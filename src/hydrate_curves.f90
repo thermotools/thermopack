@@ -12,30 +12,32 @@ module hydrate_curves
 
   logical, parameter :: debug_hyd = .false.
 
-  type :: two_phase_point
-    real, allocatable :: X1(:), X2(:), K(:)
-    real :: beta
-    real :: v1, v2
+  type :: multi_phase_point
+    real, allocatable :: X1(:), X2(:), X3(:), K1(:), K2(:)
+    real :: beta1, beta3
+    real :: v1, v2, v3
     real :: T, P
+    real :: nph
   contains
-    procedure, public :: alloc => two_phase_point_alloc
-    procedure, public :: dealloc => two_phase_point_dealloc
-  end type two_phase_point
+    procedure, public :: alloc => multi_phase_point_alloc
+    procedure, public :: dealloc => multi_phase_point_dealloc
+  end type multi_phase_point
 
-  type :: two_phase_point_list
-    type(two_phase_point), allocatable :: list(:)
+  type :: multi_phase_point_list
+    type(multi_phase_point), allocatable :: list(:)
     real, allocatable :: Z(:)
     integer :: n ! Points stored in array
   contains
-    procedure, public :: add_point => two_phase_point_list_add_point
-    procedure, public :: add_single_phase_curve => two_phase_point_list_add_single_phase_curve
-    procedure, public :: add_tppl => two_phase_point_list_add_tppl
-    procedure, public :: write_file => two_phase_point_list_write_file
-    procedure, public :: write_arrays => two_phase_point_list_write_arrays
-    procedure, public :: init => two_phase_point_list_init
-    procedure, public :: dealloc => two_phase_point_list_dealloc
-    procedure, public :: print => two_phase_point_list_print_arrays
-  end type two_phase_point_list
+    procedure, public :: add_point_twoph => multi_phase_point_list_add_point_twoph
+    procedure, public :: add_point_threeph => multi_phase_point_list_add_point_threeph
+    procedure, public :: add_single_phase_curve => multi_phase_point_list_add_single_phase_curve
+    procedure, public :: add_tppl => multi_phase_point_list_add_tppl
+    procedure, public :: write_file => multi_phase_point_list_write_file
+    procedure, public :: write_arrays => multi_phase_point_list_write_arrays
+    procedure, public :: init => multi_phase_point_list_init
+    procedure, public :: dealloc => multi_phase_point_list_dealloc
+    procedure, public :: print => multi_phase_point_list_print_arrays
+  end type multi_phase_point_list
 
   public :: map_hydrate_appearance_curve
   ! Testing
@@ -73,14 +75,14 @@ contains
     real           :: Ym(nc,nmx)        ! Phase Y composition (-)
     real           :: Xm(nc,nmx)        ! Phase X composition (-)
     real           :: Wm(nc,nmx)        ! Phase W composition (-)
-    integer :: n_sat, i, ns, n_cross, j
+    integer :: n_sat, i, ns, n_cross
     real :: fug_h_a(nmx), fug_w_a(nmx)
     real :: fug(nc)
     real :: X1(nc+3), X2(nc+3), param(nc+3), Xsol(nc+3)
     real :: X1_3ph(2*nc+5), X2_3ph(2*nc+5), Xsol_3ph(2*nc+5)
     real :: Ta(nmxs),va(nmxs)
     real :: T,P,v
-    type(two_phase_point_list) :: tppl, tppl_comprised
+    type(multi_phase_point_list) :: tppl, tppl_comprised
     call tppl%init(1000,nc,Z)
     call tppl_comprised%init(4000,nc,Z)
     !
@@ -136,7 +138,9 @@ contains
           call locate_hydrate_envelope_crossing_3ph(X1_3ph,X2_3ph,param,Xsol_3ph)
           !call print_Xvar_tv(Xsol_3ph,param,"Xsol_3ph")
           print *,"Hydrate appearance in three-phase region. Not yet supported."
-          stop
+          !call map_hydrate_curve_three_phase_fluid(Xsol_3ph,param,p_dew_start,p_max,T_min,tppl)
+          !call tppl%print()
+          !stop
         else
           call set_variables_tv(Tam(i),v_YXW(1,i),v_YXW(3,i),Ym(:,i),Wm(:,i),Z,1.0,X1,param)
           !call print_envelope_point_tv(X1,param)
@@ -326,7 +330,7 @@ contains
     real :: Xsol(2*nc+5), dXds(2*nc+5), ds, fug_w, fug_wh
     integer :: s, ierr, iter
     real :: fug(nc), error_on_exit
-    real :: W(nc),X(nc),Y(nc),beta,T,P,vW,vX,vY
+    real :: W(nc),X(nc),Y(nc),beta,T,P,vW,vX,vY,Ky(nc),Kx(nc)
     param_tv = param(1:nc+3)
     s = nint(param(nc+2))
     param_tv(nc+1) = xx
@@ -337,12 +341,16 @@ contains
     call three_ph_line_newton(param_tv,Xsol,s,xx,partial=.false.,niter=100,ierr=ierr,&
          nlines=3,error_on_exit=error_on_exit,iter=iter)
     call read_Xvar_and_param_tv(Xsol,param_tv,&
-         W,X,Y,beta,t,p,vW,vX,vY,no_press_calc=.true.)
+         W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky,no_press_calc=.true.)
     call thermo_tv(T,vY,Y,fug)
     fug_w = exp(fug(water_idx))
     call fugacity_water_in_hydrate_TVn(T,vY,Y,fug_wh)
     fun = (fug_w - fug_wh)/max(abs(fug_w),1.0)
   end function fun_hydrate_envelope_crossing_3ph
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Methods for single phase curves
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !-----------------------------------------------------------------!
   subroutine map_hydrate_curve_single_phase_fluid(Xsol_tv_sat,param_tv,p_min,p_max,T_min,nmx,Ta,va,n)
@@ -844,6 +852,10 @@ contains
     enddo
   end subroutine hyd_newton_tv_extrapolate_test
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Methods for two phase curves
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   !-----------------------------------------------------------------!
   subroutine map_hydrate_curve_two_phase_fluid(Xsol_tv_sat,param_tv,p_min,p_max,T_min,tppl)
   !-----------------------------------------------------------------!
@@ -851,7 +863,7 @@ contains
     real, intent(in) :: Xsol_tv_sat(nc+3)
     real, intent(in) :: param_tv(nc+3)
     real, intent(in) :: p_min,p_max,T_min
-    type(two_phase_point_list), intent(inout) :: tppl
+    type(multi_phase_point_list), intent(inout) :: tppl
     ! Internal
     integer :: s,ierr,iter
     real :: T,P,Pold
@@ -882,7 +894,7 @@ contains
     sgn = -1 ! Start by decreaseing beta
     !
     X = Xold
-    call tppl%add_point(X)
+    call tppl%add_point_twoph(X)
     P = tppl%list(tppl%n)%P
     dXdS = 0
     !
@@ -995,7 +1007,7 @@ contains
       endif
 
       ! Add point to list
-      call tppl%add_point(X)
+      call tppl%add_point_twoph(X)
 
       if (exit_after_saving) then
         exit
@@ -1072,7 +1084,7 @@ contains
       call update_step(halff)
       print *,"XX",XX
       print *,"param",param
-      call print_X_state(XX,param(1:nc))
+      call print_X_state_twoph(XX,param(1:nc))
       call test_differentials(XX,param,hyd_twoph_fun_newton_tv,&
            hyd_twoph_diff_newton_tv)
       call stoperror("wrap_newton_two_phase_fluid_hydrate_curve: Giving up")
@@ -1120,7 +1132,7 @@ contains
     Z = param(1:nc)
     call hydrate_var_twoph_tv_limits(Xmin,Xmax,b)
     call isXwithinBounds(nc+4,Xsol,Xmin,Xmax,"",&
-         "newton_single_phase_fluid_hydrate_curve: Initial values not within bounds!!")
+         "newton_two_phase_fluid_hydrate_curve: Initial values not within bounds!!")
     param_ext(1:nc+2) = param
     param_ext(nc+3:2*nc+2) = b
     call nonlinear_solve(solver,hyd_twoph_fun_newton_tv,hyd_twoph_diff_newton_tv,&
@@ -1239,7 +1251,7 @@ contains
   !>
   !> \author MH, 2021-12
   !-----------------------------------------------------------------------------
-  subroutine print_X_state(X,Z)
+  subroutine print_X_state_twoph(X,Z)
     implicit none
     real, dimension(nc+3), intent(in) :: X
     real, dimension(nc), intent(in) :: Z
@@ -1255,7 +1267,7 @@ contains
     print *,"X1: ",X1
     print *,"X2: ",X2
     print *,"pressure: ",p
-  end subroutine print_X_state
+  end subroutine print_X_state_twoph
 
   !-----------------------------------------------------------------------------
   !> Saturation line function values for non-linear solver
@@ -1390,7 +1402,7 @@ contains
     J(nc+4,nc+2) = v1*(lnfug1_V(water_idx) - lnfug_wh_V)
 
     ! beta differential
-    J(nc+4,nc+4) = sum(dX1dbeta*lnfug1_n(water_idx,:) - dX2dbeta*lnfug_wh_n)
+    J(nc+4,nc+4) = sum(dX1dbeta*lnfug1_n(water_idx,:) - dX1dbeta*lnfug_wh_n)
 
     ! Specification row/column
     if (s <= nc+4) then
@@ -1547,49 +1559,900 @@ contains
     enddo
   end subroutine hyd_twoph_newton_tv_extrapolate_test
 
-  subroutine two_phase_point_alloc(tpp,nc)
-    class(two_phase_point), intent(inout) :: tpp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Methods for three phase curves
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !-----------------------------------------------------------------!
+  subroutine map_hydrate_curve_three_phase_fluid(Xsol_tv_sat,param_tv,p_min,p_max,T_min,tppl)
+  !-----------------------------------------------------------------!
+    implicit none
+    real, intent(in) :: Xsol_tv_sat(2*nc+5)
+    real, intent(in) :: param_tv(nc+4)
+    real, intent(in) :: p_min,p_max,T_min
+    type(multi_phase_point_list), intent(inout) :: tppl
+    ! Internal
+    integer :: s,ierr,iter
+    real :: T,P,Pold
+    real :: X(2*nc+6), Xold(2*nc+6), dXds(2*nc+6), dXdsOld(2*nc+6)
+    real :: Z(nc), param(nc+2), sgn, Told, beta_lin, dbeta, dX(2*nc+6)
+    real :: dS, tuning, dP, dPds, dS_max, dS_min, ln_spec, dT, scaling
+    integer :: smax
+    logical :: recalculate
+    logical :: exit_after_saving
+    logical :: set_beta_lin
+    real, parameter :: maxdT = 10.0, maxdP = 15.0, maxdbeta = 0.05
+    real, parameter :: excessive_dT = 25.0
+    real, parameter :: beta_limit = 0.025
+    !
+    exit_after_saving = .false.
+    recalculate = .false.
+    set_beta_lin = .false.
+    Z = param_tv(1:nc)
+    param(1:nc) = Z
+    s = 2*nc+6 ! Start by fixating betaW
+    param(nc+1) = real(s)
+    !
+    X(1:2*nc+5) = Xsol_tv_sat
+    X(2*nc+6) = 0.0
+
+    param(nc+2) = X(s)
+    iter = newton_three_phase_fluid_hydrate_curve(X,param,T,P,ierr)
+    Xold = X
+    sgn = 1 ! Start by increaseing beta
+    !
+    !call print_X_state_threeph(X,Z)
+    !call test_hyd_threeph_diff_newton_tv(X,param)
+    !stop
+    !
+    X = Xold
+    call tppl%add_point_threeph(X)
+    P = tppl%list(tppl%n)%P
+    dXdS = 0
+    !
+    dS_max = 0.25
+    dS_min = 0.01
+    dS = dS_min
+    tuning = 1.2
+    do while (tppl%n < size(tppl%list))
+      dXdSold = dXdS
+      call hyd_threeph_newton_tv_extrapolate(X,param,dXdS,dPds)
+      smax = maxloc(abs(dXdS),dim=1)
+      if ((.not. smax == s) .and. tppl%n > 1) then
+        s = smax
+        ! Rescaling the sensitivities
+        sgn = sign(1.0,X(s) - Xold(s))
+        dPds = dPds / dXdS(s)
+        dXdS = dXdS / dXdS(s)
+        dXdSold = dXdSold / dXdSold(s)
+        param(nc+1) = real(s)
+      endif
+      dT = abs(exp(X(2*nc+1) + dXdS(2*nc+1)*dS*sgn) - exp(X(2*nc+1)))
+      if (dT > maxdT) then
+        ! Limit step in temperature
+        dS = max(min(maxdT/dT,dS_max),dS_min)
+      endif
+      dP = abs(dPds*ds)/1e5
+      if (dP > maxdP) then
+        ! Limit step in pressure
+        dS = max(min(dS*maxdP/dP,dS_max),dS_min)
+      endif
+      ! Limit step in beta
+      if (abs(dXdS(2*nc+6)*dS) > maxdbeta) then
+        dS = max(min(maxdbeta/abs(dXdS(2*nc+6)),dS_max),dS_min)
+      endif
+      beta_lin = X(2*nc+6) + dXdS(2*nc+6)*dS*sgn
+      if (dXdS(2*nc+6)*sgn < 0.0 .and. beta_lin < beta_limit) then
+        if (beta_lin <= 0.0) then
+          set_beta_lin = .true.
+          beta_lin =  0
+          dS = X(2*nc+6)/abs(dXdS(2*nc+6))
+        endif
+        s = 2*nc+6
+        param(nc+1) = real(s)
+      else if (dXdS(2*nc+6)*sgn > 0.0 .and. beta_lin > 1-beta_limit) then
+        if (beta_lin >= 1.0) then
+          set_beta_lin = .true.
+          beta_lin = 1
+          dbeta = abs(1 - X(2*nc+6))
+          dS = dbeta/abs(dXdS(2*nc+6))
+        endif
+        s = 2*nc+6
+        param(nc+1) = real(s)
+      endif
+
+      Pold = P
+      Xold = X
+      Told = T
+      dX = dXdS*dS*sgn
+      ! Make sure beta is between zero and one
+      call limit_threeph_dx(Xold,dX,Z,scaling)
+      X = Xold + scaling*dX
+      ! Make sure beta is between zero and one
+      X(2*nc+2) = min(max(X(2*nc+2),real(0)),real(1))
+      X(2*nc+6) = min(max(X(2*nc+6),real(0)),real(1))
+      if (s == 2*nc+7) then
+        param(nc+2) = log(p) + dS*sgn
+      else if (s == 2*nc+6 .and. set_beta_lin) then
+        param(nc+2) = beta_lin
+      else
+        param(nc+2) = X(s)
+      endif
+
+      call wrap_newton_three_phase_fluid_hydrate_curve(param,&
+           Pold,dpds,Xold,X,dXds,sgn,s,ds,T,P,ierr,iter)
+
+      !Exit at thermo limit or defined pressure
+      if (p < p_min) then
+        s = 2*nc+7
+        recalculate = .true.
+        ln_spec = log(p_min)
+      else if (p >= p_max) then
+        s = 2*nc+7
+        recalculate = .true.
+        ln_spec = log(p_max)
+      endif
+
+      ! Is temperature decreasing? - And below Tmin + safety limit?
+      if (X(2*nc+1) - Xold(2*nc+1) < 0.0 .and. T < T_min + 0.01) then
+        ! Exit at temperature
+        s = 2*nc+1
+        ln_spec = log(T_min)
+        recalculate = .true.
+      endif
+
+      ! Is beta, betaL or betaW zero
+      if (X(2*nc+2) <= 0.0 .or. 1-X(2*nc+2)-X(2*nc+6) <= 0.0 .or. X(2*nc+6) < 0.0) then
+        ! Exit
+        exit_after_saving = .true.
+      endif
+
+      if (recalculate) then
+        ! Extrapolate from previous point
+        param(nc+1) = real(s)
+        param(nc+2) = ln_spec
+        if (s <= 2*nc+6) then
+          dS = ln_spec - Xold(s) ! Sign included
+        else if (s == 2*nc+7) then
+          if (abs(dpds) > 10.0) ds = (exp(ln_spec) - Pold)/dpds
+        endif
+        X = Xold + dXdS*dS
+        iter = newton_three_phase_fluid_hydrate_curve(X,param,T,P,ierr)
+        exit_after_saving = .true.
+      endif
+
+      ! Add point to list
+      call tppl%add_point_threeph(X)
+
+      if (exit_after_saving) then
+        exit
+      endif
+
+      ! Tune dS up or down based on how fast newton_single_phase_fluid_hydrate_curve converged
+      if (iter < 3) then
+        dS = dS * tuning
+      else if (iter > 5) then
+        dS = dS/tuning
+      endif
+      dS = max(min(dS,dS_max),dS_min)
+
+    enddo
+  end subroutine map_hydrate_curve_three_phase_fluid
+
+  !-----------------------------------------------------------------------------
+  !> Limit change in x, dx, to keep x between extreme values:
+  !> xmin <= x <= xmax
+  !>
+  !> \author MH, Dec 2024
+  !-----------------------------------------------------------------------------
+  subroutine limit_threeph_dx(X,dX,Z,scaling)
+    use nonlinear_solvers, only: limit_dx
+    implicit none
+    real, intent(in) :: Z(nc)
+    real, intent(in) :: X(2*nc+6), dX(2*nc+6)
+    real, intent(out) :: scaling
+    ! Locals
+    real :: xxmin(2*nc+6),xxmax(2*nc+6),dxx(2*nc+6),param(2*nc+2)
+    real :: b(nc)
+    integer :: n, np, i
+    !
+    call hydrate_var_threeph_tv_limits(xxmin,xxmax,b)
+    param(nc+3:2*nc+2) = b
+    param(1:nc) = Z
+    dxx = dX
+    n = 2*nc + 6
+    np = 2*nc + 2
+    call limit_threeph_dx_line(n,X,xxmin,xxmax,dxx,np,param)
+    i = maxloc(abs(dX), dim=1)
+    if (abs(dX(i)) > 0.0) then
+      scaling = dxx(i)/dX(i)
+    else
+      scaling = 1
+    endif
+  end subroutine limit_threeph_dx
+
+  !-----------------------------------------------------------------------------
+  !> Solve for hydrate appearance point in equilibrium with three fluid phases
+  !>
+  !> \author Morten Hammer, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine wrap_newton_three_phase_fluid_hydrate_curve(param,&
+       Pold,dpds,XXold,XX,dXds,sgn,s,ds,T,P,ierr,iter)
+    use nonlinear_solvers, only: test_differentials
+    implicit none
+    real, intent(in) :: Pold, dpds
+    real, dimension(2*nc+6), intent(in) :: XXold, dXds
+    real, dimension(2*nc+6), intent(inout) :: XX
+    real, dimension(nc+2), intent(inout) :: param
+    real, intent(in)     :: sgn
+    integer, intent(in)  :: s
+    real, intent(inout)  :: ds
+    integer, intent(out) :: ierr
+    integer, intent(out) :: iter
+    real, intent(out)    :: T,P
+    ! Locals
+    integer :: i
+    real :: halff, ds_in, Told
+    real, parameter :: excessive_dT = 25.0
+    logical :: excessive_T_jump
+    Told = exp(XXold(2*nc+1))
+    ds_in = ds
+    halff = 1.0
+    do i=1,3 ! Try 3 times before trying to double
+      iter = newton_three_phase_fluid_hydrate_curve(XX,param,T,P,ierr)
+      excessive_T_jump = (abs(Told - T) > excessive_dT)
+      if (ierr == 0 .and. .not. excessive_T_jump) then
+        ds = halff*ds
+        exit
+      endif
+      halff = 0.5**i
+      call update_step(halff)
+    enddo
+    if (ierr /= 0 .or. excessive_T_jump) then ! Try doubling initial step
+      call update_step(2.0)
+      iter = newton_three_phase_fluid_hydrate_curve(XX,param,T,P,ierr)
+      excessive_T_jump = (abs(Told - T) > excessive_dT)
+      if (ierr == 0) then
+        ds = ds*2.0
+      endif
+    endif
+    do i=1,2 ! Try 2 more times before giving up
+      iter = newton_three_phase_fluid_hydrate_curve(XX,param,T,P,ierr)
+      excessive_T_jump = (abs(Told - T) > excessive_dT)
+      if (ierr == 0 .and. .not. excessive_T_jump) then
+        ds = halff*ds
+        exit
+      endif
+      halff = 0.5*halff
+      call update_step(halff)
+    enddo
+    if (ierr /= 0 .or. excessive_T_jump) then ! Giving up
+      halff = 2.0*halff
+      call update_step(halff)
+      print *,"s",nint(param(nc+1))
+      print *,"XX",XX
+      print *,"param",param
+      call print_X_state_threeph(XX,param(1:nc))
+      call test_differentials(XX,param,hyd_threeph_fun_newton_tv,&
+           hyd_threeph_diff_newton_tv)
+      call stoperror("wrap_newton_three_phase_fluid_hydrate_curve: Giving up")
+    endif
+  contains
+    subroutine update_step(fac)
+      real, intent(in) :: fac
+      XX = XXold + dXds*sgn*ds*fac
+      if (s == 2*nc+7) then
+        P = Pold + dpds*sgn*ds*fac
+        param(nc+2) = log(P)
+      else
+        param(nc+2) = XX(s)
+      endif
+    end subroutine update_step
+  end subroutine wrap_newton_three_phase_fluid_hydrate_curve
+
+  !-----------------------------------------------------------------!
+  !> Hydrate curve mapping limits
+  !>
+  !> \author MH, 2021-12
+  !-----------------------------------------------------------------------------
+  subroutine hydrate_var_threeph_tv_limits(Xmin,Xmax,b)
+    use thermopack_var, only: thermo_model, get_active_thermo_model
+    use numconstants, only: expMax, expMin, Small
+    use eosdata, only: eosCPA
+    use cubic_eos, only: get_b_linear_mix
+    implicit none
+    real, dimension(2*nc+6), intent(out) :: Xmin, Xmax !< Variable vector
+    real, dimension(nc), intent(out) :: b
+    ! Locals
+    real :: Z(nc)
+    logical :: needalt, isCPA
+    integer :: i
+    type(thermo_model), pointer :: act_mod_ptr
+    act_mod_ptr => get_active_thermo_model()
+    Xmin = expMin
+    Xmax = expMax
+    Xmin(2*nc+1) = log(tpTmin) !Tmin
+    Xmax(2*nc+1) = log(tpTmax) !Tmax
+    !
+    needalt = act_mod_ptr%need_alternative_eos
+    isCPA = (act_mod_ptr%eosidx == eosCPA)
+    if (needalt .and. .not. isCPA) then
+      b = 1.0e-7
+    else
+      do i=1,nc
+        Z = 0
+        Z(i) = 1
+        b(i) = get_b_linear_mix(Z) + Small ! m3/mol
+      enddo
+    endif
+    Xmin(2*nc+3:2*nc+5) = log(1.0e-7) !v min
+    Xmax(2*nc+3:2*nc+5) = log(100.0) !v max
+    Xmin(2*nc+2) = 0 ! beta
+    Xmax(2*nc+2) = 1 ! beta
+    Xmin(2*nc+6) = 0 ! betaW
+    Xmax(2*nc+6) = 1 ! betaW
+  end subroutine hydrate_var_threeph_tv_limits
+
+  subroutine get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,no_press_calc)
+    use multi_phase_envelope_tv, only: read_Xvar_and_param_tv
+    ! Input
+    real, intent(in) :: Xvar(2*nc+6)
+    real, intent(in) :: Z(nc)
+    logical, optional, intent(in) :: no_press_calc
+    ! Output
+    real, dimension(nc), intent(out) :: Ky, Kx, Y, X, W
+    real, intent(out) :: vY, vX, vW, t, p, beta, betaW
+    ! Locals
+    real :: param(nc+4)
+    betaW = Xvar(2*nc+6)
+    param(1:nc) = Z
+    param(nc+1:nc+3) = 0.0
+    param(nc+4) = betaW
+    call read_Xvar_and_param_tv(Xvar,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky,no_press_calc)
+  end subroutine get_three_phase_variables_tv
+
+  !-----------------------------------------------------------------------------
+  !> Print X state
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine print_X_state_threeph(Xvar,Z)
+    implicit none
+    real, dimension(2*nc+6), intent(in) :: Xvar
+    real, dimension(nc), intent(in) :: Z
+    ! Locals
+    real, dimension(nc) :: Ky, Kx, Y, X, W
+    real :: vY, vX, vW, t, p, beta, betaW
+    !
+    call get_three_phase_variables_tv(Xvar,Z,T,P,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    print *,"Ky: ",Ky
+    print *,"Kx: ",Kx
+    print *,"Temperature: ",T
+    print *,"beta: ",beta
+    print *,"vY: ",vY
+    print *,"vX: ",vX
+    print *,"vW: ",vW
+    print *,"betaW: ",betaW
+    print *,"Y: ",Y
+    print *,"X: ",X
+    print *,"W: ",W
+    print *,"Pressure: ",p
+  end subroutine print_X_state_threeph
+
+  !-----------------------------------------------------------------------------
+  !> Saturation curve function values for non-linear solver
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine hyd_threeph_fun_newton_tv(G,Xvar,param)
+    use multi_phase_envelope_tv, only: three_ph_line_fun_newton
+    implicit none
+    real, dimension(2*nc+6), intent(out) :: G !< Function values
+    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
+    real, dimension(nc+3), intent(inout) :: param !< Parameter vector
+    ! Locals
+    real, dimension(nc) :: Z
+    real, dimension(nc) :: lnfug
+    integer :: s
+    real :: param_sat_tv(nc+4)
+    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: ln_s, ps, fug_wh, vS, pW
+
+    Z = param(1:nc)
+    s = nint(param(nc+1))
+    ln_s = param(nc+2)
+
+    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    param_sat_tv(1:nc) = Z
+    param_sat_tv(nc+1) = ln_s
+    param_sat_tv(nc+2) = 1 ! Set dummy value and handle specification here
+    param_sat_tv(nc+3) = 0.0 ! Partial?
+    param_sat_tv(nc+4) = betaW
+    call three_ph_line_fun_newton(G(1:2*nc+5),Xvar(1:2*nc+5),param_sat_tv)
+    !
+    call thermo_tv(t,vW,W,lnfug)
+    call fugacity_water_in_hydrate_TVn(T,vW,W,fug_wh)
+    ! Function value
+    G(2*nc+6) = lnfug(water_idx) - log(fug_wh)
+    ! Sepcification
+    if (s <= 2*nc+6) then
+      G(2*nc+3) = Xvar(s) - ln_s
+    else if (s == 2*nc+7) then
+      ! Pressure
+      ps = exp(ln_s)
+      ! Volume average for pressure error scaling
+      vS = 3/(1/vY+1/vX+1/vW)
+      pW = pressure(t,vW,W)
+      G(2*nc+3) = (pW-ps)*vS/(Rgas*T)
+    endif
+
+    !print *,"Xvar",Xvar
+    !print *,"G",G
+  end subroutine hyd_threeph_fun_newton_tv
+
+  !-----------------------------------------------------------------------------
+  !> Differentials for saturation line function values for non-linear solver
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine hyd_threeph_diff_newton_tv(J,Xvar,param)
+    use thermo_utils, only: isSingleComp
+    use multi_phase_envelope_tv, only: three_ph_line_diff_newton
+    implicit none
+    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
+    real, dimension(2*nc+6,2*nc+6), intent(out) :: J !< Function differentials
+    real, dimension(nc+3) :: param !< Parameter vector
+    ! Locals
+    real :: Z(nc)
+    real :: lnfugY(nc), lnfugY_T(nc), lnfugY_V(nc), lnfugY_n(nc,nc)
+    real :: lnfugX(nc), lnfugX_T(nc), lnfugX_V(nc), lnfugX_n(nc,nc)
+    real :: lnfugW(nc), lnfugW_T(nc), lnfugW_V(nc), lnfugW_n(nc,nc)
+    real :: pY, dpYdv, dpYdt, dpYdn(nc)
+    real :: pX, dpXdv, dpXdt, dpXdn(nc)
+    real :: pW, dpWdv, dpWdt, dpWdn(nc)
+    real :: fug_wh, fug_wh_T, fug_wh_v, fug_wh_n(nc)
+    real :: lnfug_wh_T, lnfug_wh_v, lnfug_wh_n(nc)
+    integer :: s, i
+    real :: param_sat_tv(nc+4)
+    real :: T,P1,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: ln_s, ps, vS, dvSdvY_div_vS, dvSdvX_div_vS, dvSdvW_div_vS
+    real :: dYdbetaW(nc), dXdbetaW(nc), dWdbetaW(nc), dWdbeta(nc)
+    real :: fac, fac_vec(nc)
+    !
+    Z = param(1:nc)
+    s = nint(param(nc+1))
+    ln_s = param(nc+2)
+
+    call get_three_phase_variables_tv(Xvar,Z,T,P1,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    param_sat_tv(1:nc) = Z
+    param_sat_tv(nc+1) = ln_s
+    param_sat_tv(nc+2) = 1 ! Set dummy value and handle specification here
+    param_sat_tv(nc+3) = 0.0 ! Partial?
+    param_sat_tv(nc+4) = betaW
+    J = 0
+    call three_ph_line_diff_newton(J(1:2*nc+5,1:2*nc+5),Xvar(1:2*nc+5),param_sat_tv)
+    ! Need differentials wrpt. betaW
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        fac_vec(i) = -W(i)/(betaW + beta*Ky(i) + (1.0-beta-betaW)*Kx(i))
+        dWdbetaW(i) = (1 - Kx(i))*fac_vec(i)
+        dWdbeta(i) = (Ky(i)-Kx(i))*fac_vec(i)
+      else
+        dWdbetaW(i) = 0
+        dWdbeta(i) = 0
+      endif
+    enddo
+    dYdbetaW = Ky*dWdbetaW
+    dXdbetaW = Kx*dWdbetaW
+    !
+    ! Volume average for pressure error scaling
+    vS = 3/(1/vY+1/vX+1/vW)
+    if (debug_hyd) dvSdvY_div_vS = 1/(1/vY+1/vX+1/vW)/vY**2
+    if (debug_hyd) dvSdvX_div_vS = 1/(1/vY+1/vX+1/vW)/vX**2
+    if (debug_hyd) dvSdvW_div_vS = 1/(1/vY+1/vX+1/vW)/vW**2
+    fac = vS/(Rgas*T)
+    !
+    call thermo_tv(t,vX,X,lnfugX,lnphit=lnfugX_t,lnphiv=lnfugX_v,lnphin=lnfugX_n)
+    call thermo_tv(t,vY,Y,lnfugY,lnphit=lnfugY_t,lnphiv=lnfugY_V,lnphin=lnfugY_n)
+    call thermo_tv(t,vW,W,lnfugW,lnphit=lnfugW_t,lnphiv=lnfugW_V,lnphin=lnfugW_n)
+    pX = pressure(t,vX,X,dpdv=dpXdv,dpdt=dpXdt,dpdn=dpXdn)
+    pY = pressure(t,vY,Y,dpdv=dpYdv,dpdt=dpYdt,dpdn=dpYdn)
+    pW = pressure(t,vW,W,dpdv=dpWdv,dpdt=dpWdt,dpdn=dpWdn)
+    call fugacity_water_in_hydrate_TVn(T,vW,W,fug_wh,fug_wh_T,fug_wh_v,fug_wh_n)
+    lnfug_wh_T = fug_wh_T/fug_wh
+    lnfug_wh_v = fug_wh_v/fug_wh
+    lnfug_wh_n = fug_wh_n/fug_wh
+
+    ! beta differential of three_ph_line_diff_newton equations
+    do i=1,nc
+      J(i+nc,2*nc+6) = sum(lnfugY_n(i,:)*dYdbetaW) - sum(lnfugW_n(i,:)*dWdbetaW)
+      J(i,2*nc+6) = sum(lnfugX_n(i,:)*dXdbetaW) - sum(lnfugW_n(i,:)*dWdbetaW)
+    enddo
+    J(2*nc+1,2*nc+6) = sum(dWdbetaW)
+    J(2*nc+2,2*nc+6) = sum(dWdbetaW-dXdbetaW)
+    J(2*nc+4,2*nc+6) = sum(dXdbetaW*dpXdn-dWdbetaW*dpWdn)*fac
+    J(2*nc+5,2*nc+6) = sum(dYdbetaW*dpYdn-dWdbetaW*dpWdn)*fac
+
+    ! K differentials
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        J(2*nc+6,i+nc) = (lnfugW_n(water_idx,i)-lnfug_wh_n(i))*beta*Ky(i)*fac_vec(i)
+        J(2*nc+6,i) = (lnfugW_n(water_idx,i)-lnfug_wh_n(i))*(1.0-beta-betaW)*Kx(i)*fac_vec(i)
+      endif
+    enddo
+
+    ! Temperature differential
+    J(2*nc+6,2*nc+1) = T*(lnfugW_T(water_idx) - lnfug_wh_T)
+
+    ! Volume differential
+    J(2*nc+6,2*nc+5) = vW*(lnfugW_V(water_idx) - lnfug_wh_V)
+
+    ! beta differential
+    J(2*nc+6,2*nc+2) = sum(dWdbeta*lnfugW_n(water_idx,:) - dWdbeta*lnfug_wh_n)
+
+    ! betaW differential
+    J(2*nc+6,2*nc+6) = sum(dWdbetaW*lnfugW_n(water_idx,:) - dWdbetaW*lnfug_wh_n)
+
+    ! Specification row/column
+    if (s <= 2*nc+6) then
+      J(2*nc+3,:) = 0.0
+      J(2*nc+3,s) = 1.0
+    else if (s == 2*nc+7) then
+      ! Pressure
+      ps = exp(ln_s)
+      ! Ky and Kx differentials
+      do i=1,nc
+        if (Z(i) > 0.0) then
+          J(2*nc+3,i+nc) = fac*dpWdn(i)*beta*Ky(i)*fac_vec(i)
+          J(2*nc+3,i) = fac*dpWdn(i)*(1.0-beta-betaW)*Kx(i)*fac_vec(i)
+        else
+          J(2*nc+3,i) = 0
+          J(2*nc+3,i+nc) = 0
+        endif
+      enddo
+      J(2*nc+3,2*nc+1) = T*dpWdT*fac
+      if (debug_hyd) J(2*nc+3,2*nc+1) = J(2*nc+3,2*nc+1) - (pW-ps)*fac
+      J(2*nc+3,2*nc+5) = dpWdv*vW*fac
+      if (debug_hyd) J(2*nc+3,2*nc+5) = J(2*nc+3,2*nc+5) + vW*dvSdvW_div_vS*(pW-ps)*fac
+      J(2*nc+3,2*nc+3) = 0
+      if (debug_hyd) J(2*nc+3,2*nc+3) = J(2*nc+2,2*nc+3) + vY*dvSdvY_div_vS*(pW-ps)*fac
+      J(2*nc+3,2*nc+4) = 0
+      if (debug_hyd) J(2*nc+3,2*nc+4) = J(2*nc+2,2*nc+4) + vX*dvSdvX_div_vS*(pW-ps)*fac
+      !
+      J(2*nc+3,2*nc+2) = sum(dpWdn*dWdbeta)*fac
+      J(2*nc+3,2*nc+6) = sum(dpWdn*dWdbetaW)*fac
+    endif
+
+  end subroutine hyd_threeph_diff_newton_tv
+
+  !-----------------------------------------------------------------------------
+  !> Differentials for saturation line function values for non-linear solver
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine test_hyd_threeph_diff_newton_tv(Xvar,param)
+    implicit none
+    real, dimension(2*nc+6), intent(in) :: Xvar !< Variable vector
+    real, dimension(nc+2) :: param !< Parameter vector
+    ! Locals
+    integer :: i
+    real, dimension(2*nc+6) :: X, F0, F1, F2, dFdx
+    real :: ds, dx, J(2*nc+6,2*nc+6)
+
+    call print_X_state_threeph(Xvar,param(1:nc))
+    !call hyd_threeph_fun_newton_tv(F0,Xvar,param)
+    param(nc+1) = 2*nc+7 ! Fixate pressure
+    call hyd_threeph_diff_newton_tv(J,Xvar,param)
+    ds = 1.0e-5
+    do i=1,2*nc+6 !2*nc+6
+      X = Xvar
+      dx = sign(1.0, X(i))*max(ds*abs(X(i)), ds)
+      print *,"dx",i,dx
+      X(i) = Xvar(i) + dx
+      call hyd_threeph_fun_newton_tv(F2,X,param)
+      X(i) = Xvar(i) - dx
+      call hyd_threeph_fun_newton_tv(F1,X,param)
+      dFdx = (F2-F1)/(2*dx)
+      print *,"i",i
+      !print *,dFdx(2*nc+6)
+      !print *,J(2*nc+6,i)
+      print *,dFdx(:)
+      print *,J(:,i)
+      !stop
+    enddo
+    stop
+  end subroutine test_hyd_threeph_diff_newton_tv
+
+  !-----------------------------------------------------------------------------
+  !> Find variable sensitivities along the hydrate line
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine hyd_threeph_newton_tv_extrapolate(Xvar,param,dXdS,dpds)
+    implicit none
+    real, dimension(2*nc+6), intent(in) :: Xvar
+    real, dimension(nc+2), intent(inout) :: param
+    real, dimension(2*nc+6), intent(out) :: dXdS
+    real, intent(out) :: dPdS
+    ! Locals
+    real :: Z(nc), vS
+    real :: T,vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: pW, dpWdv, dpWdt, dpWdn(nc), fac
+    real :: dWdlnKy(nc), dWdlnKx(nc), dWdbeta(nc), dWdbetaW(nc)
+    integer :: s, i
+    real, dimension(2*nc+6,2*nc+6) :: Jac
+    integer, dimension(2*nc+6) :: INDX
+    integer :: INFO
+
+    call hyd_threeph_diff_newton_tv(Jac,Xvar,param)
+    Z = param(1:nc)
+    call get_three_phase_variables_tv(Xvar,Z,T,pW,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+
+    pW = pressure(T,vW,W,dpdv=dpWdv,dpdt=dpWdt,dpdn=dpWdn)
+    s = nint(param(nc+1))
+    dXdS = 0
+    if (s <= 2*nc+6) then
+      dXdS(2*nc+3) = 1
+    else
+      ! Specified pressure
+      vS = 3/(1/vY+1/vX+1/vW)
+      fac = vS/(Rgas*T)
+      dXdS(2*nc+3) = pW*fac
+    endif
+
+    ! Solve equation system
+    call DGESV( 2*nc+6, 1, Jac, 2*nc+6, INDX, dXdS, 2*nc+6, INFO )
+
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        fac = -W(i)/(betaW + beta*Ky(i)+(1.0-beta-betaW)*Kx(i))
+        dWdlnKX(i) = Kx(i)*(1.0-beta-betaW)*fac
+        dWdlnKY(i) = Ky(i)*beta*fac
+        dWdbeta(i) = (Ky(i)-Kx(i))*fac
+        dWdbetaW(i) = (1-Kx(i))*fac
+      else
+        dWdlnKX(i) = 0
+        dWdlnKY(i) = 0
+        dWdbeta(i) = 0
+        dWdbetaW(i) = 0
+      endif
+    enddo
+
+    dpds = vW*dpWdv*dxds(2*nc+5) + T*dpWdt*dxds(2*nc+1) + &
+         sum(dpWdn*dWdlnKx*dxds(1:nc)) + sum(dpWdn*dWdlnKy*dxds(nc+1:2*nc)) + &
+         sum(dpWdn*dWdbeta*dxds(2*nc+2)) + sum(dpWdn*dWdbetaW*dxds(2*nc+6))
+
+  end subroutine hyd_threeph_newton_tv_extrapolate
+
+  !-----------------------------------------------------------------!
+  function newton_three_phase_fluid_hydrate_curve(Xsol,param,T,P,ierr) result(iter)
+  !-----------------------------------------------------------------!
+    use nonlinear_solvers, only: nonlinear_solver,premReturn,setXv,&
+         nonlinear_solve, test_differentials
+    use utilities, only: isXwithinBounds
+    implicit none
+    real, intent(inout) :: Xsol(2*nc+6)
+    real, intent(inout) :: param(nc+2)
+    real, intent(out) :: T, P
+    integer, intent(out) :: ierr
+    integer :: iter
+    ! Internal
+    real :: Z(nc), b(nc)
+    real :: Xmax(2*nc+6), Xmin(2*nc+6)
+    type(nonlinear_solver) :: solver
+    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW
+    real :: param_ext(2*nc+2)
+    ! Testing
+    !call test_differentials(Xsol,param,hyd_twoph_fun_newton_tv,&
+    !     hyd_twoph_diff_newton_tv)
+
+    solver%rel_tol = 1.0e-20
+    solver%abs_tol = 1.0e-9
+    solver%max_it = 50
+    solver%ls_max_it = 3
+
+    Z = param(1:nc)
+    call hydrate_var_threeph_tv_limits(Xmin,Xmax,b)
+    call isXwithinBounds(2*nc+6,Xsol,Xmin,Xmax,"",&
+         "newton_three_phase_fluid_hydrate_curve: Initial values not within bounds!!")
+    param_ext(1:nc+2) = param
+    param_ext(nc+3:2*nc+2) = b
+    call nonlinear_solve(solver,hyd_threeph_fun_newton_tv,hyd_threeph_diff_newton_tv,&
+         hyd_threeph_diff_newton_tv,limit_threeph_dx_line,premReturn,&
+         setXv,Xsol,Xmin,Xmax,param_ext)
+    iter = solver%iter
+    ierr = solver%exitflag
+
+    if (ierr == 0) then
+      call get_three_phase_variables_tv(Xsol,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW)
+    endif
+  end function newton_three_phase_fluid_hydrate_curve
+
+  !-----------------------------------------------------------------------------
+  !> Limit change in x, dx, to keep x between extreme values:
+  !> xmin <= x <= xmax
+  !>
+  !> \author MH, Dec 2021
+  !-----------------------------------------------------------------------------
+  subroutine limit_threeph_dx_line(n,xx,xxmin,xxmax,dxx,np,param)
+    use nonlinear_solvers, only: limit_dx
+    implicit none
+    integer, intent(in) :: n
+    real, dimension(n),     intent(in) :: xx,xxmin,xxmax
+    real, dimension(n),     intent(inout) :: dxx
+    integer, intent(in) :: np
+    real, dimension(np),     intent(inout) :: param
+    real :: scaling
+    real :: vY,vX,vW,Y(nc),X(nc),W(nc),Ky(nc),Kx(nc),beta,betaW,T,P,z(nc)
+    real :: b(nc),bY,bX,bW
+    !
+    call limit_dx(n,xx,xxmin,xxmax,dxx,np,param)
+    ! Additional test for minimum volume?
+    if (minval(abs(Xx(2*nc+3:2*nc+5)+dxx(2*nc+3:2*nc+5)-Xxmin(2*nc+3:2*nc+5))) < 0.05) then
+      b = param(nc+3:2*nc+2)
+      Z = param(1:nc)
+      call get_three_phase_variables_tv(Xx+dxx,Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,&
+           no_press_calc=.true.)
+      bY = sum(Y*b)
+      bX = sum(X*b)
+      bW = sum(W*b)
+      scaling = 1.0
+      do while (vY < bY .or. vX < bX .or. vW < bW)
+        scaling = scaling*0.5
+        call get_three_phase_variables_tv(Xx+scaling*dxx,&
+             Z,T,p,vY,vX,vW,Y,X,W,Ky,Kx,beta,betaW,&
+             no_press_calc=.true.)
+        bY = sum(Y*b)
+        bX = sum(X*b)
+        bW = sum(W*b)
+      enddo
+      if (scaling < 1.0) then
+        dxx = dxx * scaling
+      endif
+    endif
+    ! Additional test for beta
+    if (Xx(2*nc+2)+dxx(2*nc+2) < 0.0) then
+      scaling = -Xx(2*nc+2)/dxx(2*nc+2)
+      dxx = dxx * scaling
+    endif
+    ! Additional test for betaW
+    if (Xx(2*nc+6)+dxx(2*nc+6) < 0.0) then
+      scaling = -Xx(2*nc+6)/dxx(2*nc+6)
+      dxx = dxx * scaling
+    endif
+    ! Additional test for betaL
+    if (1 - (xx(2*nc+2) + dxx(2*nc+2)) - (xx(2*nc+6) + dxx(2*nc+6)) < 0.0) then
+      scaling = (1.0 - xx(2*nc+2) - xx(2*nc+6))/(dxx(2*nc+2) + dxx(2*nc+6))
+      dxx = dxx * scaling
+    endif
+  end subroutine limit_threeph_dx_line
+
+  !-----------------------------------------------------------------------------
+  !> Test variable sensitivities along the hydrate curve for two-phase fluid
+  !>
+  !> \author MH, 2024-7
+  !-----------------------------------------------------------------------------
+  subroutine hyd_threeph_newton_tv_extrapolate_test()
+    implicit none
+    ! Locals
+    real, dimension(2*nc+6) :: Xvar1, Xvar2, Xvar0
+    real, parameter, dimension(10) :: XvarInit = (/1.0,1.0,1.0,1.0,1.0,&
+         1.0,1.0,1.0,1.0,1.0 /)
+    character(len=15), dimension(11) :: var_names
+    real, dimension(nc+2) :: param
+    real, dimension(2*nc+6) :: dXdS
+    real :: T, ln_s, dpds, p1, p2, ds, p
+    integer :: s, ierr, iter
+    real :: Z(nc)
+    ! Debug
+    !real :: v1,v2,X1(nc),X2(nc),K(nc),beta
+    !real :: T_2,v1_2,v2_2,X1_2(nc),X2_2(nc),K_2(nc),beta_2
+
+    var_names(1) = "lnKy1"
+    var_names(2) = "lnKy2"
+    var_names(3) = "lnKx1"
+    var_names(4) = "lnKx2"
+    var_names(5) = "ln(T)"
+    var_names(6) = "beta"
+    var_names(7) = "ln(v1)"
+    var_names(8) = "ln(v2)"
+    var_names(9) = "ln(v2)"
+    var_names(10) = "betaW"
+    var_names(11) = "dlnP"
+    !call init_cubic("CO2,H2O","SRK")
+    z = (/0.5,0.5/)
+    param(1:nc) = Z
+    Xvar0 = XvarInit
+    s = 2*nc+6
+    param(nc+1) = real(s)
+    ln_s = Xvar0(s)
+    param(nc+2) = ln_s
+    iter = newton_three_phase_fluid_hydrate_curve(Xvar0,param,T,P,ierr)
+    !call get_two_phase_variables_tv(Xvar0,Z,T,P,v1,v2,X1,X2,K,beta)
+    !print *,"iter,ierr",iter,ierr
+    ds = 1.0e-4
+
+    ! Loop
+    do s=1,nc+5
+      param(nc+1) = real(s)
+      call hyd_twoph_newton_tv_extrapolate(Xvar0,param,dXdS,dpds)
+      if (s <= 2*nc+6) then
+        param(nc+2) = Xvar0(s) - ds
+      else
+        param(nc+2) = log(p) - ds
+      endif
+      Xvar1 = Xvar0 - dXdS*ds
+      iter = newton_three_phase_fluid_hydrate_curve(Xvar1,param,T,P1,ierr)
+      !print *,"iter,ierr",iter,ierr
+      !call get_two_phase_variables_tv(Xvar1,Z,T,P1,v1,v2,X1,X2,K,beta)
+      if (s <= 2*nc+6) then
+        param(nc+2) = Xvar0(s) + ds
+      else
+        param(nc+2) = log(p) + ds
+      endif
+      Xvar2 = Xvar0 + dXdS*ds
+      iter = newton_three_phase_fluid_hydrate_curve(Xvar2,param,T,P2,ierr)
+      !print *,"iter,ierr",iter,ierr
+      !call get_two_phase_variables_tv(Xvar2,Z,T_2,P2,v1_2,v2_2,X1_2,X2_2,K_2,beta_2)
+      print *,trim(var_names(s))//":"
+      print *,(Xvar2-Xvar1)/(2*ds)
+      print *,dXdS
+      print *,"dpds:"
+      print *,dpds,(p2-p1)/(2*ds)
+    enddo
+  end subroutine hyd_threeph_newton_tv_extrapolate_test
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Methods for storage structure
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine multi_phase_point_alloc(tpp,nc)
+    class(multi_phase_point), intent(inout) :: tpp
     integer, intent(in) :: nc
     !
     integer :: istat
     call tpp%dealloc()
-    allocate(tpp%X1(nc), tpp%X2(nc), tpp%K(nc), stat=istat)
-    if (istat /= 0) call stoperror("Error allocating two_phase_point")
-  end subroutine two_phase_point_alloc
+    allocate(tpp%X1(nc), tpp%X2(nc), tpp%X3(nc), tpp%K1(nc), tpp%K2(nc), stat=istat)
+    if (istat /= 0) call stoperror("Error allocating multi_phase_point")
+  end subroutine multi_phase_point_alloc
 
-  subroutine two_phase_point_dealloc(tpp)
-    class(two_phase_point), intent(inout) :: tpp
+  subroutine multi_phase_point_dealloc(tpp)
+    class(multi_phase_point), intent(inout) :: tpp
     !
     integer :: istat
     istat = 0
     if (allocated(tpp%X1)) deallocate(tpp%X1, stat=istat)
-    if (istat /= 0) call stoperror("Error deallocating two_phase_point X1")
+    if (istat /= 0) call stoperror("Error deallocating multi_phase_point X1")
     if (allocated(tpp%X2)) deallocate(tpp%X2, stat=istat)
-    if (istat /= 0) call stoperror("Error deallocating two_phase_point X2")
-    if (allocated(tpp%K)) deallocate(tpp%K, stat=istat)
-    if (istat /= 0) call stoperror("Error deallocating two_phase_point K")
-  end subroutine two_phase_point_dealloc
+    if (istat /= 0) call stoperror("Error deallocating multi_phase_point X2")
+    if (allocated(tpp%X3)) deallocate(tpp%X3, stat=istat)
+    if (istat /= 0) call stoperror("Error deallocating multi_phase_point X3")
+    if (allocated(tpp%K1)) deallocate(tpp%K1, stat=istat)
+    if (istat /= 0) call stoperror("Error deallocating multi_phase_point K1")
+    if (allocated(tpp%K2)) deallocate(tpp%K2, stat=istat)
+    if (istat /= 0) call stoperror("Error deallocating multi_phase_point K2")
+  end subroutine multi_phase_point_dealloc
 
-  subroutine two_phase_point_list_init(tppl,nmax,nc,Z)
-    class(two_phase_point_list), intent(inout) :: tppl
+  subroutine multi_phase_point_list_init(tppl,nmax,nc,Z)
+    class(multi_phase_point_list), intent(inout) :: tppl
     integer, intent(in) :: nmax, nc
     real, intent(in) :: Z(nc)
     !
     integer :: istat, i
     call tppl%dealloc()
     allocate(tppl%list(nmax), stat=istat)
-    if (istat /= 0) call stoperror("Error allocating two_phase_point_list")
+    if (istat /= 0) call stoperror("Error allocating multi_phase_point_list")
     allocate(tppl%z(nc), stat=istat)
-    if (istat /= 0) call stoperror("Error allocating two_phase_point_list Z")
+    if (istat /= 0) call stoperror("Error allocating multi_phase_point_list Z")
     tppl%z = Z
     do i=1,size(tppl%list)
       call tppl%list(i)%alloc(nc)
     enddo
     tppl%n = 0
-  end subroutine two_phase_point_list_init
+  end subroutine multi_phase_point_list_init
 
-  subroutine two_phase_point_list_dealloc(tppl)
-    class(two_phase_point_list), intent(inout) :: tppl
+  subroutine multi_phase_point_list_dealloc(tppl)
+    class(multi_phase_point_list), intent(inout) :: tppl
     !
     integer :: istat, i
     if (allocated(tppl%list)) then
@@ -1597,16 +2460,16 @@ contains
         call tppl%list(i)%dealloc()
       enddo
       deallocate(tppl%list, stat=istat)
-      if (istat /= 0) call stoperror("Error deallocating two_phase_point_list")
+      if (istat /= 0) call stoperror("Error deallocating multi_phase_point_list")
     endif
     if (allocated(tppl%Z)) then
       deallocate(tppl%Z, stat=istat)
-      if (istat /= 0) call stoperror("Error deallocating two_phase_point_list Z")
+      if (istat /= 0) call stoperror("Error deallocating multi_phase_point_list Z")
     endif
-  end subroutine two_phase_point_list_dealloc
+  end subroutine multi_phase_point_list_dealloc
 
-  subroutine two_phase_point_list_add_point(tppl,Xvar)
-    class(two_phase_point_list), intent(inout) :: tppl
+  subroutine multi_phase_point_list_add_point_twoph(tppl,Xvar)
+    class(multi_phase_point_list), intent(inout) :: tppl
     real, intent(in) :: Xvar(nc+4)
     !
     tppl%n = tppl%n + 1
@@ -1617,8 +2480,13 @@ contains
          tppl%list(tppl%n)%v2,&
          tppl%list(tppl%n)%X1,&
          tppl%list(tppl%n)%X2,&
-         tppl%list(tppl%n)%K,&
-         tppl%list(tppl%n)%beta)
+         tppl%list(tppl%n)%K1,&
+         tppl%list(tppl%n)%beta1)
+    tppl%list(tppl%n)%nph = 2
+    tppl%list(tppl%n)%v3 = 0
+    tppl%list(tppl%n)%X3 = 0
+    tppl%list(tppl%n)%K2 = 1
+    tppl%list(tppl%n)%beta3 = 0
     if (.false.) then
       print *,"T",tppl%list(tppl%n)%T
       print *,"P",tppl%list(tppl%n)%P
@@ -1626,13 +2494,48 @@ contains
       print *,"v2",tppl%list(tppl%n)%v2
       print *,"X1",tppl%list(tppl%n)%X1
       print *,"X2",tppl%list(tppl%n)%X2
-      print *,"K",tppl%list(tppl%n)%K
-      print *,"beta",tppl%list(tppl%n)%beta
+      print *,"K1",tppl%list(tppl%n)%K1
+      print *,"beta1",tppl%list(tppl%n)%beta1
     endif
-  end subroutine two_phase_point_list_add_point
+  end subroutine multi_phase_point_list_add_point_twoph
 
-  subroutine two_phase_point_list_add_single_phase_curve(tppl,T,v,n,inverted)
-    class(two_phase_point_list), intent(inout) :: tppl
+  subroutine multi_phase_point_list_add_point_threeph(tppl,Xvar)
+    class(multi_phase_point_list), intent(inout) :: tppl
+    real, intent(in) :: Xvar(2*nc+6)
+    !
+    tppl%n = tppl%n + 1
+    call get_three_phase_variables_tv(Xvar,tppl%Z,&
+         tppl%list(tppl%n)%T,&
+         tppl%list(tppl%n)%P,&
+         tppl%list(tppl%n)%v1,&
+         tppl%list(tppl%n)%v2,&
+         tppl%list(tppl%n)%v3,&
+         tppl%list(tppl%n)%X1,&
+         tppl%list(tppl%n)%X2,&
+         tppl%list(tppl%n)%X3,&
+         tppl%list(tppl%n)%K1,&
+         tppl%list(tppl%n)%K2,&
+         tppl%list(tppl%n)%beta1,&
+         tppl%list(tppl%n)%beta3)
+    tppl%list(tppl%n)%nph = 3
+    if (.false.) then
+      print *,"T",tppl%list(tppl%n)%T
+      print *,"P",tppl%list(tppl%n)%P
+      print *,"v1",tppl%list(tppl%n)%v1
+      print *,"v2",tppl%list(tppl%n)%v2
+      print *,"v3",tppl%list(tppl%n)%v3
+      print *,"X1",tppl%list(tppl%n)%X1
+      print *,"X2",tppl%list(tppl%n)%X2
+      print *,"X3",tppl%list(tppl%n)%X3
+      print *,"K1",tppl%list(tppl%n)%K1
+      print *,"K2",tppl%list(tppl%n)%K2
+      print *,"beta1",tppl%list(tppl%n)%beta1
+      print *,"beta3",tppl%list(tppl%n)%beta3
+    endif
+  end subroutine multi_phase_point_list_add_point_threeph
+
+  subroutine multi_phase_point_list_add_single_phase_curve(tppl,T,v,n,inverted)
+    class(multi_phase_point_list), intent(inout) :: tppl
     integer, intent(in) :: n
     real, intent(in) :: T(n), v(n)
     logical, intent(in) :: inverted
@@ -1655,14 +2558,18 @@ contains
       tppl%list(tppl%n)%v2 = 0
       tppl%list(tppl%n)%X1 = tppl%Z
       tppl%list(tppl%n)%X2 = 0
-      tppl%list(tppl%n)%K = 1
-      tppl%list(tppl%n)%beta = 1
+      tppl%list(tppl%n)%X3 = 0
+      tppl%list(tppl%n)%K1 = 1
+      tppl%list(tppl%n)%K2 = 1
+      tppl%list(tppl%n)%beta1 = 1
+      tppl%list(tppl%n)%beta3 = 1
+      tppl%list(tppl%n)%nph = 1
     enddo
-  end subroutine two_phase_point_list_add_single_phase_curve
+  end subroutine multi_phase_point_list_add_single_phase_curve
 
-  subroutine two_phase_point_list_add_tppl(tppl,tppl_to_add,inverted)
-    class(two_phase_point_list), intent(inout) :: tppl
-    class(two_phase_point_list), intent(in) :: tppl_to_add
+  subroutine multi_phase_point_list_add_tppl(tppl,tppl_to_add,inverted)
+    class(multi_phase_point_list), intent(inout) :: tppl
+    class(multi_phase_point_list), intent(in) :: tppl_to_add
     logical, intent(in) :: inverted
     !
     integer :: i, imin, imax, step
@@ -1681,16 +2588,21 @@ contains
       tppl%list(tppl%n)%v1 = tppl_to_add%list(i)%v1
       tppl%list(tppl%n)%P = tppl_to_add%list(i)%P
       tppl%list(tppl%n)%v2 = tppl_to_add%list(i)%v2
+      tppl%list(tppl%n)%v3 = tppl_to_add%list(i)%v3
       tppl%list(tppl%n)%X1 = tppl_to_add%list(i)%X1
       tppl%list(tppl%n)%X2 = tppl_to_add%list(i)%X2
-      tppl%list(tppl%n)%K = tppl_to_add%list(i)%K
-      tppl%list(tppl%n)%beta = tppl_to_add%list(i)%beta
+      tppl%list(tppl%n)%X3 = tppl_to_add%list(i)%X3
+      tppl%list(tppl%n)%K1 = tppl_to_add%list(i)%K1
+      tppl%list(tppl%n)%K2 = tppl_to_add%list(i)%K2
+      tppl%list(tppl%n)%beta1 = tppl_to_add%list(i)%beta1
+      tppl%list(tppl%n)%beta3 = tppl_to_add%list(i)%beta3
+      tppl%list(tppl%n)%nph = tppl_to_add%list(i)%nph
     enddo
-  end subroutine two_phase_point_list_add_tppl
+  end subroutine multi_phase_point_list_add_tppl
 
-  subroutine two_phase_point_list_write_file(tppl,filename)
+  subroutine multi_phase_point_list_write_file(tppl,filename)
     use utilities, only: newunit
-    class(two_phase_point_list), intent(in) :: tppl
+    class(multi_phase_point_list), intent(in) :: tppl
     character(len=*), intent(in) :: filename
     !
     integer :: i, i_unit
@@ -1700,10 +2612,10 @@ contains
       write(i_unit,*) tppl%list(i)%T, tppl%list(i)%P
     enddo
     close(i_unit)
-  end subroutine two_phase_point_list_write_file
+  end subroutine multi_phase_point_list_write_file
 
-  subroutine two_phase_point_list_write_arrays(tppl,nmax,n,T,P)
-    class(two_phase_point_list), intent(in) :: tppl
+  subroutine multi_phase_point_list_write_arrays(tppl,nmax,n,T,P)
+    class(multi_phase_point_list), intent(in) :: tppl
     integer, intent(in) :: nmax
     integer, intent(out) :: n
     real, intent(out) :: T(nmax), P(nmax)
@@ -1714,15 +2626,15 @@ contains
       T(i) = tppl%list(i)%T
       P(i) = tppl%list(i)%P
     enddo
-  end subroutine two_phase_point_list_write_arrays
+  end subroutine multi_phase_point_list_write_arrays
 
-  subroutine two_phase_point_list_print_arrays(tppl)
-    class(two_phase_point_list), intent(in) :: tppl
+  subroutine multi_phase_point_list_print_arrays(tppl)
+    class(multi_phase_point_list), intent(in) :: tppl
     !
     integer :: i
     do i=1,tppl%n
-      print *,tppl%list(i)%T, tppl%list(i)%P, tppl%list(i)%beta, tppl%list(i)%X1
+      print *,tppl%list(i)%T, tppl%list(i)%P, tppl%list(i)%beta1, tppl%list(i)%beta3
     enddo
-  end subroutine two_phase_point_list_print_arrays
+  end subroutine multi_phase_point_list_print_arrays
 
 end module hydrate_curves

@@ -86,6 +86,7 @@ public :: multi_phase_envelope_plot_tv
 public :: three_ph_line_newton, read_Xvar_and_param_tv
 public :: extrapolate_three_ph_line_tv
 public :: fill_Xvar_and_param_tv, print_Xvar_tv
+public :: three_ph_line_diff_newton, three_ph_line_fun_newton
 ! Debugging
 public :: three_ph_newton_tv, three_ph_newton_tv_extrapolate_test
 contains
@@ -892,7 +893,7 @@ contains
     real :: beta, W(nc), X(nc), Y(nc), lns, t, p, dlns, sgn
     integer :: s, ierr, iter, i
     real :: vW, vX, vY
-    real :: XX(2*nc+5), param(nc+3)
+    real :: XX(2*nc+5), param(nc+4)
     real :: error_on_exit
     !real, dimension(nc) :: lnFug
     !integer :: phase
@@ -965,7 +966,7 @@ contains
     type(three_phase_line),  intent(inout) :: threepl
     real,      intent(in)     :: Z(nc)        ! Overall composition
     real,      intent(inout)  :: XX(2*nc+5)   ! Variables (-)
-    real,      intent(inout)  :: param(nc+3)  ! Paramaters (-)
+    real,      intent(inout)  :: param(nc+4)  ! Paramaters (-)
     real,      intent(in)     :: Pmin         ! Minimum pressure (Pa)
     real,      intent(in)     :: Pmax         ! Maximum pressure (Pa)
     real,      intent(in)     :: Tmin         ! Minimum temperature (K)
@@ -1163,7 +1164,7 @@ contains
     real,           intent(in)  :: Tmin       !< Minimum temperature (K)
     ! Locals
     real    :: XX(2*nc+5)   ! Variables (-)
-    real    :: param(nc+3)  ! Paramaters (-)
+    real    :: param(nc+4)  ! Paramaters (-)
     integer :: s            ! Specification
     real    :: sgn          ! Step direction
     real    :: dlns         ! Inital step size
@@ -1187,7 +1188,7 @@ contains
     real,           intent(in)  :: T_HC         !< Initial guess for temperature (K)
     real,           intent(in)  :: p_init       !< Initial point pressure (Pa)
     real,           intent(out) :: XXF(2*nc+5)  !< Variables
-    real,           intent(out) :: paramF(nc+3) !< Parameters
+    real,           intent(out) :: paramF(nc+4) !< Parameters
     real,           intent(out) :: lns          !< Specification
     real,           intent(out) :: dlns         !< Step size
     real,           intent(out) :: sgn          !< Step direction
@@ -1468,15 +1469,15 @@ contains
     type(three_phase_line), intent(inout) :: tpline
     real, dimension(nc), intent(in) :: Z
     real, dimension(2*nc+5), intent(in) :: XX
-    real, dimension(nc+3), intent(in) :: param
+    real, dimension(nc+4), intent(in) :: param
     logical, optional, intent(out) :: isS
     real, optional, dimension(nc), intent(out) :: WW
     ! Locals
-    real, dimension(nc) :: W, X, Y, WWl
+    real, dimension(nc) :: W, X, Y, WWl, Ky, Kx
     real :: vW,vX,vY
     real :: t, p, beta
     !logical :: isStab
-    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
     !print *,"TP",T,P
     !print *,"Y",Y
     !print *,"X",X
@@ -1501,7 +1502,7 @@ contains
   subroutine wrap_three_ph_line_solver(param,XX,s,lns,ierr,error_on_exit,iter)
     implicit none
     real, dimension(2*nc+5), intent(inout) :: XX
-    real, dimension(nc+3), intent(inout) :: param
+    real, dimension(nc+4), intent(inout) :: param
     real, intent(inout)    :: lns
     real, intent(out)    :: error_on_exit
     integer, intent(in) :: s
@@ -1527,7 +1528,7 @@ contains
     implicit none
     real, dimension(2*nc+5), intent(in) :: XXold, dXds
     real, dimension(2*nc+5), intent(inout) :: XX
-    real, dimension(nc+3), intent(inout) :: param
+    real, dimension(nc+4), intent(inout) :: param
     real, intent(inout)    :: lns, dlns, sgn
     integer, intent(in) :: s
     integer, intent(out) :: ierr
@@ -1607,7 +1608,7 @@ contains
     use utilities, only: isXwithinBounds
     implicit none
     real, dimension(2*nc+5), intent(inout) :: XX
-    real, dimension(nc+3), intent(inout) :: param
+    real, dimension(nc+4), intent(inout) :: param
     logical, intent(in) :: partial
     real, intent(in)    :: lns
     integer, intent(in) :: niter, s, nlines
@@ -1617,7 +1618,7 @@ contains
     ! Locals
     type(nonlinear_solver) :: solver
     real, dimension(2*nc+5) :: XXmax, XXmin
-    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY
+    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY,Ky(nc),Kx(nc)
     ! real :: G(2*nc+5), J(2*nc+5,2*nc+5), dXX
     ! real :: G1(2*nc+5), J1(2*nc+5,2*nc+5), XX0(2*nc+5)
     ! integer :: i
@@ -1628,6 +1629,7 @@ contains
     else
       param(nc+3) = 0.0
     endif
+    param(nc+4) = 0.0
 
     ! XX =(/14.664418513028755, -10.398985162227861, 14.664448971237785,&
     !      -18.998242274339034, 5.1081310265597253, 1.5213907961904378E-002,&
@@ -1673,7 +1675,7 @@ contains
     solver%max_it = niter
     solver%ls_max_it = nlines
 
-    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
     XX(2*nc+2) = min(max(XX(2*nc+2), 0.0), 1.0)
     call sat_var_tv_limits(T,Y,X,W,XXmin,XXmax,include_beta=.true.)
     call isXwithinBounds(2*nc+5,XX,XXmin,XXmax,"",&
@@ -1706,7 +1708,7 @@ contains
     real, dimension(np),     intent(inout) :: param
     real :: scaling
     logical :: needalt, isCPA
-    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY,b
+    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY,b,Ky(nc),Kx(nc)
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
     !
@@ -1716,7 +1718,8 @@ contains
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (.not. (needalt .and. .not. isCPA)) then
       if (minval(abs(Xx(2*nc+2:2*nc+4)+dxx(2*nc+2:2*nc+4)-Xxmin(2*nc+2:2*nc+4))) < 0.05) then
-        call read_Xvar_and_param_tv(Xx+dxx,param,W,X,Y,beta,t,p,vW,vX,vY,no_press_calc=.true.)
+        call read_Xvar_and_param_tv(Xx+dxx,param,W,X,Y,beta,t,p,vW,vX,vY,&
+             Kx,Ky,no_press_calc=.true.)
         b = get_b_linear_mix(Y) + Small ! m3/mol
         scaling = 1.0
         if (vY < b) scaling = 0.5
@@ -1729,7 +1732,6 @@ contains
         endif
       endif
     endif
-
   end subroutine limit_dx_line
 
   !-----------------------------------------------------------------------------
@@ -1742,14 +1744,13 @@ contains
     implicit none
     real, dimension(2*nc+5), intent(out) :: G !< Function values
     real, dimension(3*nc+5), intent(in) :: Yvar !< Variable vector
-    real, dimension(nc+3) :: param !< Parameter vector
+    real, dimension(nc+4) :: param !< Parameter vector
     ! Locals
     real, dimension(nc) :: Z, X, W, Y!, Ky, Kx, lnKy, lnKx
     real, dimension(nc) :: lnFugY, lnFugX, lnFugW
     integer :: i, s
-    real :: vY, vX, vW, vS
+    real :: vY, vX, vW, vS, Ky(nc) ,Kx(nc)
     real :: pY, pX, pW, t, lns, beta, p
-
     !Z = param(1:nc)
     lns = param(nc+1)
     s = nint(param(nc+2))
@@ -1773,7 +1774,8 @@ contains
     ! enddo
     ! Y = Ky*W
     ! X = Kx*W
-    call read_Xvar_and_param_tv(Yvar,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(Yvar,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
+
     call thermo_tv(t,vY,Y,lnFugY)
     call thermo_tv(t,vW,W,lnFugW)
     call thermo_tv(t,vX,X,lnFugX)
@@ -1818,7 +1820,7 @@ contains
     implicit none
     real, dimension(2*nc+5), intent(in) :: Yvar !< Variable vector
     real, dimension(2*nc+5,2*nc+5), intent(out) :: Jac !< Function differentials
-    real, dimension(nc+3) :: param !< Parameter vector
+    real, dimension(nc+4) :: param !< Parameter vector
     ! Locals
     real, dimension(nc) :: Z, X, W, Y, lnKx, lnKy, Ky, Kx
     real, dimension(nc) :: lnFugY, lnFugX, lnFugW
@@ -1835,11 +1837,13 @@ contains
     real :: dpdvY,dpdTY,dpdnY(nc)
     real :: dpdvW,dpdTW,dpdnW(nc)
     real :: dpdvX,dpdTX,dpdnX(nc)
+    real :: betaW
     !
     Z = param(1:nc)
     s = nint(param(nc+2))
     lns = param(nc+1)
     partial = (nint(param(3+nc)) /= 0)
+    betaW = param(nc+4)
     lnKx = Yvar(1:nc)
     lnKy = Yvar(1+nc:2*nc)
     t = exp(Yvar(2*nc+1))
@@ -1852,7 +1856,7 @@ contains
     W = 0.0
     do i=1,nc
       if (Z(i) > 0.0) then
-        W(i) = Z(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
+        W(i) = Z(i)/(betaW + beta*Ky(i)+(1.0-beta-betaW)*Kx(i))
       endif
     enddo
     Y = Ky*w
@@ -1867,13 +1871,14 @@ contains
 
     do i=1,nc
       if (Z(i) > 0.0) then
-        dWdlnKX(i) = - Kx(i)*(1.0-beta)*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
-        dWdlnKY(i) = - Ky(i)*beta*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
+        fac = W(i)/(betaW + beta*Ky(i) + (1.0-beta-betaW)*Kx(i))
+        dWdlnKX(i) = - Kx(i)*(1.0-beta-betaW)*fac
+        dWdlnKY(i) = - Ky(i)*beta*fac
         dXdlnKX(i) = Kx(i)*W(i) + Kx(i)*dWdlnKX(i)
         dXdlnKY(i) = Kx(i)*dWdlnKY(i)
         dYdlnKX(i) = Ky(i)*dWdlnKX(i)
         dYdlnKY(i) = Ky(i)*W(i) + Ky(i)*dWdlnKY(i)
-        dWdbeta(i) = - (Ky(i)-Kx(i))*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
+        dWdbeta(i) = - (Ky(i)-Kx(i))*fac
         dXdbeta(i) = Kx(i)*dWdbeta(i)
         dYdbeta(i) = Ky(i)*dWdbeta(i)
       else
@@ -1987,7 +1992,7 @@ contains
   subroutine extrapolate_three_ph_line_tv(param,XXold,XX,dXdS,dlns,s,sgn,&
        Pmin,Pmax,Tmin,lns,only_calc_dxds,is_first_iteration)
     implicit none
-    real, dimension(nc+3), intent(inout) :: param
+    real, dimension(nc+4), intent(inout) :: param
     real, dimension(2*nc+5), intent(out) :: dXdS
     real, dimension(2*nc+5), intent(inout) :: XXold
     real, dimension(2*nc+5), intent(inout) :: XX
@@ -2002,7 +2007,7 @@ contains
     real, parameter :: betaLimit = 1.0e-4
     integer :: beta_idx
     real :: dpds, vS
-    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY,p_new
+    real :: W(nc),X(nc),Y(nc),beta,t,p,vW,vX,vY,p_new,Ky(nc),Kx(nc)
     param(nc+2) = real(s)
     param(nc+3) = 0.0 ! Partial off
 
@@ -2012,7 +2017,7 @@ contains
       dXdS(2*nc+3) = 1.0
     else
       ! Specified pressure
-      call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+      call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
       ! Volume average for pressure error scaling
       vS = 3/(1/vW + 1/vX + 1/vY)
       ! dlnP
@@ -2121,11 +2126,11 @@ contains
          -6.0789515586576170, 8.0622774660287710, 19.007741713255712, -9.2100724083490260, &
          5.5735578415932991, 1.0000000000000000, -7.6018922636034283, -9.8878584799437164, &
          -10.666046734192035/)
-    real, dimension(nc+3) :: param, param1
+    real, dimension(nc+4) :: param, param1
     real, dimension(2*nc+5) :: dXdS
     real :: p, T, beta, ln_s, dpds, p1
     integer :: s, ierr, iter
-    real :: Y(nc), X(nc), Z(nc), dlns, sgn, W(nc)
+    real :: Y(nc), X(nc), Z(nc), dlns, sgn, W(nc), Ky(nc), Kx(nc)
     real :: vY, vX, vW
     real :: error_on_exit
 
@@ -2133,6 +2138,7 @@ contains
     z = (/0.85,0.1499,0.0001/)
     param(1:nc) = Z
     param(nc+3) = 0
+    param(nc+4) = 0
 
     ! Fixate beta
     s = 2*nc + 2
@@ -2187,7 +2193,7 @@ contains
     param1(nc+1) = ln_s
     Xvar1 = Xvar
     call three_ph_line_newton(param1,Xvar1,s,ln_s,.false.,50,ierr,3,error_on_exit,iter)
-    call read_Xvar_and_param_tv(Xvar1,param1,W,X,Y,beta,t,p1,vW,vX,vY)
+    call read_Xvar_and_param_tv(Xvar1,param1,W,X,Y,beta,t,p1,vW,vX,vY,Kx,Ky)
 
     print *,"Temperature:"
     print *,(Xvar1-Xvar)/(param1(nc+1)-param(nc+1))
@@ -2206,28 +2212,31 @@ contains
   subroutine calc_dpds(XX,dXds,param,p,dpds)
     implicit none
     real, dimension(2*nc+5), intent(in) :: XX, dXds
-    real, dimension(nc+3), intent(in) :: param
+    real, dimension(nc+4), intent(in) :: param
     real, intent(out) :: p, dpds
     ! Locals
     integer :: i
     real, dimension(nc) :: dWdlnKX, dWdlnKY, dWdbeta, Ky, Kx
     real :: W(nc),X(nc),Y(nc),beta,t,vW,vX,vY,Z(nc)
     real :: dpdv,dpdt,dpdn(nc)
+    real :: betaW, fac
     !
-    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
     p = pressure(T,vW,W,dpdv=dpdv,dpdt=dpdt,dpdn=dpdn)
     Z = param(1:nc)
-
+    betaW = param(nc+4)
     Kx = exp(XX(1:nc))
     Ky = exp(XX(1+nc:2*nc))
     do i=1,nc
       if (Z(i) > 0.0) then
-        dWdlnKX(i) = - Kx(i)*(1.0-beta)*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
-        dWdlnKY(i) = - Ky(i)*beta*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
-        dWdbeta(i) = - (Ky(i)-Kx(i))*W(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
+        fac = W(i)/(betaW + beta*Ky(i)+(1.0-beta-betaW)*Kx(i))
+        dWdlnKX(i) = - Kx(i)*(1.0-beta-betaW)*fac
+        dWdlnKY(i) = - Ky(i)*beta*fac
+        dWdbeta(i) = - (Ky(i)-Kx(i))*fac
       else
-        dWdlnKX(i) = 0.0
-        dWdlnKY(i) = 0.0
+        dWdlnKX(i) = 0
+        dWdlnKY(i) = 0
+        dWdbeta(i) = 0
       endif
     enddo
 
@@ -2253,7 +2262,7 @@ contains
     real, intent(in)    :: lns
     real, intent(in) :: vX, vW, vY
     integer, intent(in) :: s
-    real, dimension(nc+3), intent(out) :: param
+    real, dimension(nc+4), intent(out) :: param
     real, dimension(2*nc+5), intent(out) :: XX
     ! Locals
     integer :: i
@@ -2277,6 +2286,7 @@ contains
     param(nc+1) = lns
     param(nc+2) = real(s)
     param(nc+3) = 0.0 ! Default not partial
+    param(nc+4) = 0.0 ! Default betaW=0
   end subroutine fill_Xvar_and_param_tv
 
   !-----------------------------------------------------------------------------
@@ -2284,21 +2294,24 @@ contains
   !>
   !> \author Morten Hammer, 2021-11
   !-----------------------------------------------------------------------------
-  subroutine read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,no_press_calc)
+  subroutine read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky,no_press_calc)
     implicit none
     real, dimension(nc), intent(out) :: W,X,Y
     real, intent(out) :: p
     real, intent(out) :: t
     real, intent(out) :: beta
     real, intent(out) :: vX, vW, vY
-    real, dimension(nc+3), intent(in) :: param
+    real, dimension(nc), intent(out) :: Kx, Ky
+    real, dimension(nc+4), intent(in) :: param
     real, dimension(2*nc+5), intent(in) :: XX
     logical, optional, intent(in) :: no_press_calc
     ! Locals
     integer :: i
-    real, dimension(nc) :: Kx, Ky, Z
+    real :: betaW
+    real, dimension(nc) :: Z
     logical :: no_press_calc_local
     Z = param(1:nc)
+    betaW = param(nc+4)
     t = exp(XX(2*nc+1))
     beta = XX(2*nc+2)
     vY = exp(XX(2*nc+3))
@@ -2309,7 +2322,7 @@ contains
     W = 0.0
     do i=1,nc
       if (Z(i) > 0.0) then
-        W(i) = Z(i)/(beta*Ky(i)+(1.0-beta)*Kx(i))
+        W(i) = Z(i)/(betaW + beta*Ky(i)+(1.0-beta-betaW)*Kx(i))
       endif
     enddo
     Y = Ky*w
@@ -2332,16 +2345,16 @@ contains
   !-----------------------------------------------------------------------------
   function pressure_Xvar_tv(XX,param) result(p)
     implicit none
-    real, dimension(nc+3), intent(in) :: param
+    real, dimension(nc+4), intent(in) :: param
     real, dimension(2*nc+5), intent(in) :: XX
     real :: p
     ! Locals
-    real, dimension(nc) :: W,X,Y
+    real, dimension(nc) :: W,X,Y,Ky,Kx
     real :: t
     real :: beta
     real :: vX, vW, vY
 
-    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
   end function pressure_Xvar_tv
 
   !-----------------------------------------------------------------------------
@@ -2351,17 +2364,17 @@ contains
   !-----------------------------------------------------------------------------
   subroutine print_Xvar_tv(XX,param,message)
     implicit none
-    real, dimension(nc+3), intent(in) :: param
+    real, dimension(nc+4), intent(in) :: param
     real, dimension(2*nc+5), intent(in) :: XX
     character(len=*), intent(in) :: message
     ! Locals
-    real, dimension(nc) :: W,X,Y
+    real, dimension(nc) :: W,X,Y,Ky,Kx
     real :: p
     real :: t
     real :: beta
     real :: vX, vW, vY
 
-    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY)
+    call read_Xvar_and_param_tv(XX,param,W,X,Y,beta,t,p,vW,vX,vY,Kx,Ky)
     print *,""
     print *,"Three-phase state: ",message
     print *,"T: ",T
@@ -2370,6 +2383,7 @@ contains
     print *,"vX: ",vX
     print *,"vW: ",vW
     print *,"beta: ",beta
+    print *,"betaW: ",param(nc+4)
     print *,"vY: ",vY
     print *,"vX: ",vX
     print *,"vW: ",vW
