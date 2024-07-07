@@ -584,16 +584,18 @@ contains
   !>
   !> \author MH, 2021-12
   !-----------------------------------------------------------------------------
-  subroutine hydrate_var_tv_limits(Z,Xmin,Xmax)
+  subroutine hydrate_var_tv_limits(Z,Xsol,Xmin,Xmax)
     use thermopack_var, only: thermo_model, get_active_thermo_model
     use numconstants, only: expMax, expMin, Small
     use eosdata, only: eosCPA
     use cubic_eos, only: get_b_linear_mix
+    use volume_shift, only: get_c_mix
     implicit none
     real, dimension(nc), intent(in) :: Z
+    real, dimension(2), intent(in) :: Xsol !< Variable vector
     real, dimension(2), intent(out) :: Xmin, Xmax !< Variable vector
     ! Locals
-    real :: b
+    real :: b, T
     logical :: needalt, isCPA
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
@@ -601,13 +603,14 @@ contains
     Xmax = expMax
     Xmin(1) = log(tpTmin) !Tmin
     Xmax(1) = log(tpTmax) !Tmax
+    T = exp(Xsol(1))
     !
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
     if (needalt .and. .not. isCPA) then
       b = 1.0e-7
     else
-      b = get_b_linear_mix(Z) + Small ! m3/mol
+      b = get_b_linear_mix(Z) + get_c_mix(T,Z) + Small ! m3/mol
     endif
     Xmin(2) = log(b) !v min
     Xmax(2) = log(100.0) !v max
@@ -639,7 +642,7 @@ contains
     solver%ls_max_it = 3
 
     Z = param(1:nc)
-    call hydrate_var_tv_limits(Z,Xmin,Xmax)
+    call hydrate_var_tv_limits(Z,Xsol,Xmin,Xmax)
     call isXwithinBounds(2,Xsol,Xmin,Xmax,"",&
          "newton_single_phase_fluid_hydrate_curve: Initial values not within bounds!!")
     call nonlinear_solve(solver,hyd_single_fun_newton_tv,hyd_single_diff_newton_tv,&
@@ -1130,7 +1133,7 @@ contains
     solver%ls_max_it = 3
 
     Z = param(1:nc)
-    call hydrate_var_twoph_tv_limits(Xmin,Xmax,b)
+    call hydrate_var_twoph_tv_limits(Xsol,Xmin,Xmax,b)
     call isXwithinBounds(nc+4,Xsol,Xmin,Xmax,"",&
          "newton_two_phase_fluid_hydrate_curve: Initial values not within bounds!!")
     param_ext(1:nc+2) = param
@@ -1193,16 +1196,18 @@ contains
   !>
   !> \author MH, 2021-12
   !-----------------------------------------------------------------------------
-  subroutine hydrate_var_twoph_tv_limits(Xmin,Xmax,b)
+  subroutine hydrate_var_twoph_tv_limits(Xsol,Xmin,Xmax,b)
     use thermopack_var, only: thermo_model, get_active_thermo_model
     use numconstants, only: expMax, expMin, Small
     use eosdata, only: eosCPA
     use cubic_eos, only: get_b_linear_mix
+    use volume_shift, only: get_c_mix
     implicit none
+    real, dimension(nc+4), intent(in) :: Xsol !< Variable vector
     real, dimension(nc+4), intent(out) :: Xmin, Xmax !< Variable vector
     real, dimension(nc), intent(out) :: b
     ! Locals
-    real :: Z(nc)
+    real :: Z(nc), T
     logical :: needalt, isCPA
     integer :: i
     type(thermo_model), pointer :: act_mod_ptr
@@ -1211,6 +1216,7 @@ contains
     Xmax = expMax
     Xmin(nc+1) = log(tpTmin) !Tmin
     Xmax(nc+1) = log(tpTmax) !Tmax
+    T = exp(Xsol(nc+1))
     !
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
@@ -1220,7 +1226,7 @@ contains
       do i=1,nc
         Z = 0
         Z(i) = 1
-        b(i) = get_b_linear_mix(Z) + Small ! m3/mol
+        b(i) = get_b_linear_mix(Z) + get_c_mix(T,Z) + Small ! m3/mol
       enddo
     endif
     Xmin(nc+2:nc+3) = log(1.0e-7) !v min
@@ -1771,7 +1777,7 @@ contains
     real :: b(nc)
     integer :: n, np, i
     !
-    call hydrate_var_threeph_tv_limits(xxmin,xxmax,b)
+    call hydrate_var_threeph_tv_limits(X,xxmin,xxmax,b)
     param(nc+3:2*nc+2) = b
     param(1:nc) = Z
     dxx = dX
@@ -1870,16 +1876,18 @@ contains
   !>
   !> \author MH, 2021-12
   !-----------------------------------------------------------------------------
-  subroutine hydrate_var_threeph_tv_limits(Xmin,Xmax,b)
+  subroutine hydrate_var_threeph_tv_limits(Xsol,Xmin,Xmax,b)
     use thermopack_var, only: thermo_model, get_active_thermo_model
     use numconstants, only: expMax, expMin, Small
     use eosdata, only: eosCPA
     use cubic_eos, only: get_b_linear_mix
+    use volume_shift, only: get_c_mix
     implicit none
+    real, dimension(2*nc+7), intent(in) :: Xsol !< Variable vector
     real, dimension(2*nc+7), intent(out) :: Xmin, Xmax !< Variable vector
     real, dimension(nc), intent(out) :: b
     ! Locals
-    real :: Z(nc)
+    real :: Z(nc), T
     logical :: needalt, isCPA
     integer :: i
     type(thermo_model), pointer :: act_mod_ptr
@@ -1888,6 +1896,7 @@ contains
     Xmax = expMax
     Xmin(2*nc+1) = log(tpTmin) !Tmin
     Xmax(2*nc+1) = log(tpTmax) !Tmax
+    T = exp(Xsol(2*nc+1))
     !
     needalt = act_mod_ptr%need_alternative_eos
     isCPA = (act_mod_ptr%eosidx == eosCPA)
@@ -1897,7 +1906,7 @@ contains
       do i=1,nc
         Z = 0
         Z(i) = 1
-        b(i) = get_b_linear_mix(Z) + Small ! m3/mol
+        b(i) = get_b_linear_mix(Z) + get_c_mix(T,Z) + Small ! m3/mol
       enddo
     endif
     Xmin(2*nc+3:2*nc+5) = log(1.0e-7) !v min
@@ -2405,7 +2414,7 @@ contains
     solver%ls_max_it = 3
 
     Z = param(1:nc)
-    call hydrate_var_threeph_tv_limits(Xmin,Xmax,b)
+    call hydrate_var_threeph_tv_limits(Xsol,Xmin,Xmax,b)
     call isXwithinBounds(2*nc+7,Xsol,Xmin,Xmax,"",&
          "newton_three_phase_fluid_hydrate_curve: Initial values not within bounds!!")
     param_ext(1:nc+2) = param

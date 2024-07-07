@@ -21,6 +21,7 @@ module multi_phase_envelope_tv
   use saturation_curve, only: ER_STABILITY, ER_PMAX_TMIN, isStable, &
        envelope_plot_control
   use cubic_eos, only: get_b_linear_mix
+  use volume_shift, only: get_c_mix
 implicit none
 private
 save
@@ -1723,12 +1724,12 @@ contains
       if (minval(abs(Xx(2*nc+2:2*nc+4)+dxx(2*nc+2:2*nc+4)-Xxmin(2*nc+2:2*nc+4))) < 0.05) then
         call read_Xvar_and_param_tv(Xx+dxx,param,W,X,Y,beta,t,p,vW,vX,vY,&
              Kx,Ky,no_press_calc=.true.)
-        b = get_b_linear_mix(Y) + Small ! m3/mol
+        b = get_b_linear_mix(Y) + get_c_mix(T,Y) + Small ! m3/mol
         scaling = 1.0
         if (vY < b) scaling = 0.5
-        b = get_b_linear_mix(X) + Small ! m3/mol
+        b = get_b_linear_mix(X) + get_c_mix(T,X) + Small ! m3/mol
         if (vX < b) scaling = 0.5
-        b = get_b_linear_mix(W) + Small ! m3/mol
+        b = get_b_linear_mix(W) + get_c_mix(T,W) + Small ! m3/mol
         if (vW < b) scaling = 0.5
         if (scaling < 1.0) then
           dxx = dxx * scaling
