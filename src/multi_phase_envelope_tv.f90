@@ -10,7 +10,7 @@ module multi_phase_envelope_tv
        MINGIBBSPH, WATER, NONWATER, clen, verbose
   use nonlinear_solvers
   use thermopack_var, only: nc, thermo_model, get_active_eos, &
-       get_active_thermo_model, Rgas, tpTmax, tpTmin
+       get_active_thermo_model, Rgas, tpTmax, tpTmin, tpPmin, tpPmax
   use numconstants, only: machine_prec, small
   use thermo_utils, only: isSingleComp, wilsonK, wilsonKdiff, &
        calcLnPhiOffset, waterComponentFraction
@@ -527,6 +527,11 @@ contains
     call two_phase_lines_alloc(twopls, nmax)
     call three_phase_points_alloc(tps)
     Pmin = p_init
+
+    if (Pmin < tpPmin) print *,"Warning! Initial pressure is below system pmin"
+    if (Pmax > tpPmax) print *,"Warning! Maximum pressure is above system pmax"
+    if (Tmin < tpTmin) print *,"Warning! Minimum temperature is below system tmin"
+
     ! Find initial point on envelope, and disable formulation switching for water-gas line
     isWaterLine = initialPoint(Z,t,p_init,K,t_HC,t_WATER)
     p = p_init
@@ -978,11 +983,9 @@ contains
     integer :: ierr, i
     real :: XXold(2*nc+5), dXds(2*nc+5)
     logical :: isS, crossed_temp_limit, zero_beta, crossed_pressure_limit
-    !logical :: swappedPhases
     real :: WW(nc), p
     real :: error_on_exit
     !
-    !swappedPhases = .false.
     XXold = 0
     do i=1,nmax_static
       call extrapolate_three_ph_line_tv(param,XXold,XX,dXdS,dlns,s,sgn,&
@@ -1038,7 +1041,7 @@ contains
       crossed_temp_limit = (XX(2*nc+1) < XXold(2*nc+1)) .and. (XX(2*nc+1) - log(Tmin) <= 0.0)
       zero_beta = (XX(2*nc+2)-1.0 >= 0.0 .OR. XX(2*nc+2) <= 0.0)
       p = pressure_Xvar_tv(XX,param)
-      crossed_pressure_limit = ((p > Pmax*(1-small)) .or. (p <= Pmin*(1+small)))
+      crossed_pressure_limit = ((p > Pmax*(1-1e-6)) .or. (p <= Pmin*(1+1e-6)))
 
       ! print *,"p",p,XX(2*nc+2)
       ! print *,"crossed_pressure_limit",crossed_pressure_limit
@@ -1491,7 +1494,7 @@ contains
         WW = WWl
       endif
     endif
-    !print *,'point',T,p,beta
+    ! print *,'point',T,p,beta
   end subroutine set_three_ph_line_point
 
   !-----------------------------------------------------------------------------
