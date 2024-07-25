@@ -22,15 +22,16 @@ jobs:
             sudo apt-get install libblas-dev
             sudo apt-get install liblapack-dev
     
-      - name: Setup  macOS
-        if: runner.os != 'macOS'
+      - name: Setup macOS
+        if: runner.os == 'macOS'
         run: |
             export FC="/opt/homebrew/bin/gfortran-14"
             mkdir build
             cd build
             cmake ..
             make install
-            ls addon/pycThermopack
+            ls ../addon/pycThermopack
+            ls ../addon/pycThermopack/thermopack
 
 
       # Used to host cibuildwheel
