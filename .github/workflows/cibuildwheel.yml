@@ -50,7 +50,7 @@ jobs:
         env:
           FC: /opt/homebrew/bin/gfortran-14
           CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: "universal2"
+          CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
           CIBW_BUILD_VERBOSITY_WINDOWS: 2
           CIBW_SKIP: "*pypy* *pp* *cp36* *cp37* *musl*"
