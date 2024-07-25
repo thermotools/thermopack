@@ -45,3 +45,6 @@ add_executable(flashes flashes.cpp)
 target_include_directories(flashes PUBLIC ${THERMOPACK_HEADERS})
 target_link_libraries(flashes PUBLIC ${libthermopack_path})
 
+add_executable(saturation saturation.cpp)
+target_include_directories(saturation PUBLIC ${THERMOPACK_HEADERS})
+target_link_libraries(saturation PUBLIC ${libthermopack_path})

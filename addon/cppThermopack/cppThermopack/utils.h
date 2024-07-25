@@ -149,7 +149,7 @@ class FlashResult{
            << "\tz : {";
         for (const double& zi : self.z) os << zi << ", ";
         os << "}\n"
-           << "\tbetaV / betaL : " << self.betaV << " / " << self.betaL << "\n"
+           << "\tbetaL / betaV : " << self.betaL << " / " << self.betaV << "\n"
            << "\tx : {";
         for (const double& xi : self.x) os << xi << ", ";
         os << "}\n\ty : {";
@@ -165,4 +165,16 @@ class FlashResult{
     FlashResult(double T, double p, const vector1d& z_, std::string flash_type)
         : phase{0}, x(z_.size(), 0.), y(z_.size(), 0.), z{z_}, T{T}, p{p}, flash_type{flash_type}
         {}
+
+    static FlashResult dew(double T, double p, const vector1d& z_, std::string spec){
+        FlashResult fr(T, p, z_, spec);
+        fr.y = z_; fr.betaV = 1.0; fr.betaL = 0.0;
+        return fr;
+    }
+
+    static FlashResult bub(double T, double p, const vector1d& z_, std::string spec){
+        FlashResult fr(T, p, z_, spec);
+        fr.x = z_; fr.betaL = 1.0; fr.betaV = 0.0;
+        return fr;
+    }
 };

@@ -35,6 +35,13 @@ extern "C" {
     void get_export_name(uv_solver, twophaseuvflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* u, double* v, int* phase);
     void get_export_name(ph_solver, twophasephflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* h, int* phase, int* ierr);
     // guess_phase
+
+    double get_export_name(saturation, safe_bubt)(double* p, double* z, double* y, int* ierr);
+    double get_export_name(saturation, safe_bubp)(double* T, double* z, double* y, int* ierr);
+    double get_export_name(saturation, safe_dewt)(double* p, double* z, double* x, int* ierr);
+    double get_export_name(saturation, safe_dewp)(double* T, double* z, double* x, int* ierr);
+
+    void get_export_name(critical, calccriticaltv)(double* T, double* V, double* n, int* ierr, double* tol, double* v_min, double* p);
 }
 
 
@@ -195,6 +202,57 @@ class Thermo{
         FlashResult fr(T, p, z, "UV");
         get_export_name(uv_solver, twophaseuvflash)(&fr.T, &fr.p, z.data(), &fr.betaV, &fr.betaL, fr.x.data(), fr.y.data(), &u, &v, &fr.phase);
         return fr;
+    }
+
+    FlashResult bubble_temperature(double p, vector1d z){
+        activate();
+        FlashResult bub = FlashResult::bub(300., p, z, "Bub_T");
+        int ierr;
+        bub.T = get_export_name(saturation, safe_bubt)(&p, z.data(), bub.y.data(), &ierr);
+        if (ierr == true_int) throw std::runtime_error("Bubble temperature calculation failed!");
+        
+        return bub;
+    }
+
+    FlashResult bubble_pressure(double T, vector1d z){
+        activate();
+        FlashResult bub = FlashResult::bub(T, 1e5, z, "Bub_P");
+        int ierr;
+        bub.p = get_export_name(saturation, safe_bubp)(&T, z.data(), bub.y.data(), &ierr);
+        if (ierr == true_int)throw std::runtime_error("Bubble pressure calculation failed!");
+        
+        return bub;
+    }
+
+    FlashResult dew_temperature(double p, vector1d z){
+        activate();
+        FlashResult dew = FlashResult::dew(300., p, z, "Dew_T");
+        int ierr;
+        dew.T = get_export_name(saturation, safe_dewt)(&p, dew.x.data(), z.data(), &ierr);
+        if (ierr == true_int)throw std::runtime_error("Dew temperature calculation failed!");
+        
+        return dew;
+    }
+
+    FlashResult dew_pressure(double T, vector1d z){
+        activate();
+        FlashResult dew = FlashResult::dew(T, 1e5, z, "Dew_P");
+        int ierr;
+        dew.p = get_export_name(saturation, safe_dewp)(&T, dew.x.data(), z.data(), &ierr);
+        if (ierr == true_int)throw std::runtime_error("Dew pressure calculation failed!");
+        
+        return dew;
+    }
+
+    vector1d critical(vector1d n, double T=0., double V=0., double tol=1e-7, double v_min=-1.){
+        activate();
+        double p = 0.;
+        vector1d tvp = {T, V, p};
+        int ierr;
+        get_export_name(critical, calccriticaltv)(&(tvp[0]), &(tvp[1]), n.data(), &ierr, &tol, (v_min > 0) ? &v_min : nullptr, &(tvp[2]));
+        if (ierr == true_int) throw std::runtime_error("Critical calculation failed!");
+        
+        return tvp;
     }
 
     protected:
