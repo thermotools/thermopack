@@ -16,8 +16,8 @@ string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../../bin/dynamic/libthermopack_optim_gfortran_Darwin.dylib")
-set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermoPack")
+set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack.dylib")
+set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermopack")
 
 message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
 message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_HEADERS}")
