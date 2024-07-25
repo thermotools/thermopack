@@ -29,9 +29,13 @@ jobs:
             brew install lapack
             export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
             export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
+            brew install gcc
             echo "gcc is at : $(which gcc)"
             echo "gcc version: $(gcc --version)"
             ls /usr/local/opt
+            ls /opt
+            ls /opt/homebrew
+            ls /opt/homebrew/bin
 
 
       # Used to host cibuildwheel
