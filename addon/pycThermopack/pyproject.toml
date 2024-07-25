@@ -17,7 +17,7 @@ maintainers = [
   { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
 ]
 description = "Thermodynamics library for multicomponent, multiphase equilibrium calculations."
-readme = "addon/pycThermopack/README_pypi.md"
+readme = "README_pypi.md"
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
