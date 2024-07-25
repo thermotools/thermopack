@@ -48,7 +48,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1 # run: python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         env:
-          FC: /usr/bin/gcc
+          FC: /opt/homebrew/bin/gfortran-14
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "universal2"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
