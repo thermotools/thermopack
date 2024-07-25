@@ -15,17 +15,20 @@ jobs:
       - name: checkout submodules
         run: git submodule update --init --recursive
       
-      - name: install_lapack
+      - name: Install Lapack on Linux
         if: runner.os == 'Linux'
         run: |
             sudo apt-get update
+            sudo apt-get install libblas-dev
             sudo apt-get install liblapack-dev
     
-      - name: install_lapack
+      - name: Install Lapack on macOS
         if: runner.os == 'macOS'
         run: |
             brew update
             brew install lapack
+            export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
+            export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v4
