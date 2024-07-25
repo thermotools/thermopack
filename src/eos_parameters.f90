@@ -36,7 +36,6 @@ Module eos_parameters
 
 contains
 
-
   subroutine single_eos_allocate_and_init(eos,nc,eos_label)
     ! Passed object:
     class(single_eos), intent(inout) :: eos

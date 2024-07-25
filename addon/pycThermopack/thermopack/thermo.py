@@ -138,6 +138,8 @@ class thermo(object):
             self.tp, self.get_export_name("eos", "enthalpy"))
         self.s_eos_compmoleweight = getattr(
             self.tp, self.get_export_name("eos", "compmoleweight"))
+        self.s_eos_moleweight = getattr(
+            self.tp, self.get_export_name("eos", "moleweight"))
         self.s_eos_getCriticalParam = getattr(
             self.tp, self.get_export_name("eos", "getcriticalparam"))
 
@@ -294,7 +296,7 @@ class thermo(object):
 
         # Get int representation of true value
         self._true_int_value = self._get_true_int_value()
-  
+
         self.add_eos()
 
     def __del__(self):
@@ -314,7 +316,7 @@ class thermo(object):
         self.s_get_true.restype = None
         self.s_get_true(byref(int_true_c))
         return int_true_c.value
-  
+
     def activate(self):
         """Internal
         Activate this instance of thermopack parameters for calculation
@@ -863,12 +865,13 @@ class thermo(object):
             structure_dict[key] = int(value)
         return structure_dict
 
-    def compmoleweight(self, comp):
+    def compmoleweight(self, comp, si_units=False):
         """Utility
         Get component mole weight (g/mol)
 
         Args:
             comp (int): Component FORTRAN index
+            si_units (bool, optional) : true for output in kg/mol, false for g/mol
 
         Returns:
             float: Component mole weight (g/mol)
@@ -878,7 +881,30 @@ class thermo(object):
         self.s_eos_compmoleweight.argtypes = [POINTER(c_int)]
         self.s_eos_compmoleweight.restype = c_double
         mw_i = self.s_eos_compmoleweight(byref(comp_c))
+        if si_units:
+            mw_i = mw_i*1e-3 # kg/mol
         return mw_i
+
+    def moleweight(self, z, si_units=True):
+        """Utility
+        Get mole weight (kg/mol)
+
+        Args:
+            z (array_like): Molar composition
+            si_units (bool, optional) : true for output in kg/mol, false for g/mol
+
+        Returns:
+            float: mixture mole weight (kg/mol)
+        """
+        self.activate()
+        z_c = (c_double * len(z))(*z)
+        self.s_eos_moleweight.argtypes = [POINTER(c_double)]
+        self.s_eos_moleweight.restype = c_double
+        mw = self.s_eos_moleweight(z_c)
+        if si_units:
+            mw = mw*1e-3 # kg/mol
+        return mw
+
 
     def acentric_factor(self, i):
         '''Utility

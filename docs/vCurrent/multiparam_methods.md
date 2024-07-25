@@ -6,7 +6,7 @@ permalink: /vcurrent/multiparam_methods.html
 ---
 
 <!--- 
-Generated at: 2023-11-16T19:54:33.676337
+Generated at: 2024-06-11T11:12:19.246019
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 multiparam class. For instructions on how to use the parser routines, see the
@@ -66,7 +66,7 @@ Initialize multiparameter EOS
 
 &nbsp;&nbsp;&nbsp;&nbsp; **eos (str):** 
 
-&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Equation of state. (NIST_MEOS, MBWR32, MBWR19, MEOS, GERG2008)
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Equation of state. (NIST_MEOS, MBWR32, MBWR19)
 
 &nbsp;&nbsp;&nbsp;&nbsp; **reference_state (str):** 
 
