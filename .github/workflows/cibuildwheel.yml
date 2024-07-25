@@ -25,11 +25,6 @@ jobs:
       - name: Setup  macOS
         if: runner.os == 'macOS'
         run: |
-            brew update
-            brew install lapack
-            export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
-            export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
-            brew install gcc
             echo "gcc is at : $(which gcc)"
             echo "gcc version: $(gcc --version)"
             ls /usr/local/opt
@@ -48,7 +43,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1 # run: python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         env:
-          FC: /opt/homebrew/bin/gfortran-14
+          FC: /opt/homebrew/bin/gcc-14
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
