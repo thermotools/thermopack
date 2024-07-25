@@ -16,7 +16,13 @@ string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack.dylib")
+set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack")
+if(APPLE)
+    set(libthermopack_path "${libthermopack_path}.dylib")
+else()
+    set(libthermopack_path "${libthermopack_path}.so")
+endif()
+
 set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermopack")
 
 message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
