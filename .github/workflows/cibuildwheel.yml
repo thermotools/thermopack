@@ -23,10 +23,14 @@ jobs:
             sudo apt-get install liblapack-dev
     
       - name: Setup  macOS
-        if: runner.os == 'macOS'
+        if: runner.os != 'macOS'
         run: |
-            ls -la
-            echo "cmake is $(which cmake)"
+            export FC="/opt/homebrew/bin/gfortran-14"
+            mkdir build
+            cd build
+            cmake ..
+            make install
+            ls addon/pycThermopack
 
 
       # Used to host cibuildwheel
@@ -39,7 +43,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1 # run: python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         env:
-          FC: /opt/homebrew/bin/gfortran-14
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
