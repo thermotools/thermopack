@@ -30,7 +30,9 @@ jobs:
             export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
             export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
             echo "gcc is at : $(which gcc)"
-            export FC=$(which gcc)
+            echo "gcc version: $(gcc --version)"
+            ls /usr/local/opt
+
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v4
