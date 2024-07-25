@@ -25,16 +25,12 @@ jobs:
       - name: Setup  macOS
         if: runner.os == 'macOS'
         run: |
-            echo "gcc is at : $(which gcc)"
-            echo "gcc version: $(gcc --version)"
-            ls /usr/local/opt
-            ls /opt
-            ls /opt/homebrew
-            ls /opt/homebrew/bin
+            ls -la
+            echo "cmake is $(which cmake)"
 
 
       # Used to host cibuildwheel
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
 
       - name: Install cibuildwheel and other dependencies
         run: python -m pip install cibuildwheel==2.17.0 build wheel setuptools
