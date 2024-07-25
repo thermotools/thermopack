@@ -29,8 +29,7 @@ jobs:
             brew install lapack
             export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
             export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
-            brew install gfortran
-            echo "gfortran is at : $(which gfortran) / $(which gcc)"
+            echo "gcc is at : $(which gcc)"
             export FC=$(which gcc)
 
       # Used to host cibuildwheel
@@ -43,6 +42,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1 # run: python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         env:
+          FC: /usr/bin/gcc
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "universal2"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
