@@ -30,7 +30,8 @@ jobs:
             export LDFLAGS="-L/opt/homebrew/opt/lapack/lib"
             export CPPFLAGS="-I/opt/homebrew/opt/lapack/include"
             brew install gfortran
-            echo "gfortran is at : $(which gfortran)"
+            echo "gfortran is at : $(which gfortran) / $(which gcc)"
+            export FC=$(which gcc)
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v4
