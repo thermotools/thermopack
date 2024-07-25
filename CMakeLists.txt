@@ -2,7 +2,7 @@ string(ASCII 27 Esc)
 set(ColorRed "${Esc}[31m")
 set(ColorBlue "${Esc}[34m")
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
 project(ThermoPack LANGUAGES Fortran)
 
 if(NOT MSVC)
