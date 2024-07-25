@@ -12,7 +12,7 @@ set_target_properties(thermopack PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CUR
 target_include_directories(thermopack PUBLIC ${TREND_DIR})
 target_link_libraries(thermopack ${LAPACK_LIBRARIES})
 
-install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/addon/pycThermopack/thermopack)
+install(TARGETS thermopack DESTINATION ${CMAKE_SOURCE_DIR}/addon/pycThermopack/thermopack)
 install(TARGETS thermopack DESTINATION ${CMAKE_SOURCE_DIR}/addon/cppThermopack)
 
 add_executable(run_thermopack ${CMAKE_CURRENT_SOURCE_DIR}/thermopack.f90)
