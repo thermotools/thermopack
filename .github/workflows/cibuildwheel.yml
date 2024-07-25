@@ -31,7 +31,7 @@ jobs:
           CIBW_BUILD_VERBOSITY_WINDOWS: 2
           CIBW_SKIP: "*pypy* *pp* *cp36* *cp37* *musl*"
         with:
-          package-dir: "addon/pycThermopack"
+          package-dir: "./addon/pycThermopack"
           output-dir: "./wheelhouse"
           config-file: "{package}/pyproject.toml"
 
