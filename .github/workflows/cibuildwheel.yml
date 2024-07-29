@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-latest] 
+        os: [macOS-12] 
 
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
       - name: Setup macOS
         if: runner.os == 'macOS'
         run: |
-            export FC="/opt/homebrew/bin/gfortran-14"
+            export FC="/opt/homebrew/bin/gfortran-13"
             mkdir build
             cd build
             cmake ..
@@ -38,8 +38,8 @@ jobs:
         # to supply options, put them in 'env', like:
         env:
           CIBW_ARCHS: auto64
-          CIBW_ARCHS_MACOS: "arm64"
-          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=11.0
+          CIBW_ARCHS_MACOS: "unversal2"
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=12.0
           CIBW_BUILD_VERBOSITY_WINDOWS: 2
           CIBW_SKIP: "*pypy* *pp* *cp36* *cp37* *musl*"
         with:
