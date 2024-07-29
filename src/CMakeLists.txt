@@ -13,8 +13,8 @@ set_target_properties(thermopack PROPERTIES
 target_include_directories(thermopack PUBLIC ${TREND_DIR})
 target_link_libraries(thermopack ${LAPACK_LIBRARIES})
 
-install(TARGETS thermopack DESTINATION ${CMAKE_SOURCE_DIR}/addon/pycThermopack/thermopack)
-install(TARGETS thermopack DESTINATION ${CMAKE_SOURCE_DIR}/addon/cppThermopack)
+install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../addon/pycThermopack/thermopack)
+install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../addon/cppThermopack)
 
 add_executable(run_thermopack ${CMAKE_CURRENT_SOURCE_DIR}/thermopack.f90)
 target_link_libraries(run_thermopack thermopack)
