@@ -7,7 +7,7 @@ project(ThermoPack LANGUAGES Fortran)
 
 if(NOT MSVC)
     execute_process(COMMAND bash -c "arch" OUTPUT_VARIABLE PROC)
-    set(tp_flags_common "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive -Wno-unused-function -Wno-unused-variable")
+    set(tp_flags_common "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive -fopenmp -Wno-unused-function -Wno-unused-variable")
 
     include(CheckCompilerFlag)
     check_compiler_flag(Fortran "-arch arm64" arm64_supported)
@@ -20,7 +20,7 @@ if(NOT MSVC)
     endif()
 
     set(tp_debug_flags "${gf_proc} ${tp_flags_common} -g -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -Wno-unused-dummy-argument -Wall")
-
+    set(tp_profile_flags "${tp_flags_common} -g -pg")
     set(tp_optim_flags "${tp_flags_common} -O3 ${gf_march} -funroll-loops")
 
     if(APPLE)
@@ -47,7 +47,9 @@ if(test)
     if (NOT PFUNIT_FOUND)
         message("${ColorRed}Did not find pFUnit. If you have installed pFUnit, make sure that PFUNIT_DIR is set. Falling back to building pFUnit from source...")
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pFUnit)
+    else()
+        message(STATUS "Found pFUnit: ${PFUNIT_DIR}")
     endif()
-    message("${ColorBlue}Creating run_unittests target")
+    message(STATUS "Creating run_unittests target")
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unittests)
 endif()
