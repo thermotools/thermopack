@@ -134,4 +134,29 @@ See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main
 available Dockerfiles to run Thermopack with docker.
 
 ### CMake setup
-See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
+
+The CMake setup has been tested on macOS and Linux, and is the system currently used for CI. The system assumes that you have
+Lapack and gfortran installed, see above instructions for more on that.
+
+Build and install thermopack by running
+```bash
+mkdir build
+cd build
+cmake ..
+make install
+```
+
+To set up the python wrapper, 
+```bash
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+this will generate the file `addon/pycThermopack/thermopack/platform_specifics.py` and install thermopack to your activated virtual environment.
+
+ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
+the `-diffs` flag when running `makescript.py` as
+```bash
+python map_platform_specifics.py -diffs=v2 # Use tuples
+python map_platform_specifics.py -diffs=v3 # use Property
+```
+the default value is `-diffs=v3`.

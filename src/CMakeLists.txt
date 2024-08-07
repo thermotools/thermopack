@@ -10,9 +10,17 @@ find_package(LAPACK REQUIRED)
 add_library(thermopack SHARED ${SOURCES})
 set_target_properties(thermopack PROPERTIES 
                         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+# if (NOT MSVC AND NOT APPLE)
+#     set_target_properties(thermopack PROPERTIES 
+#                             INSTALL_RPATH ${CMAKE_INSTALL_RPATH}
+#                             INSTALL_RPATH_USE_LINK_PATH TRUE)
+# endif()
+
 target_include_directories(thermopack PUBLIC ${TREND_DIR})
 target_link_libraries(thermopack ${LAPACK_LIBRARIES})
 
+install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../addon/pycThermopack/thermopack)
 install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../addon/cppThermopack)
 

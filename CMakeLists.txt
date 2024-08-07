@@ -1,13 +1,13 @@
+cmake_minimum_required(VERSION 3.5)
+project(ThermoPack LANGUAGES Fortran)
+
 string(ASCII 27 Esc)
 set(ColorRed "${Esc}[31m")
 set(ColorBlue "${Esc}[34m")
 
-cmake_minimum_required(VERSION 3.5)
-project(ThermoPack LANGUAGES Fortran)
-
 if(NOT MSVC)
     execute_process(COMMAND bash -c "arch" OUTPUT_VARIABLE PROC)
-    set(tp_flags_common "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive -Wno-unused-function -Wno-unused-variable")
+    set(tp_flags_common "-cpp -fPIC -fdefault-real-8 -fdefault-double-8 -frecursive -fopenmp -Wno-unused-function -Wno-unused-variable")
 
     include(CheckCompilerFlag)
     check_compiler_flag(Fortran "-arch arm64" arm64_supported)
@@ -20,7 +20,6 @@ if(NOT MSVC)
     endif()
 
     set(tp_debug_flags "${gf_proc} ${tp_flags_common} -g -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -Wno-unused-dummy-argument -Wall")
-
     set(tp_optim_flags "${tp_flags_common} -O3 ${gf_march} -funroll-loops")
 
     if(APPLE)

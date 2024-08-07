@@ -1,0 +1,105 @@
+name: unittests
+
+on: [push, pull_request]
+
+jobs:
+  run-tests:
+    name: Run tests on ${{ matrix.os }}-${{ matrix.version }}
+    runs-on: ${{ matrix.os }}-${{ matrix.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS, ubuntu]
+        version: [latest]
+        include:
+            - version: 12
+              os: macOS
+
+    outputs:
+        status: ${{ join('steps.*test.conclusion') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: checkout submodules
+        run: git submodule update --init --recursive
+      
+      - name: Setup gfortran Linux
+        if: matrix.os == 'ubuntu'
+        run: echo "gfortran=$(which gfortran)" >> $GITHUB_ENV
+    
+      - name: Setup gfortran macOS
+        if: matrix.os == 'macOS'
+        run: echo "gfortran=$(which gfortran-13)" >> $GITHUB_ENV
+    
+      - name: Build ThermoPack
+        run: |
+            ${{ env.gfortran }} --version
+            export FC=${{ env.gfortran }}
+            mkdir build
+            cd build
+            cmake -Dtest=ON -DCMAKE_BUILD_TYPE=Debug ..
+            make -j4 install
+            echo "--- pycThermopack contents ---"
+            ls ../addon/pycThermopack
+            echo "--- pycThermopack/thermopack contents ---"
+            ls ../addon/pycThermopack/thermopack
+    
+      - name: Inspect thermopack
+        if: matrix.os == 'ubuntu'
+        run: | 
+          echo "--- Inspecting libthermopack ---"
+          ldd bin/libthermopack.so
+          echo "--- Inspecting run_unittests ---"
+          ldd bin/unittests
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+            name: binary-${{ matrix.os }}-${{ matrix.version }}
+            path: ./bin/*
+    
+      - id: fortran_test
+        name: Run unittests
+        continue-on-error: true
+        run: |
+            result=$(./bin/unittests)
+            if echo "$result" | grep -q "OK"; then
+            statuscode=0
+            else
+            statuscode=1
+            fi
+            echo "$result"
+            echo "statuscode=$statuscode" >> $GITHUB_OUTPUT
+            exit $statuscode
+            
+      - uses: actions/setup-python@v5
+      - id: python_test 
+        name: Run python tests
+        continue-on-error: true
+        run: |
+            python addon/pycThermopack/map_platform_specifics.py
+            pip install addon/pycThermopack/[test]
+            pytest addon/pyTests
+            result=$(pytest addon/pyTests)
+            if echo "$result" | grep -q "FAILED"; then
+            statuscode=1
+            else
+            statuscode=0
+            fi
+            echo "$result"
+            echo "statuscode=$statuscode" >> $GITHUB_OUTPUT
+            exit $statuscode
+    
+      - name: Check success
+        run: |
+            echo "Fortran test result : ${{ steps.fortran_test.outputs.statuscode }}"
+            echo "Python test result : ${{ steps.python_test.outputs.statuscode }}"
+            if [[ ${{ steps.fortran_test.outputs.statuscode }} -eq 0 ]] && [[ ${{ steps.python_test.outputs.statuscode }} -eq 0 ]]; then
+            exit 0
+            else
+            exit 1
+            fi
+        
+
+
+    
+            

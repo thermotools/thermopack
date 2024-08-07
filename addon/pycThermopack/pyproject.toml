@@ -3,7 +3,7 @@ requires = ["scikit-build-core"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-sdist.include = ["libthermopack*"]
+sdist.include = ["libthermopack*", "platform_specifics.py"]
 wheel.expand-macos-universal-tags = true
 
 [project]
@@ -35,6 +35,6 @@ dependencies = ["numpy~=1.20"]
 test = ["pytest"]
 
 [tool.cibuildwheel]
-test-command = "pytest {project}/../pyTests"
+test-command = "pytest {package}/../pyTests"
 test-requires = ["pytest"]
 build-verbosity = 2

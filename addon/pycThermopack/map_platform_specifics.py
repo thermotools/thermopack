@@ -7,6 +7,7 @@ import itertools
 import sysconfig
 from datetime import datetime
 import os
+import argparse
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -74,19 +75,24 @@ def get_platform_specifics_by_trial_and_error():
     platform_specifics["dyn_lib"] = ""
 
     dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dylib"]
+    thermopack_dir = path.join(path.dirname(__file__), "thermopack")
+    errors = []
     for lib in dynlibs:
-        dyn_lib_path = path.join(path.dirname(__file__), "thermopack", lib)
+        dyn_lib_path = path.join(thermopack_dir, lib)
         try:
             tp = cdll.LoadLibrary(dyn_lib_path)
-        except OSError:
-            tp = None
-        #print(dyn_lib_path, tp)
-        if tp is not None:
             platform_specifics["dyn_lib"] = lib
             break
+        except OSError as err:
+            errors.append(err)
+            pass
     else:
-        raise FileNotFoundError(f'Could not locate ThermoPack binary! Tried '
-                                f'{[path.join(path.dirname(__file__), "thermopack", lib) for lib in dynlibs]}')
+        thermopack_contains = os.listdir(thermopack_dir)
+        load_errors = '\n\t'.join([str(err) for err in errors])
+        raise FileNotFoundError(f'Could not load ThermoPack binary!\n'
+                                f'Tried : {[path.join(thermopack_dir, lib) for lib in dynlibs]}.\n'
+                                f'{thermopack_dir} contains files : {thermopack_contains}\n'
+                                f'Errors when attempting to load :\n\t{load_errors}')
     prefixes = ["__", ""]
     moduletxt = ["_", "_MOD_", "_mp_"]
     postfixes = ["", "_"]
@@ -240,7 +246,15 @@ def get_platform_specifics_windows_ifort_whl():
     return pf_specifics
 	
 if __name__ == "__main__":
-    pf_specifics_path = os.path.join(os.path.dirname(
-        __file__), "thermopack", "platform_specifics.py")
+    VERSION_2 = '2.2.3'
+    VERSION_3 = '3.b0'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--diffs', default='v3', help="Old (v2) or new (> v2) return mode for differentials")
+    args = parser.parse_args()
+
+    pf_specifics_path = os.path.join(os.path.dirname( __file__), "thermopack", "platform_specifics.py")
     pf_specifics_ = get_platform_specifics_by_trial_and_error()
+    pf_specifics_['diff_return_mode'] = args.diffs
+    pf_specifics_['version'] = VERSION_2 if (args.diffs == 'v2') else VERSION_3
     write_platform_specifics_file(pf_specifics_, pf_specifics_path)
