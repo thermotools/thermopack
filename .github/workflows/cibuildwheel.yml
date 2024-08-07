@@ -1,0 +1,83 @@
+name: cibuildwheel
+
+on: [pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}-${{ matrix.version }}
+    runs-on: ${{ matrix.os }}-${{ matrix.version }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS, ubuntu]
+        version: [latest]
+        include:
+            - version: 12
+              os: macOS
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: checkout submodules
+        run: git submodule update --init --recursive
+      
+      - name: Setup Linux env
+        if: matrix.os == 'ubuntu'
+        run: |
+          echo "gfortran=gfortran" >> $GITHUB_ENV
+          echo "libinspector=ls ../addon/pycThermopack/thermopack/libthermopack* | xargs ldd" >> $GITHUB_ENV
+    
+      - name: Setup macOS env
+        if: matrix.os == 'macOS'
+        run: |
+          echo "gfortran=$(which gfortran-13)" >> $GITHUB_ENV
+          echo "libinspector=otool -L ../addon/pycThermopack/thermopack/libthermopack*" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1)" >> $GITHUB_ENV
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+            name: binary-${{ matrix.os }}-${{ matrix.version }}
+            path: ./bin/libthermopack.dylib
+  
+      - uses: actions/setup-python@v5
+
+      - name: Check macOS deployment target
+        if: matrix.os == 'macOS'
+        run: echo "Deployment target version is ${{ env.MACOSX_DEPLOYMENT_TARGET }} / ${MACOSX_DEPLOYMENT_TARGET}"
+
+      - name: Build wheel
+        uses: pypa/cibuildwheel@v2.19.2 # run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_ARCHS: auto64
+          CIBW_BEFORE_ALL_LINUX: |
+            yum install -y blas blas-devel
+            yum install -y lapack lapack-devel
+            echo $(which gfortran)
+
+          CIBW_BEFORE_BUILD: |
+            ${{ env.gfortran }} --version
+            export FC=${{ env.gfortran }}
+            mkdir build
+            cd build
+            cmake ..
+            make -j4 install
+            python ../addon/pycThermopack/map_platform_specifics.py
+            echo "--- pycThermopack contents ---"
+            ls ../addon/pycThermopack
+            echo "--- pycThermopack/thermopack contents ---"
+            ls ../addon/pycThermopack/thermopack
+            echo "--- Inspecting libthermopack ---"
+            ${{ env.libinspector }}
+          CIBW_BUILD: "*cp311*"
+          CIBW_SKIP: "*musllinux*"
+          CIBW_TEST_SKIP: "*x86_64*"
+        with:
+          package-dir: "./addon/pycThermopack"
+          output-dir: "./wheelhouse"
+          config-file: "{package}/pyproject.toml"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-${{ matrix.version }}
+          path: ./wheelhouse/*.whl

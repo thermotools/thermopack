@@ -6,7 +6,7 @@ permalink: /vcurrent/thermo_methods.html
 ---
 
 <!--- 
-Generated at: 2024-06-11T11:12:19.233427
+Generated at: 2024-07-25T14:16:10.431252
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 thermo class. For instructions on how to use the parser routines, see the
@@ -98,7 +98,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [joule_thompson_inversion](#joule_thompson_inversionself-z-nmax1000)
   * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
-    * [compmoleweight](#compmoleweightself-comp)
+    * [compmoleweight](#compmoleweightself-comp-si_unitsfalse)
     * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
     * [get_comp_structure](#get_comp_structureself-comp_name)
     * [get_enthalpy_of_formation](#get_enthalpy_of_formationself-j)
@@ -112,6 +112,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
+    * [moleweight](#moleweightself-z-si_unitstrue)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
     * [set_enthalpy_of_formation](#set_enthalpy_of_formationself-j-h0)
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
@@ -124,7 +125,7 @@ The `thermo` class, found in `addon/pycThermopack/thermopack/thermo.py`, is the 
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
-    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [\_\_new\_\_](#__new__cls-args-kwargs)
     * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
@@ -2941,7 +2942,7 @@ Methods for setting ... and getting ...
 ### Table of contents
   * [Utility methods](#utility-methods)
     * [acentric_factor](#acentric_factorself-i)
-    * [compmoleweight](#compmoleweightself-comp)
+    * [compmoleweight](#compmoleweightself-comp-si_unitsfalse)
     * [get_comp_name](#get_comp_nameself-index-get_comp_identifierfalse)
     * [get_comp_structure](#get_comp_structureself-comp_name)
     * [get_enthalpy_of_formation](#get_enthalpy_of_formationself-j)
@@ -2955,6 +2956,7 @@ Methods for setting ... and getting ...
     * [get_tmax](#get_tmaxself)
     * [get_tmin](#get_tminself)
     * [getcompindex](#getcompindexself-comp)
+    * [moleweight](#moleweightself-z-si_unitstrue)
     * [redefine_critical_parameters](#redefine_critical_parametersself-silenttrue-tc_initialsnone-vc_initialsnone)
     * [set_enthalpy_of_formation](#set_enthalpy_of_formationself-j-h0)
     * [set_ideal_cp](#set_ideal_cpself-j-cp_correlation_type-parameters)
@@ -2971,7 +2973,7 @@ Get acentric factor of component i Args: i (int) component FORTRAN index returns
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
-### `compmoleweight(self, comp)`
+### `compmoleweight(self, comp, si_units=False)`
 Get component mole weight (g/mol)
 
 #### Args:
@@ -2979,6 +2981,10 @@ Get component mole weight (g/mol)
 &nbsp;&nbsp;&nbsp;&nbsp; **comp (int):** 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component FORTRAN index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **si_units (bool, optional) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  true for output in kg/mol, false for g/mol
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
@@ -3191,6 +3197,29 @@ Get component index
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
+### `moleweight(self, z, si_units=True)`
+Get mole weight (kg/mol)
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **z (array_like):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Molar composition
+
+&nbsp;&nbsp;&nbsp;&nbsp; **si_units (bool, optional) :** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  true for output in kg/mol, false for g/mol
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+#### Returns:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **float:** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  mixture mole weight (kg/mol)
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
 ### `redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None)`
 Recalculate critical properties of pure fluids
 
@@ -3326,7 +3355,7 @@ Methods for handling communication with the Fortran library.
   * [Internal methods](#internal-methods)
     * [\_\_del\_\_](#__del__self)
     * [\_\_init\_\_](#__init__self)
-    * [\_\_new\_\_](#__new__cls-*args-**kwargs)
+    * [\_\_new\_\_](#__new__cls-args-kwargs)
     * [_get_true_int_value](#_get_true_int_valueself)
     * [activate](#activateself)
     * [add_eos](#add_eosself)
