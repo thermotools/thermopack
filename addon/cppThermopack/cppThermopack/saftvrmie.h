@@ -9,10 +9,10 @@ extern "C" {
 
 class Saftvrmie : public Saft {
     public:
-    Saftvrmie(std::string comps, std::string parameter_reference="Default") 
-        : Saft(comps) 
+    Saftvrmie(std::string comps, std::string parameter_reference="Default")
+	: Saft(comps)
     {
-        activate();
-        get_export_name(eoslibinit, init_saftvrmie)(comps.data(), parameter_reference.data(), comps.size(), parameter_reference.size());
+	activate();
+	get_export_name(eoslibinit, init_saftvrmie)(comps.data(), parameter_reference.data(), comps.size(), parameter_reference.size());
     }
 };
