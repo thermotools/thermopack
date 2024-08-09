@@ -1,11 +1,11 @@
 # Example for Compiling and linking C++ executables using thermopack.
 # This example assumes that libthermopack.dylib has already been built. The path to libthermopack.dylib
 # is set in `libthermopack_path`, you will likely need to modify this.
-# 
+#
 # Note: If you want to build with static linkage, you also need to link libgfortran.a, libquadmath.a, and
 # lapack, as shown in CMakelists_static.txt.
-# 
-# Note: On macOS (arm64), you might need to 
+#
+# Note: On macOS (arm64), you might need to
 #   export CC=/opt/homebrew/bin/gcc-13
 #   export CXX=/opt/homebrew/bin/g++-13
 # before running cmake, in order to force compilation for arm64.
@@ -16,12 +16,7 @@ string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack")
-if(APPLE)
-    set(libthermopack_path "${libthermopack_path}.dylib")
-else()
-    set(libthermopack_path "${libthermopack_path}.so")
-endif()
+set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermopack")
 
