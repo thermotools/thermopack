@@ -42,6 +42,8 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(tp_fortran_flags ${tp_debug_flags})
 else()
+    set(CMAKE_BUILD_TYPE "Release")
+    message(STATUS "CMAKE_BUILD_TYPE not specified, defaulting to Release.")
     set(tp_fortran_flags ${tp_optim_flags})
 endif()
 
