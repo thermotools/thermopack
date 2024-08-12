@@ -2,6 +2,7 @@ syntax: glob
 
 objects
 bin
+build/
 run*
 doc/dox.out
 doc/doxygen/html

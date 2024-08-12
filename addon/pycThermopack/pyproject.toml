@@ -1,0 +1,40 @@
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+sdist.include = ["libthermopack*"]
+wheel.expand-macos-universal-tags = true
+
+[project]
+name = "thermopack"
+version = "2.3b0"
+authors = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+]
+maintainers = [
+  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
+  { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
+]
+description = "Thermodynamics library for multicomponent, multiphase equilibrium calculations."
+readme = "README_pypi.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+]
+keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
+dependencies = ["numpy~=1.20"]
+
+[project.urls]
+"Homepage" = "https://thermotools.github.io/thermopack/"
+"Repository" = "https://github.com/thermotools/thermopack/"
+"Bug Tracker" = "https://github.com/thermotools/thermopack/issues"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.cibuildwheel]
+test-command = "pytest {project}/../pyTests"
+test-requires = ["pytest"]
+build-verbosity = 2
