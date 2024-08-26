@@ -1,5 +1,5 @@
 """
-This is the core of the pythod interface to ThermoPack. All equation of state classes on the python side inherit from
+This is the core of the python interface to ThermoPack. All equation of state classes on the python side inherit from
 the thermo class in this file. Please note that the docstrings of the methods in this file are used to generate
 the markdown-documentation found elsewhere (the ThermoTools wiki, etc.). Therefore, new methods that are implemented
 must conform to the following style guide for docstrings:
@@ -755,7 +755,7 @@ class thermo(object):
         temp_c = c_double(temp)
         press_c = c_double(press)
         x_c = (c_double * len(x))(*x)
-        h_c = c_double(0.0)
+        v_c = c_double(0.0)
 
         if dvdt is None:
             dvdt_c = null_pointer
@@ -778,11 +778,11 @@ class thermo(object):
         self.solideos_solid_volume(byref(temp_c),
                             byref(press_c),
                             x_c,
-                            byref(h_c),
+                            byref(v_c),
                             dvdt_c,
                             dvdp_c)
 
-        return_tuple = (h_c.value, )
+        return_tuple = (v_c.value, )
         if not dvdt is None:
             return_tuple += (dvdt_c[0], )
         if not dvdp is None:
@@ -1307,7 +1307,7 @@ class thermo(object):
             ophase (int, optional): Phase flag. Only set when phase=MINGIBBSPH.
             v (float, optional): Specific volume (m3/mol)
         Returns:
-            ndarray: fugacity coefficient (-), and optionally differentials
+            ndarray: logarithm of fugacity coefficient (-), and optionally differentials
         """
         self.activate()
         null_pointer = POINTER(c_double)()
