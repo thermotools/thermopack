@@ -1,5 +1,5 @@
-#ifndef THERMO_H
-#define THERMO_H
+#ifndef THERMO_HPP
+#define THERMO_HPP
 
 #include <string>
 #include <vector>
@@ -7,35 +7,42 @@
 #include <stdexcept>
 #include <cstring>
 
+typedef int (*p_get_comp_index)(const char *, size_t);
 
-typedef int (*p_get_comp_index)(const char*, size_t);
-
-class Thermo {
+class Thermo
+{
 public:
 	Thermo();
 	virtual ~Thermo();
-
+	
+	int MINGIBBSPH = 3;
 	int TWOPH = 2;
 	int LIQPH = 1;
 	int VAPPH = 0;
-	
-	void activate();
-	void init_thermo(const std::string& eos, const std::string& mixing, const std::string& alpha,
-					 const std::string& comps, int nphases, int* liq_vap_discr_method = nullptr,
-					 const std::string& csp_eos = "", const std::string& csp_ref_comp = "",
-					 const std::string& kij_ref = "Default", const std::string& alpha_ref = "Default",
-					 const std::string& saft_ref = "Default", double* b_exponent = nullptr,
-					 const std::string& TrendEosForCp = "", int* cptype = nullptr,
-					 bool* silent = nullptr);
 
-	void init_peneloux_volume_translation(const std::string& parameter_reference = "Default");
+	void activate();
+	void init_thermo(const std::string &eos, const std::string &mixing, const std::string &alpha,
+					 const std::string &comps, int nphases, int *liq_vap_discr_method = nullptr,
+					 const std::string &csp_eos = "", const std::string &csp_ref_comp = "",
+					 const std::string &kij_ref = "Default", const std::string &alpha_ref = "Default",
+					 const std::string &saft_ref = "Default", double *b_exponent = nullptr,
+					 const std::string &TrendEosForCp = "", int *cptype = nullptr,
+					 bool *silent = nullptr);
+
+	void init_peneloux_volume_translation(const std::string &parameter_reference = "Default");
+
+	// Get critical temperature of a component
 	double critical_temperature(int i);
-	std::pair<double, std::vector<double>> bubble_pressure(double temp, const std::vector<double>& z);
-	std::vector<double> thermo(double T, double P, const std::vector<double>& composition, int phase_flag);
+
+	// Calculate bubble pressure given temperature and composition
+	std::pair<double, std::vector<double>> bubble_pressure(double temp, const std::vector<double> &z);
+
+	// Perform thermodynamic property calculations
+	std::vector<double> thermo(double T, double P, const std::vector<double> &composition, int phase_flag);
 
 	std::string get_model_id();
 	int get_comp_index(const std::string &comp);
-	
+
 protected:
 	void add_eos();
 	void delete_eos();
@@ -43,22 +50,23 @@ protected:
 	p_get_comp_index s_get_comp_index = nullptr;
 
 private:
-	void* tp_handle;
+	void *tp_handle;
 	int model_index;
 	int _true_int_value;
 
-	typedef void (*activate_model_func)(int*);
+	// Function pointers
+	typedef void (*activate_model_func)(int *);
 	typedef int (*add_eos_func)();
-	typedef void (*delete_eos_func)(int*);
-	typedef void (*get_model_id_func)(char*, size_t);
-	typedef void (*init_thermo_func)(const char*, const char*, const char*, const char*,
-									 int*, int*, const char*, const char*, const char*, const char*,
-									 const char*, double*, const char*, int*, bool*, size_t, size_t,
+	typedef void (*delete_eos_func)(int *);
+	typedef void (*get_model_id_func)(char *, size_t);
+	typedef void (*init_thermo_func)(const char *, const char *, const char *, const char *,
+									 int *, int *, const char *, const char *, const char *, const char *,
+									 const char *, double *, const char *, int *, bool *, size_t, size_t,
 									 size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t);
-	typedef void (*init_volume_translation_func)(const char*, const char*, size_t, size_t);
-	typedef void (*get_true_func)(int*);
-	typedef void (*getCriticalParam_func)(int*, double*, double*, double*, double*, double*);
-	typedef double (*bubble_p_func)(double*, double*, double*, int*);
+	typedef void (*init_volume_translation_func)(const char *, const char *, size_t, size_t);
+	typedef void (*get_true_func)(int *);
+	typedef void (*getCriticalParam_func)(int *, double *, double *, double *, double *, double *);
+	typedef double (*bubble_p_func)(double *, double *, double *, int *);
 
 	activate_model_func s_activate_model;
 	add_eos_func s_add_eos;
@@ -72,4 +80,25 @@ private:
 	std::string get_export_name(const std::string &module, const std::string &method);
 };
 
-#endif // THERMO_H
+extern "C" {
+	// Declare the function type expected from the Fortran library
+	void __thermopack_var_MOD_activate_model(int *index);
+	int __thermopack_var_MOD_add_eos();
+	void __thermopack_var_MOD_delete_eos(int *index);
+	void __eoslibinit_MOD_init_thermo(const char* eos, const char* mixing, const char* alpha, const char* comps,
+									  int* nphases, int* liq_vap_discr_method, const char* csp_eos, const char* csp_ref_comp,
+									  const char* kij_ref, const char* alpha_ref, const char* saft_ref, double* b_exponent,
+									  const char* TrendEosForCp, int* cptype, bool* silent, size_t eos_len, size_t mixing_len,
+									  size_t alpha_len, size_t comps_len, size_t csp_eos_len, size_t csp_ref_comp_len,
+									  size_t kij_ref_len, size_t alpha_ref_len, size_t saft_ref_len, size_t TrendEosForCp_len);
+	void __eoslibinit_MOD_init_volume_translation(const char* volume_trans_model, const char* param_ref, int volume_trans_model_len, int param_ref_len);
+	int __compdata_MOD_comp_index_active(const char* compName, size_t compName_len);
+	void __thermopack_constants_MOD_get_true(int *true_value);
+	void __eos_MOD_getcriticalparam(int* i, double* tci, double* pci, double* w, double* vci, double* tnbi);
+	double __saturation_MOD_safe_bubp(double* temp, double* z, double* y, int* ierr);
+	void __eos_MOD_thermo(double* t, double* p, double* z, int* phase,
+						  double* lnfug, double* lnfugt, double* lnfugp,
+						  double* lnfugx, int* ophase, int* metaExtremum, double* v);
+}
+
+#endif // THERMO_HPP
