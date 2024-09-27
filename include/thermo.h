@@ -1,5 +1,5 @@
-#ifndef THERMO_HPP
-#define THERMO_HPP
+#ifndef THERMO_H
+#define THERMO_H
 
 #include <string>
 #include <vector>

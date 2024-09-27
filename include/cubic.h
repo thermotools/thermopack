@@ -1,5 +1,5 @@
-#ifndef CUBIC_HPP
-#define CUBIC_HPP
+#ifndef CUBIC_H
+#define CUBIC_H
 
 #include <string>
 #include <vector>
