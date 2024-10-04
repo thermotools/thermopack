@@ -129,6 +129,8 @@ class thermo(object):
         # Eos interface
         self.s_eos_specificvolume = getattr(
             self.tp, self.get_export_name("eos", "specificvolume"))
+        self.s_eos_molardensity = getattr(
+            self.tp, self.get_export_name("eos", "molardensity"))
         self.s_eos_zfac = getattr(self.tp, self.get_export_name("eos", "zfac"))
         self.s_eos_thermo = getattr(
             self.tp, self.get_export_name("eos", "thermo"))
@@ -1216,6 +1218,76 @@ class thermo(object):
             return_tuple += (np.array(dvdn_c), )
 
         prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, dvdn), 'tpn')
+        return prop.unpack()
+
+    def molar_density(self, temp, press, x, phase, drhodt=None, drhodp=None, drhodn=None):
+        """Tp-property
+        Calculate single-phase molar density
+        Note that the order of the output matches the default order of input for the differentials.
+        Note further that drhodt, drhodp and drhodn only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            drhodt (bool, optional): Calculate molar density differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            drhodp (bool, optional): Calculate molar density differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            drhodn (bool, optional): Calculate molar density differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+
+        Returns:
+            float: Molar density (mol/m3), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        phase_c = c_int(phase)
+        rho_c = c_double(0.0)
+
+        if drhodt is None:
+            drdt_c = null_pointer
+        else:
+            drdt_c = POINTER(c_double)(c_double(0.0))
+        if drhodp is None:
+            drdp_c = null_pointer
+        else:
+            drdp_c = POINTER(c_double)(c_double(0.0))
+        if drhodn is None:
+            drdn_c = null_pointer
+        else:
+            drdn_c = (c_double * len(x))(0.0)
+
+        self.s_eos_molardensity.argtypes = [POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_int),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double)]
+
+        self.s_eos_molardensity.restype = None
+
+        self.s_eos_molardensity(byref(temp_c),
+                                  byref(press_c),
+                                  x_c,
+                                  byref(phase_c),
+                                  byref(rho_c),
+                                  drdt_c,
+                                  drdp_c,
+                                  drdn_c)
+        return_tuple = (rho_c.value, )
+        if not drhodt is None:
+            return_tuple += (drdt_c[0], )
+        if not drhodp is None:
+            return_tuple += (drdp_c[0], )
+        if not drhodn is None:
+            return_tuple += (np.array(drdn_c), )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (drhodt, drhodp, drhodn), 'tpn')
         return prop.unpack()
 
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
