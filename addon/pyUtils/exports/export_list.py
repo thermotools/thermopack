@@ -140,6 +140,7 @@ append_export("get_energy_constants", "cubic_eos")
 append_export("get_covolumes", "cubic_eos")
 
 append_export("specificvolume", "eos")
+append_export("molardensity", "eos")
 append_export("zfac", "eos")
 append_export("thermo", "eos")
 append_export("entropy", "eos")

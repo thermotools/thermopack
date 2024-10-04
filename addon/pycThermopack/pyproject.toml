@@ -3,7 +3,7 @@ requires = ["scikit-build-core"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-sdist.include = ["libthermopack*"]
+sdist.include = ["libthermopack*", "platform_specifics.py"]
 wheel.expand-macos-universal-tags = true
 
 [project]
