@@ -38,10 +38,15 @@ public:
 	std::pair<double, std::vector<double>> bubble_pressure(double temp, const std::vector<double> &z);
 
 	// Perform thermodynamic property calculations
-	std::vector<double> thermo(double T, double P, const std::vector<double> &composition, int phase_flag);
+	// Added optional pointers for differentials (dlnfugdt, dlnfugdp, dlnfugdn) and phase/v outputs (ophase, v)
+	std::vector<double> thermo(double T, double P, const std::vector<double> &composition, int phase_flag, 
+                                  std::vector<double>* dlnfugdt, std::vector<double>* dlnfugdp, 
+                                  std::vector<double>* dlnfugdn, int* ophase, double* v);
 
 	std::string get_model_id();
 	int get_comp_index(const std::string &comp);
+	std::vector<double> specific_volume(double T, double P, const std::vector<double> &composition, int phase_flag);
+	double compmoleweight(int32_t comp, bool si_units = false);
 
 protected:
 	void add_eos();
@@ -99,6 +104,10 @@ extern "C" {
 	void __eos_MOD_thermo(double* t, double* p, double* z, int* phase,
 						  double* lnfug, double* lnfugt, double* lnfugp,
 						  double* lnfugx, int* ophase, int* metaExtremum, double* v);
+						  
+	double __eos_MOD_compmoleweight(int32_t* comp);
+						  
+	void thermopack_specific_volume_c(double* temp, double* press, double* x, int* iphase, double* v);
 }
 
-#endif // THERMO_HPP
+#endif // THERMO_H

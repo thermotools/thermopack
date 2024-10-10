@@ -6,8 +6,6 @@
 
 Thermo::Thermo()
 {
-	std::cout << "Initializing Thermo object" << std::endl;
-
 	add_eos();
 	_true_int_value = get_true_int_value();
 }
@@ -19,14 +17,18 @@ Thermo::~Thermo()
 
 int Thermo::get_comp_index(const std::string &comp)
 {
+	// Ensure string is properly null-terminated
 	const char *comp_c = comp.c_str();
 	size_t comp_len = comp.length();
 	
+	// Call the Fortran function with the component name and its length
 	int index = __compdata_MOD_comp_index_active(comp_c, comp_len);
 
+	// Check if the index is valid
 	if (index < 0)
 	{
-		throw std::runtime_error("Component not found: " + comp);
+		// If the component is not found, throw a more detailed error
+		throw std::runtime_error("Component not found: '" + comp + "' (Length: " + std::to_string(comp_len) + ")");
 	}
 
 	return index;
@@ -51,8 +53,7 @@ void Thermo::delete_eos()
 	__thermopack_var_MOD_delete_eos(&model_index);
 }
 
-void Thermo::activate()
-{
+void Thermo::activate() {
 	__thermopack_var_MOD_activate_model(&model_index);
 }
 
@@ -132,28 +133,83 @@ std::pair<double, std::vector<double>> Thermo::bubble_pressure(double temp, cons
 	return {press, y};
 }
 
-std::vector<double> Thermo::thermo(double T, double P, const std::vector<double>& composition, int phase_flag) {
-	activate();
+std::vector<double> Thermo::thermo(double T, double P, const std::vector<double> &composition, int phase_flag, 
+								  std::vector<double>* dlnfugdt, std::vector<double>* dlnfugdp, 
+								  std::vector<double>* dlnfugdn, int* ophase, double* v) 
+{
+	activate();  // Activate the EOS model
 
 	int nc = composition.size();  // Number of components
+	std::vector<double> lnfug(nc, 0.0);  // Fugacity coefficients (output)
 
-	std::vector<double> lnfug(nc, 0.0);  // Fugacity coefficients
-
-	std::vector<double> z = composition;  // Copy composition array
-	
+	// Prepare inputs for the Fortran function
+	std::vector<double> z = composition;  // Molar composition
 	double temp = T;
 	double press = P;
 	int phase = phase_flag;
 
-	double* lnfugt = nullptr;     // Temperature differentials (optional)
-	double* lnfugp = nullptr;     // Pressure differentials (optional)
-	double* lnfugx = nullptr;     // Composition differentials (optional)
-	int* ophase = nullptr;        // Phase identifier for MINGIBBSPH (optional)
-	int* metaExtremum = nullptr;  // MetaExtremum flag (optional)
-	double* v = nullptr;          // Specific volume (optional)
+	// Pointers to pass optional outputs
+	double* lnfugt_c = nullptr;
+	double* lnfugp_c = nullptr;
+	double* lnfugx_c = nullptr;
+	int* ophase_c = ophase;
+	int* metaExtremum_c = nullptr;  // Set to nullptr as it's unused
 
-	__eos_MOD_thermo(&temp, &press, z.data(), &phase, lnfug.data(), lnfugt, lnfugp, lnfugx, ophase, metaExtremum, v);
+	// If dlnfugdt is provided, allocate memory for Fortran to store the result
+	if (dlnfugdt && dlnfugdt->size() == nc) {
+		lnfugt_c = dlnfugdt->data();
+	}
 
+	// If dlnfugdp is provided, allocate memory for Fortran to store the result
+	if (dlnfugdp && dlnfugdp->size() == nc) {
+		lnfugp_c = dlnfugdp->data();
+	}
+
+	// If dlnfugdn is provided, allocate memory for Fortran to store the result as a 1D array
+	if (dlnfugdn && dlnfugdn->size() == nc * nc) {
+		lnfugx_c = dlnfugdn->data();
+	}
+
+	// Call the Fortran subroutine
+	__eos_MOD_thermo(&temp, &press, z.data(), &phase, lnfug.data(), lnfugt_c, lnfugp_c, lnfugx_c, ophase_c, metaExtremum_c, v);
+
+	// Return the calculated fugacity coefficients
 	return lnfug;
+}
+
+
+std::vector<double> Thermo::specific_volume(double T, double P, const std::vector<double> &composition, int phase_flag)
+{	
+	activate();
+	
+	std::vector<double> result(1);  // Only one specific volume is returned
+	double v = 0.0;
+	
+	
+	double* x = const_cast<double*>(composition.data());  
+	int iphase = phase_flag;
+
+	
+	thermopack_specific_volume_c(&T, &P, x, &iphase, &v);
+
+	result[0] = v;
+	return result;
+}
+
+double Thermo::compmoleweight(int32_t comp, bool si_units) {
+	// Ensure the Fortran function is available
+	if (comp <= 0) {
+		throw std::invalid_argument("Component index must be positive.");
+	}
+
+	// Call the Fortran function using the wrapper
+	double mw = __eos_MOD_compmoleweight(&comp);
+
+	// Convert to SI units if needed
+	if (si_units) {
+		mw *= 1e-3;  // Convert g/mol to kg/mol
+	}
+
+	return mw;
 }
 

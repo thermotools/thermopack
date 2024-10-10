@@ -3,21 +3,24 @@
 #include <stdexcept>
 #include <dlfcn.h>
 #include <cstring>
+#include <algorithm>
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
 
 // Constructor: Initialize the Cubic EoS
 Cubic::Cubic(const std::string &comps, const std::string &eos, const std::string &mixing)
 {
 	load_library();
+	set_nc_from_comps(comps);  // Set the number of components based on the composition string
 	init(comps, eos, mixing);
 }
 
 // Load thermopack library dynamically
 void Cubic::load_library()
 {
-	tp_handle = dlopen("libthermopack.dll", RTLD_LAZY);
+	tp_handle = dlopen("cygthermopack.dll", RTLD_LAZY);
 	if (!tp_handle)
 	{
 		throw std::runtime_error("Failed to load thermopack library.");
@@ -31,6 +34,13 @@ void Cubic::unload_library()
 	{
 		dlclose(tp_handle);
 	}
+}
+
+// Set the number of components based on the composition string
+void Cubic::set_nc_from_comps(const std::string &comps)
+{
+	// Assuming each component is separated by a comma
+	nc = std::count(comps.begin(), comps.end(), ',') + 1;  // Set nc based on the number of components in the string
 }
 
 std::string Cubic::get_export_name(const std::string &module, const std::string &method) {
@@ -76,6 +86,9 @@ void Cubic::init_pseudo(const std::string& comps, const std::vector<double>& Tcl
 		throw std::runtime_error("Could not load init_cubic_pseudo from thermopack.");
 	}
 
+	// Set nc based on the size of Tclist, assuming Tclist, Pclist, etc., have the same length
+	nc = Tclist.size(); 
+
 	init_cubic_pseudo(comps.c_str(), Tclist.data(), Pclist.data(), acflist.data(), Mwlist.data(), 
 					  mixing.c_str(), alpha.c_str(), 
 					  comps.size(), mixing.size(), alpha.size());
@@ -109,33 +122,6 @@ void Cubic::set_kij(int c1, int c2, double kij)
 	set_kij(&c1, &c2, &kij);
 }
 
-double Cubic::get_lij(int c1, int c2)
-{
-	typedef void (*get_lij_func)(int *, int *, double *);
-	get_lij_func get_lij = (get_lij_func)dlsym(tp_handle, "thermopack_getlij_");
-
-	if (!get_lij)
-	{
-		throw std::runtime_error("Could not load thermopack_getlij from thermopack.");
-	}
-
-	double lij;
-	get_lij(&c1, &c2, &lij);
-	return lij;
-}
-
-void Cubic::set_lij(int c1, int c2, double lij)
-{
-	typedef void (*set_lij_func)(int *, int *, double *);
-	set_lij_func set_lij = (set_lij_func)dlsym(tp_handle, "thermopack_setlijandji_");
-
-	if (!set_lij)
-	{
-		throw std::runtime_error("Could not load thermopack_setlijandji from thermopack.");
-	}
-
-	set_lij(&c1, &c2, &lij);
-}
 
 void Cubic::get_hv_param(int c1, int c2, double &alpha_ij, double &alpha_ji, double &a_ij, double &a_ji, double &b_ij, double &b_ji, double &c_ij, double &c_ji)
 {
@@ -150,18 +136,6 @@ void Cubic::get_hv_param(int c1, int c2, double &alpha_ij, double &alpha_ji, dou
 	get_hv_param(&c1, &c2, &alpha_ij, &alpha_ji, &a_ij, &a_ji, &b_ij, &b_ji, &c_ij, &c_ji);
 }
 
-void Cubic::set_hv_param(int c1, int c2, double alpha_ij, double alpha_ji, double a_ij, double a_ji, double b_ij, double b_ji, double c_ij, double c_ji)
-{
-	typedef void (*set_hv_param_func)(int *, int *, double *, double *, double *, double *, double *, double *, double *, double *);
-	set_hv_param_func set_hv_param = (set_hv_param_func)dlsym(tp_handle, "thermopack_sethvparam_");
-
-	if (!set_hv_param)
-	{
-		throw std::runtime_error("Could not load thermopack_sethvparam from thermopack.");
-	}
-
-	set_hv_param(&c1, &c2, &alpha_ij, &alpha_ji, &a_ij, &a_ji, &b_ij, &b_ji, &c_ij, &c_ji);
-}
 
 void Cubic::get_ws_param(int c1, int c2, double &alpha_ij, double &alpha_ji, double &k_ij, double &k_ji, double &tau_ij, double &tau_ji)
 {
@@ -273,4 +247,40 @@ void Cubic::set_beta_corr(int ic, const std::string &corrname, const std::vector
 
 	int num_coeffs = coeffs.size();
 	set_beta_corr(&ic, corrname.c_str(), const_cast<double *>(coeffs.data()), &num_coeffs);
+}
+int Cubic::get_nc() const
+{
+	// Return the number of components in the Cubic EOS
+	return nc;
+}
+
+void Cubic::thermopack_setHVparam(int c1, int c2, double alpha_ij, double alpha_ji, double a_ij, double a_ji, 
+					  double b_ij, double b_ji, double c_ij, double c_ji)
+{
+    int c1_c = c1;
+    int c2_c = c2;
+    double alpha_ij_c = alpha_ij;
+    double alpha_ji_c = alpha_ji;
+    double a_ij_c = a_ij;
+    double a_ji_c = a_ji;
+    double b_ij_c = b_ij;
+    double b_ji_c = b_ji;
+    double c_ij_c = c_ij;
+    double c_ji_c = c_ji;
+
+    // Call the Fortran subroutine to set HV parameters
+    thermopack_sethvparam_(&c1_c, &c2_c, &alpha_ij_c, &alpha_ji_c, &a_ij_c, &a_ji_c, &b_ij_c, &b_ji_c, &c_ij_c, &c_ji_c);
+}
+
+void Cubic::thermopack_setlijandji(int i, int j, double lij)
+{
+	try
+	{
+		// Call the Fortran subroutine to set lij
+		thermopack_setlijandji_(&i, &j, &lij);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error while calling thermopack_setlijandji: " << e.what() << std::endl;
+	}
 }
