@@ -57,10 +57,22 @@ The environment variable `THERMOPACK_DIR` can also be set using
 ```bash
 export THERMOPACK_DIR=/path/to/thermopack
 ```
+
+*When building on Linux* You should add the line
+```
+set_target_properties(<my_target> PROPERTIES 
+                            INSTALL_RPATH ${THERMOPACK_INSTALL_DIR}
+                            INSTALL_RPATH_USE_LINK_PATH TRUE)
+```
+to your `CMakeLists.txt`. This will add the `THERMOPACK_INSTALL_DIR` to your library/programs runtime search path (`@rpath`) and ensure that your binary will find the thermopack dynamic library at runtime if it is moved or installed to some other location than where it is built.
+
 and should point to the top-level directory of the thermopack-package (where `thermopack-config.cmake` is found). After the `find_library` command has been run, several convenience variables will have been defined:
-* `THERMOPACK_INSTALLED` : `"TRUE"` if thermopack is installed, `"FALSE"` otherwise
+* `THERMOPACK_FOUND` : `TRUE` if thermopack was found, `FALSE` otherwise
+* `THERMOPACK_INSTALLED` : `TRUE` if thermopack is installed, `FALSE` otherwise
 * `THERMOPACK_ROOT` : Path to directory where `thermopack-config.cmake` was found
+* `THERMOPACK_INSTALLED_DIR` : Path to directory in which thermopack has installed files
 * `THERMOPACK_LIB` : Path to thermopack dynamic library
+* `THERMOPACK_STATIC_LIB` : Path to thermopack static library (archive)
 * `THERMOPACK_INCLUDE` : Path to thermopack C++ headers
 * `thermopack` : Imported shared library target with headers (this is what you want to link to using `target_link_libraries`)
 
