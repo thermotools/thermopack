@@ -5,6 +5,7 @@
 #include <vector>
 #include <dlfcn.h>
 #include <stdexcept>
+#include <cstdint>
 #include <cstring>
 
 typedef int (*p_get_comp_index)(const char *, size_t);
