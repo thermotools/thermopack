@@ -1,14 +1,13 @@
 # Example for Compiling and linking C++ executables using thermopack.
-# This example assumes that libthermopack.dylib has already been built. The path to libthermopack.dylib
-# is set in `libthermopack_path`, you will likely need to modify this.
-# 
-# Note: If you want to build with static linkage, you also need to link libgfortran.a, libquadmath.a, and
-# lapack, as shown in CMakelists_static.txt.
-# 
-# Note: On macOS (arm64), you might need to 
+# This example assumes that libthermopack.dylib has already been built and installed with `make install`
+# The environment variable THERMOPACK_DIR should point to the root directory of ThermoPack (where thermopack-config.cmake is found)
+# this can be set with `export THERMOPACK_DIR=<path/to/thermopack>`.
+#
+# Note: On macOS (arm64), you might need to
 #   export CC=/opt/homebrew/bin/gcc-13
 #   export CXX=/opt/homebrew/bin/g++-13
 # before running cmake, in order to force compilation for arm64.
+
 project(cppExamples)
 cmake_minimum_required(VERSION 3.2)
 
@@ -16,17 +15,20 @@ string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
 set(ColourBlue "${Esc}[34m")
 
-set(libthermopack_path "${CMAKE_SOURCE_DIR}/../cppThermopack/libthermopack")
-if(APPLE)
-    set(libthermopack_path "${libthermopack_path}.dylib")
-else()
-    set(libthermopack_path "${libthermopack_path}.so")
+set(THERMOPACK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
+# Searches for thermopack-config.cmake in the directory ${THERMOPACK_DIR}, which can be set with `export THERMOPACK_DIR=<path/to/thermopack>`
+# Once thermopack is found, it provides some convenience variables shown below, as well as the exported target `thermopack` which can be used for linking directly.
+find_package(THERMOPACK REQUIRED)
+if (NOT THERMOPACK_INSTALLED)
+    message("${ColourRed}Thermopack was found but is not installed. Exiting ...")
+    return()
 endif()
 
-set(THERMOPACK_HEADERS "${CMAKE_SOURCE_DIR}/../cppThermopack")
-
-message("${ColourBlue}Using libthermopack at : ${libthermopack_path}")
-message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_HEADERS}")
+message("${ColourBlue}Thermopack was found at : ${THERMOPACK_ROOT}")
+message("${ColourBlue}Using libthermopack at : ${THERMOPACK_LIB}")
+message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_INCLUDE}")
+message("${ColourBlue}Linking thermopack using exported target thermopack")
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++17")
@@ -36,21 +38,16 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 
 add_executable(basic basic.cpp)
-target_include_directories(basic PUBLIC ${THERMOPACK_HEADERS})
-target_link_libraries(basic PUBLIC ${libthermopack_path})
+target_link_libraries(basic PUBLIC thermopack)
 
 add_executable(tp_properties tp_properties.cpp)
-target_include_directories(tp_properties PUBLIC ${THERMOPACK_HEADERS})
-target_link_libraries(tp_properties PUBLIC ${libthermopack_path})
+target_link_libraries(tp_properties PUBLIC thermopack)
 
 add_executable(tv_properties tv_properties.cpp)
-target_include_directories(tv_properties PUBLIC ${THERMOPACK_HEADERS})
-target_link_libraries(tv_properties PUBLIC ${libthermopack_path})
+target_link_libraries(tv_properties PUBLIC thermopack)
 
 add_executable(flashes flashes.cpp)
-target_include_directories(flashes PUBLIC ${THERMOPACK_HEADERS})
-target_link_libraries(flashes PUBLIC ${libthermopack_path})
+target_link_libraries(flashes PUBLIC thermopack)
 
 add_executable(saturation saturation.cpp)
-target_include_directories(saturation PUBLIC ${THERMOPACK_HEADERS})
-target_link_libraries(saturation PUBLIC ${libthermopack_path})
+target_link_libraries(saturation PUBLIC thermopack)

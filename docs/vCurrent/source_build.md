@@ -5,6 +5,19 @@ title: Installing the latest version of ThermoPack
 permalink: /vcurrent/source_build.html
 ---
 
+- [Using pip](#using-pip)
+- [Installing from wheels](#installing-from-wheels)
+- [Building from source](#building-from-source)
+  - [Prerequisites](#prerequisites)
+  - [CMake setup (macOS and Linux)](#cmake-setup-macos-and-linux)
+  - [CMake setup (Windows)](#cmake-setup-windows)
+- [Legacy build system (without CMake)](#legacy-build-system-without-cmake)
+  - [Linux setup](#linux-setup)
+  - [MacOS setup](#macos-setup)
+  - [Windows setup](#windows-setup)
+    - [MSYS2/Mingw-W64 setup](#msys2mingw-w64-setup)
+  - [Docker setup](#docker-setup)
+
 ## Using pip
 Thermopack has been compiled for Windows, Linux and macOS
 and made available on the [Python Package Index](https://pypi.org/project/thermopack/) (pypi), and can be
@@ -15,6 +28,9 @@ pip3 install thermopack
 ```
 
 For documentation on the version available on pypi, refer to the appropriate version number in the sidebar.
+
+## Installing from wheels
+Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
 
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
@@ -33,6 +49,62 @@ Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
 [thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
+
+For macOS and Linux, Lapack and Blas can likely be installed using `apt`, `brew`, or similar. For windows, Lapack will need to be built from source. The [CMake setup for Windows](#cmake-setup-windows) is configured to handle this automatically.
+
+### CMake setup (macOS and Linux)
+
+The `cmake`-based build system assumes that you have Lapack and gfortran installed, see above instructions for more on that.
+
+Build and install thermopack by running
+```bash
+mkdir build
+cd build
+cmake ..
+make install
+```
+
+This will ensure that the thermopack dynamic library is properly installed to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To set up the python wrapper, 
+```bash
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+this will generate the file `addon/pycThermopack/thermopack/platform_specifics.py` and install thermopack to your activated virtual environment.
+
+ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
+the `-diffs` flag when running `map_platform_specifics.py` as
+```bash
+python map_platform_specifics.py -diffs=v2 # Use tuples
+python map_platform_specifics.py -diffs=v3 # use Property
+```
+the default value is `-diffs=v3`.
+
+### CMake setup (Windows)
+
+To compile thermopack (and Lapack) with intel fortran, run
+```
+mkdir build
+cd build
+cmake .. -G Ninja -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config=Release --target install
+```
+Compile and install Lapack, and install the thermopack dynamic library to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To configure and install the python-wrapper, run
+```
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+
+*Note:* If your thermopack dynamic library is called `libthermopack.dll`, and not `thermopack.dll`, you will instead need to run
+```
+python addon/pycThermopack/map_platform_specifics.py --ifort=True
+pip install addon/pycThermopack/
+```
+
+## Legacy build system (without CMake)
 
 ### Linux setup
 The Thermopack source code is downloaded by cloning the library to your local
@@ -132,31 +204,3 @@ how to install pycThermopack for the MSYS2 environment.
 ### Docker setup
 See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main/addon/docker) for
 available Dockerfiles to run Thermopack with docker.
-
-### CMake setup
-
-The CMake setup has been tested on macOS and Linux, and is the system currently used for CI. The system assumes that you have
-Lapack and gfortran installed, see above instructions for more on that.
-
-Build and install thermopack by running
-```bash
-mkdir build
-cd build
-cmake ..
-make install
-```
-
-To set up the python wrapper, 
-```bash
-python addon/pycThermopack/map_platform_specifics.py
-pip install addon/pycThermopack/
-```
-this will generate the file `addon/pycThermopack/thermopack/platform_specifics.py` and install thermopack to your activated virtual environment.
-
-ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
-the `-diffs` flag when running `makescript.py` as
-```bash
-python map_platform_specifics.py -diffs=v2 # Use tuples
-python map_platform_specifics.py -diffs=v3 # use Property
-```
-the default value is `-diffs=v3`.

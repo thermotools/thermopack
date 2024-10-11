@@ -36,17 +36,33 @@ The header files you will need are found in `thermopack/addon/cppThermoPack/cppT
 
 # Including and linking ThermoPack
 
+*Note:* Before including ThermoPack in your project, ensure that you have compiled and installed ThermoPack by following the instructions for [building with cmake](source_build.html).
+
 An example `CMakeLists.txt` is found in `thermopack/addon/cppExamples`. In essence, all that is required to include ThermoPack is to add the following to your `CMakeLists.txt`:
 
 ```cmake
-set(THERMOPACK_HEADERS "path/to/thermopack/addon/cppThermopack")
-set(libthermopack_path "path/to/thermopack/addon/cppThermopack/libthermopack.[so/dylib]")
+set(THERMOPACK_DIR "/path/to/thermopack")
+find_library(THERMOPACK REQUIRED)
 
-target_link_libraries(<my_project> ${libthermopack_path})
-target_include_directories(<my_project> ${THERMOPACK_HEADERS})
+add_executable(<my_program> <my_source.cpp>)
+add_library(<my_lib> <my_lib_source.cpp>)
+# etc.
+
+target_link_libraries(<my_program> thermopack) # find_library ensures that the exported target "thermopack" is available
+target_link_libraries(<my_lib> thermopack)
+# etc.
 ```
 
-where `<my_project>` is some target previously defined by a call to `add_executable`, `add_library`, etc.
+The environment variable `THERMOPACK_DIR` can also be set using
+```bash
+export THERMOPACK_DIR=/path/to/thermopack
+```
+and should point to the top-level directory of the thermopack-package (where `thermopack-config.cmake` is found). After the `find_library` command has been run, several convenience variables will have been defined:
+* `THERMOPACK_INSTALLED` : `"TRUE"` if thermopack is installed, `"FALSE"` otherwise
+* `THERMOPACK_ROOT` : Path to directory where `thermopack-config.cmake` was found
+* `THERMOPACK_LIB` : Path to thermopack dynamic library
+* `THERMOPACK_INCLUDE` : Path to thermopack C++ headers
+* `thermopack` : Imported shared library target with headers (this is what you want to link to using `target_link_libraries`)
 
 # Library structure
 

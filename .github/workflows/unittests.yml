@@ -1,67 +1,116 @@
 name: unittests
 
-on: [pull_request]
+on:
+  push:
+      branches:
+          - main
+  pull_request:
 
 jobs:
   run-tests:
-    name: Run tests on ${{ matrix.os }}-${{ matrix.version }}
-    runs-on: ${{ matrix.os }}-${{ matrix.version }}
+    name: Test on ${{ matrix.os }} with ${{ matrix.toolchain.compiler }} ${{ matrix.toolchain.version }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS, ubuntu]
-        version: [latest]
+        os: [ubuntu-latest, macos-latest, macos-12]
+        toolchain:
+          - {compiler: gcc, version: 13}
         include:
-            - version: 12
-              os: macOS
+          - os: windows-2022
+            toolchain: {compiler: intel-classic, version: '2021.12'}
 
-    outputs:
-        status: ${{ join('steps.*test.conclusion') }}
     steps:
       - uses: actions/checkout@v4
       - name: checkout submodules
         run: git submodule update --init --recursive
+
+      # - name: Setup Visual Studio 2022
+      #   if: matrix.os == 'windows-2022'
+      #   uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Install ninja-build tool
+        if: matrix.os == 'windows-2022'
+        uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
+
+      - uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        if: matrix.os != 'macos-12'
+        with:
+          compiler: ${{ matrix.toolchain.compiler }}
+          version: ${{ matrix.toolchain.version }}
       
-      - name: Setup gfortran Linux
-        if: matrix.os == 'ubuntu'
-        run: echo "gfortran=$(which gfortran)" >> $GITHUB_ENV
-    
-      - name: Setup gfortran macOS
-        if: matrix.os == 'macOS'
-        run: echo "gfortran=$(which gfortran-13)" >> $GITHUB_ENV
-    
-      - name: Build ThermoPack
+      - name: Setup gfortran macos-12
+        if: matrix.os == 'macos-12'
         run: |
-            ${{ env.gfortran }} --version
-            export FC=${{ env.gfortran }}
-            mkdir build
-            cd build
-            cmake -Dtest=ON -DCMAKE_BUILD_TYPE=Debug ..
-            make -j4 install
-            echo "--- pycThermopack contents ---"
-            ls ../addon/pycThermopack
-            echo "--- pycThermopack/thermopack contents ---"
-            ls ../addon/pycThermopack/thermopack
-    
-      - name: Inspect thermopack
-        if: matrix.os == 'ubuntu'
+          export FC=$(which gfortran-13)
+          echo FC=$FC >> $GITHUB_ENV
+
+      - name: Build ThermoPack
+        if: matrix.os != 'windows-2022'
+        run: |
+          mkdir build
+          cd build
+          cmake -Dtest=ON -DCMAKE_BUILD_TYPE=Debug ..
+          make -j4 install
+      
+      # - name: Build LAPACK Windows
+      #   if: matrix.os == 'windows-2022'
+      #   run: |
+      #     cd external
+      #     cd lapack
+      #     cmake -B build -G Ninja -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icx
+      #     cmake --build build --target install
+
+      - name: Build ThermoPack Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          echo "Building on ${{ matrix.os }}"
+          $FC = ${{ env.FC }}
+          $FC_PATH = $((Get-Command ${{ env.FC }} | Select-Object -ExpandProperty Path) -replace '\\', '/')
+          echo "Using compiler $env:FC / ${{ env.FC }}"
+          echo "Fortran compiler at: $(Get-Command ${{ env.FC }} | Select-Object -ExpandProperty Path) / $FC_PATH"
+          cmake -B build -G Ninja -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release 
+          cmake --build build --config Release --target install --verbose
+      # cmake -B build -G "Visual Studio 17 2022" -DCMAKE_Fortran_COMPILER=${{ env.FC }} 
+      
+      - name: Inspect thermopack Linux
+        if: ${{ runner.os == 'Linux' }}
         run: | 
           echo "--- Inspecting libthermopack ---"
-          ldd bin/libthermopack.so
+          ldd installed/libthermopack.so
+          nm installed/libthermopack.so | grep " T "
           echo "--- Inspecting run_unittests ---"
-          ldd bin/unittests
+          ldd installed/unittests
+
+      - name: Inspect thermopack MacOS
+        if: ${{ runner.os == 'macOS' }}
+        run: | 
+          echo "--- Inspecting libthermopack ---"
+          otool -L installed/libthermopack.dylib
+          nm installed/libthermopack.dylib | grep " T "
+          echo "--- Inspecting run_unittests ---"
+          otool -L installed/unittests
+
+      - name: Inspect thermopack Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          echo "--- Inspecting libthermopack.dll ---"
+          dumpbin /DEPENDENTS installed/libthermopack.dll
+          dumpbin /EXPORTS installed/libthermopack.dll
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-            name: binary-${{ matrix.os }}-${{ matrix.version }}
-            path: ./bin/*
+            name: binary-${{ matrix.os }}-${{ matrix.toolchain.compiler }}
+            path: ./installed/*
     
       - id: fortran_test
         name: Run unittests
+        if: matrix.os != 'windows-2022'
         continue-on-error: true
         run: |
-            result=$(./bin/unittests)
+            result=$(./installed/unittests)
             if echo "$result" | grep -q "OK"; then
             statuscode=0
             else
@@ -73,7 +122,8 @@ jobs:
             
       - uses: actions/setup-python@v5
       - id: python_test 
-        name: Run python tests
+        name: Run python tests for Linux/MacOS
+        if: matrix.os != 'windows-2022'
         continue-on-error: true
         run: |
             python addon/pycThermopack/map_platform_specifics.py
@@ -89,7 +139,30 @@ jobs:
             echo "statuscode=$statuscode" >> $GITHUB_OUTPUT
             exit $statuscode
     
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - id: python_test_windows
+        name: Run python tests for Windows
+        if: matrix.os == 'windows-2022'
+        continue-on-error: true
+        run: |
+            python -m pip install --upgrade pip
+            pip install pytest numpy
+            python -c "import sys; sys.path.insert(0, './addon/pycThermopack'); import makescript; makescript.windows_make('v3')"
+            pip install ./addon/pycThermopack/[test]
+            $result = python -m pytest ./addon/pyTests
+            if ($result -match "FAILED") {
+              $statuscode = 1
+            } else {
+              $statuscode = 0
+            }
+            Write-Output $result
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "statuscode=$statuscode"
+            exit $statuscode
+
       - name: Check success
+        if: matrix.os != 'windows-2022'
         run: |
             echo "Fortran test result : ${{ steps.fortran_test.outputs.statuscode }}"
             echo "Python test result : ${{ steps.python_test.outputs.statuscode }}"
@@ -98,8 +171,14 @@ jobs:
             else
             exit 1
             fi
-        
 
-
-    
-            
+      - name: Check success Windows
+        if: matrix.os == 'windows-2022'
+        run: |
+            $statusCode = ${{ steps.python_test_windows.outputs.statuscode }}
+            Write-Host "Python test result: $statusCode"
+            if ($statusCode -eq 0) {
+              exit 0
+            } else {
+              exit 1
+            }

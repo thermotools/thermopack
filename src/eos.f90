@@ -847,7 +847,7 @@ contains
   !>
   !> \author MH, 2014-01
   !----------------------------------------------------------------------
-  subroutine ideal_enthalpy_single(t,j,h,dhdt,dhdp)
+  subroutine ideal_enthalpy_single(t,j,h,dhdt)
     use ideal, only: Hideal_apparent, Cpideal_apparent
     use eos_parameters, only: single_eos
     implicit none
@@ -856,7 +856,6 @@ contains
     integer, intent(in) :: j                !< Component index
     real, intent(out) :: h                  !< J/mol - Ideal enthalpy
     real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
-    real, optional, intent(out) :: dhdp     !< J/mol/Pa - Pressure differential of ideal enthalpy
     ! Locals
     type(thermo_model), pointer :: act_mod_ptr
     class(base_eos_param), pointer :: act_eos_ptr
@@ -892,9 +891,6 @@ contains
       write(*,*) 'EoSlib error in eos::idealEnthalpySingle: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-    if (present(dhdp)) then
-      dhdp=0.0
-    end if
   end subroutine ideal_enthalpy_single
 
   !----------------------------------------------------------------------

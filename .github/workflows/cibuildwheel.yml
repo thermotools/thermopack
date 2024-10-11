@@ -1,20 +1,30 @@
 name: cibuildwheel
 
-on: [pull_request]
+on:
+  push:
+      branches:
+          - main
+  pull_request:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}-${{ matrix.version }}
+    if: github.ref == 'refs/heads/main' || github.event_name != 'push'
+    name: Build ${{ matrix.tp_version }} wheels on ${{ matrix.os }}-${{ matrix.version }}
     runs-on: ${{ matrix.os }}-${{ matrix.version }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS, ubuntu]
+        os: [macOS, ubuntu, windows]
         version: [latest]
+        tp_version: [v2, v3]
         include:
             - version: 12
               os: macOS
+              tp_version: v2
+            - version: 12
+              os: macOS
+              tp_version: v3
 
     steps:
       - uses: actions/checkout@v4
@@ -33,14 +43,13 @@ jobs:
           echo "gfortran=$(which gfortran-13)" >> $GITHUB_ENV
           echo "libinspector=otool -L ../addon/pycThermopack/thermopack/libthermopack*" >> $GITHUB_ENV
           echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1)" >> $GITHUB_ENV
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
+      
+      - name: Setup Windows env
+        if: matrix.os == 'windows'
+        uses: fortran-lang/setup-fortran@v1
         with:
-            name: binary-${{ matrix.os }}-${{ matrix.version }}
-            path: ./bin/libthermopack.dylib
-  
-      - uses: actions/setup-python@v5
+          compiler: intel-classic
+          version: '2021.12'
 
       - name: Check macOS deployment target
         if: matrix.os == 'macOS'
@@ -53,7 +62,8 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             yum install -y blas blas-devel
             yum install -y lapack lapack-devel
-            echo $(which gfortran)
+
+          CIBW_BEFORE_BUILD_WINDOWS: powershell -ExecutionPolicy Bypass -File .github/scripts/before_windows_build.ps1 ${{ matrix.tp_version }}
 
           CIBW_BEFORE_BUILD: |
             ${{ env.gfortran }} --version
@@ -62,16 +72,18 @@ jobs:
             cd build
             cmake ..
             make -j4 install
-            python ../addon/pycThermopack/map_platform_specifics.py
+            python ../addon/pycThermopack/map_platform_specifics.py --diffs=${{ matrix.tp_version }}
             echo "--- pycThermopack contents ---"
             ls ../addon/pycThermopack
             echo "--- pycThermopack/thermopack contents ---"
             ls ../addon/pycThermopack/thermopack
             echo "--- Inspecting libthermopack ---"
             ${{ env.libinspector }}
+
           CIBW_BUILD: "*cp311*"
           CIBW_SKIP: "*musllinux*"
-          CIBW_TEST_SKIP: "*x86_64*"
+          CIBW_TEST_SKIP: "*x86_64* thermopack-2*"
+          CIBW_BUILD_VERBOSITY: 1
         with:
           package-dir: "./addon/pycThermopack"
           output-dir: "./wheelhouse"
@@ -79,5 +91,46 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-${{ matrix.os }}-${{ matrix.version }}
+          name: wheel-${{ matrix.tp_version }}-${{ matrix.os }}-${{ matrix.version }}
           path: ./wheelhouse/*.whl
+
+  release_wheels: # Create or update the release tagged Latest-beta, and upload wheels to that release.
+    name: Update prerelease
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download created wheels
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wheel-*
+    
+    - name: Display full directory status
+      run: ls -R .
+    
+    - name: zip wheels
+      run: |
+        for dir in wheel-*; do
+        zip -r "${dir}.zip" ${dir}
+        done
+    
+    - name: Display current directory status
+      run: ls
+    
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        prerelease: true
+        updateOnlyUnreleased: true
+        removeArtifacts: true
+        name: "Latest (beta)"
+        tag: Latest-beta
+        commit: main
+        makeLatest: true
+        bodyFile: ".github/prerelease_bodyFile.md"
+        artifacts: "wheel-*.zip"
