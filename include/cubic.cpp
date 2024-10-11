@@ -20,7 +20,7 @@ Cubic::Cubic(const std::string &comps, const std::string &eos, const std::string
 // Load thermopack library dynamically
 void Cubic::load_library()
 {
-	tp_handle = dlopen("cygthermopack.dll", RTLD_LAZY);
+	tp_handle = dlopen("libthermopack.dll", RTLD_LAZY);
 	if (!tp_handle)
 	{
 		throw std::runtime_error("Failed to load thermopack library.");
