@@ -4,6 +4,7 @@ extern "C" {
     void get_export_name(thermopack_var, delete_eos)(const int* model_idx);
 
     void get_export_name(eos, specificvolume)(double* T, double* p, double* z, int* phase, double* v, double* dvdt, double* dvdp, double* dvdn);
+    void get_export_name(eos, molardensity)(double* T, double* p, double* z, int* phase, double* v, double* dvdt, double* dvdp, double* dvdn);
     void get_export_name(eos, zfac)(double* T, double* p, double* z, int* phase, double* zfac, double* dzdt, double* dzdp, double* dzdn);
     void get_export_name(eos, thermo)(double* T, double* p, double* z, int* phase, double* lnfug, double* dlnfugdt, double* dlnfugdp, double* dlnfugdn, int* ophase, int* metaextremum, double* v);
     void get_export_name(eos, enthalpy)(double* T, double* p, double* z, int* phase, double* h, double* dhdt, double* dhdp, double* dhdn, int* property_flag);

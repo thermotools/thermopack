@@ -42,6 +42,13 @@ class Thermo{
 	return v;
     }
 
+    Property molar_density(double T, double p, vector1d z, int phase, bool drdt=false, bool drdp=false, bool drdn=false) const {
+	activate();
+	Property rho(nc, drdt, false, drdp, drdn);
+	get_export_name(eos, molardensity)(&T, &p, z.data(), &phase, &rho.value_, rho.dt_ptr, rho.dp_ptr, rho.dn_ptr);
+	return rho;
+    }
+
     Property zfac(double T, double p, vector1d z, int phase, bool dzdt=false, bool dzdp=false, bool dzdn=false) const {
 	activate();
 	Property Z(nc, dzdt, false, dzdp, dzdn);
