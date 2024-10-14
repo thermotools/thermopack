@@ -233,6 +233,43 @@ class Thermo{
 	return tvp;
     }
 
+/************************************************************************/
+// ------------------------------- Utility ---------------------------- //
+/************************************************************************/
+
+	double get_tmin() const {
+		activate();
+		return get_export_name(thermopack_var, get_tmin)();
+	}
+    void set_tmin(double tmin) {
+		activate();
+		get_export_name(thermopack_var, set_tmin)(&tmin);
+	}
+    double get_tmax() const {
+		activate();
+		return get_export_name(thermopack_var, get_tmax)();
+	}
+	void set_tmax(double tmax) {
+		activate();
+		get_export_name(thermopack_var, set_tmax)(&tmax);
+	}
+    double get_pmin() const {
+		activate();
+		return get_export_name(thermopack_var, get_pmin)();
+	}
+    void set_pmin(double pmin) {
+		activate();
+		get_export_name(thermopack_var, set_pmin)(&pmin);
+	}
+    double get_pmax() const {
+		activate();
+		return get_export_name(thermopack_var, get_pmax)();
+	}
+    void set_pmax(double pmax) {
+		activate();
+		get_export_name(thermopack_var, set_pmax)(&pmax);
+	}
+
     protected:
     const int true_int;
     size_t nc;
