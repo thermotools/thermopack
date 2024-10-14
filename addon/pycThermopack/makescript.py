@@ -24,24 +24,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", type=str, help="optim or debug")
     parser.add_argument("-diffs", default="v3", type=str, help="Old (v2) or new (> v2) return mode for differentials")
-    parser.add_argument("--install", action=argparse.BooleanOptionalAction, help="Install thermopack from thermopack/bin/dynamic?")
 
     args = parser.parse_args()
     mode = args.mode
 
-    if args.install:
-        # Glob to handle different OS suffixes
-        libthermo = list(
-            Path('../../bin/dynamic').glob(f'libthermopack_{mode}_gfortran*.*'))[0]
-    
-        if not os.path.exists(libthermo):
-            print(f'{libthermo}does not exist. Have you compiled thermopack?')
-            sys.exit(1)
+    # Glob to handle different OS suffixes
+    libthermo = list(
+        Path('../../bin/dynamic').glob(f'libthermopack_{mode}_gfortran*.*'))[0]
 
-        if os.path.exists("./thermopack/libthermopack"+libthermo.suffix):
-            os.remove("./thermopack/libthermopack"+libthermo.suffix)
+    if not os.path.exists(libthermo):
+        print(f'{libthermo}does not exist. Have you compiled thermopack?')
+        sys.exit(1)
 
-        shutil.copy2(libthermo, "./thermopack/libthermopack"+libthermo.suffix)
+    if os.path.exists("./thermopack/libthermopack"+libthermo.suffix):
+        os.remove("./thermopack/libthermopack"+libthermo.suffix)
+
+    shutil.copy2(libthermo, "./thermopack/libthermopack"+libthermo.suffix)
 
     pf_specifics = map_platform_specifics.get_platform_specifics_by_trial_and_error()
 

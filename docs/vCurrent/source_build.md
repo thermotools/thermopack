@@ -83,7 +83,11 @@ the default value is `-diffs=v3`.
 
 ### CMake setup (Windows)
 
-To compile thermopack (and Lapack) with intel fortran, run
+To compile thermopack (and Lapack) with intel fortran, first run
+```
+git submodule update --init --recursive
+```
+from within the `thermopack` direcory, in order to clone Lapack. Then, run
 ```
 mkdir build
 cd build

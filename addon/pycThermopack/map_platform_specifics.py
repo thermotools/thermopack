@@ -21,6 +21,17 @@ I_MODULE = "_mp_"
 I_POSTFIX = "_"
 I_POSTFIX_NM = "_"
 
+VERSION_2 = '2.2.4b0'
+VERSION_3 = '3.b0'
+pf_specifics_path = os.path.join(os.path.dirname( __file__), "thermopack", "platform_specifics.py")
+
+class bcolor:
+    green = '\033[92m'
+    blue = '\033[34m'
+    yellow = '\033[93m'
+    red = '\033[31m'
+    default = '\033[0m'
+    
 
 def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
@@ -190,30 +201,26 @@ def get_platform_specifics_windows_ifort_whl():
 
 def warn_diff_version(diffs):
     if diffs == 'v2':
-        warnings.warn('\033[93m\nYou are building ThermoPack to use the deprecated return pattern using tuples.\n'
+        warnings.warn(f'{bcolor.yellow}\nYou are building ThermoPack to use the deprecated return pattern using tuples.\n'
                       'Future versions of ThermoPack will return differentials using the `Differential` struct found in utils.py. '
                       'To build ThermoPack to use the new return pattern, run \n\n\t`python map_platform_specifics.py [--diffs=v3 --ifort=False]`\n'
                       'For more information see PR#102 at https://github.com/thermotools/thermopack/pull/102\n\n'
-                      'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n\033[0m', DeprecationWarning)
+                      f'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n{bcolor.default}', Warning)
     else:
-        warnings.warn('\033[93m\nYou are building ThermoPack using the "new" return pattern (i.e. the Differential structs found '
-                      "in utils.py.) \nTHIS IS THE RECOMMENDED BUILD but I'm warning you because it is not backwards compatible.\n"
-                      "The old return pattern will probably be discontinued in the future. To build "
-                      'ThermoPack with the "old" return pattern (using tuples) run \n\n\t`python map_platform_specifics.py --diffs=v2 [--ifort=False]`\n\n'
-                      'For information on how to adapt old code to the new return pattern, see '
-                      'PR#102 at https://github.com/thermotools/thermopack/pull/102\n\n'
-                      'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n\033[0m', Warning)
+        print(f'{bcolor.blue}You are building ThermoPack using the "new" return pattern (i.e. the Differential structs found '
+                "in utils.py.) \nTHIS IS THE RECOMMENDED BUILD but I'm warning you because it is not backwards compatible.\n"
+                "The old return pattern will probably be discontinued in the future. To build "
+                'ThermoPack with the "old" return pattern (using tuples) run \n\n\t`python map_platform_specifics.py --diffs=v2 [--ifort=False]`\n\n'
+                'For information on how to adapt old code to the new return pattern, see '
+                'PR#102 at https://github.com/thermotools/thermopack/pull/102\n\n'
+                f'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n{bcolor.default}')
 
 if __name__ == "__main__":
-    VERSION_2 = '2.2.4b0'
-    VERSION_3 = '3.b0'
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--diffs', default='v3', help="Old (v2) or new (v3) return mode for differentials (Default: v3)")
     parser.add_argument('--ifort', default=False, help='Set to True if thermopack has been compiled with intel-fortran (Default: False)')
     args = parser.parse_args()
 
-    pf_specifics_path = os.path.join(os.path.dirname( __file__), "thermopack", "platform_specifics.py")
     pf_specifics_ = get_platform_specifics_by_trial_and_error() if (args.ifort is False) else get_platform_specifics_windows_ifort_whl()
     pf_specifics_['diff_return_mode'] = args.diffs
     pf_specifics_['version'] = VERSION_2 if (args.diffs == 'v2') else VERSION_3
@@ -223,4 +230,4 @@ if __name__ == "__main__":
     write_platform_specifics_file(pf_specifics_, pf_specifics_path)
     set_toml_version(pf_specifics_['version'])
 
-    print(f'\033[92mSuccessfully configured ThermoPack {pf_specifics_["version"]}\033[0m')
+    print(f'{bcolor.green}Successfully configured ThermoPack {pf_specifics_["version"]}{bcolor.default}')

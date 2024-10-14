@@ -161,7 +161,7 @@ jobs:
             Add-Content -Path $env:GITHUB_OUTPUT -Value "statuscode=$statuscode"
             exit $statuscode
 
-      - name: cpp_test
+      - name: Run cppExamples on Linux/macOS
         id: cpp_test
         if: matrix.os != 'windows-2022'
         run: |
