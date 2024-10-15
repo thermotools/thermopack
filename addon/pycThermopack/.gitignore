@@ -4,3 +4,4 @@ build/
 thermopack/platform_specifics.py
 pyctp/platform_specifics.py
 setup.py
+!scripts/

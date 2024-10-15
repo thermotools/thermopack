@@ -5,10 +5,14 @@ build-backend = "scikit_build_core.build"
 [tool.scikit-build]
 sdist.include = ["libthermopack*", "platform_specifics.py"]
 wheel.expand-macos-universal-tags = true
+wheel.py-api = "py3"
+
+[tool.scikit-build.cmake.define]
+RECOMPILE_THERMOPACK = {env="RECOMPILE_THERMOPACK", default="OFF"}
 
 [project]
 name = "thermopack"
-version = "2.3b0"
+version = "0.0.0"
 authors = [
   { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
 ]
@@ -35,6 +39,6 @@ dependencies = ["numpy~=1.20"]
 test = ["pytest"]
 
 [tool.cibuildwheel]
-test-command = "pytest {project}/../pyTests"
+test-command = "pytest {package}/../pyTests"
 test-requires = ["pytest"]
 build-verbosity = 2
