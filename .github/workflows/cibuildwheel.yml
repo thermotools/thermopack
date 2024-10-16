@@ -96,7 +96,7 @@ jobs:
 
   release_wheels: # Create or update the release tagged Latest-beta, and upload wheels to that release.
     name: Update prerelease
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build_wheels
     runs-on: ubuntu-latest
     permissions:
@@ -122,6 +122,14 @@ jobs:
     - name: Display current directory status
       run: ls
     
+    - name: Create cpp dist
+      run: bash .github/scripts/create_cppdist.sh
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cppdist
+        path: ./thermopack-*.zip
+
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
@@ -133,4 +141,4 @@ jobs:
         commit: main
         makeLatest: true
         bodyFile: ".github/prerelease_bodyFile.md"
-        artifacts: "wheel-*.zip"
+        artifacts: "wheel-*.zip,thermopack-*.zip"
