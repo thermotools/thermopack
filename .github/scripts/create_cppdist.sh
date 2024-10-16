@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-platforms=("macos-latest" "macos-12" "ubuntu-latest" "windows-latest")
+platforms=("macOS-latest" "macOS-12" "ubuntu-latest" "windows-latest")
 dylib_dirs=(".dylibs" ".dylibs" "../thermopack.libs" "NO_DYLIB_DIR")
 
 length=${#platforms[@]}
