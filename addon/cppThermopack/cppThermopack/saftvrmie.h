@@ -26,7 +26,7 @@ protected:
     void init_params(){
         activate();
         size_t ci; // Fortran component index
-        for (size_t i = 0; i < nc, i++){
+        for (size_t i = 0; i < nc; i++){
             ci = i + 1;
             get_export_name(saftvrmie_containers, get_saftvrmie_pure_fluid_param)(&ci, &(ms[i]), &(sigma[i]), &(eps_div_k[i]), &(lambda_a[i]), &(lambda_r[i]));
         }

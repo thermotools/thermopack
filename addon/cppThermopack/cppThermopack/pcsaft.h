@@ -1,4 +1,5 @@
 #include "saft.h"
+#include <array>
 
 extern "C" {
     void get_export_name(eoslibinit, init_pcsaft)(char* comps, char* param_ref, int* simplified, int* polar, size_t comp_strlen, size_t ref_strlen);
@@ -23,7 +24,7 @@ class Pcsaft : public Saft{
 
 protected:
     void init_params(){
-        std::vector<double> param(nc);
+        std::array<double, 5> param;
         int ci; // Fortran component index
         for (size_t i = 0; i < nc; i++){
             ci = i + 1;
