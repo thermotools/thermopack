@@ -170,7 +170,7 @@ jobs:
           cd build
           cmake ..
           make
-          examples=("flashes" "saturation" "tp_properties" "tv_properties")
+          examples=("basic" "flashes" "saturation" "tp_properties" "tv_properties")
           nfailed=0
           for exmp in "${examples[@]}"; do echo "Running $exmp"; ./"$exmp" > /dev/null; if [[ $? -ne 0 ]]; then echo "$exmp exited with code $? (failure)."; ((nfailed++)); else echo "$exmp exit 0 (success)"; fi; done
           echo "statuscode=$nfailed" >> $GITHUB_OUTPUT

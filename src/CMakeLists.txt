@@ -23,7 +23,8 @@ else()
     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} /real-size:64 /warn:all,noexternal /check:all,noarg_temp_created,nopointers")
 endif()
 
-add_library(libthermopack STATIC ${SOURCES})
+add_library(thermopack_obj OBJECT ${SOURCES})
+target_include_directories(thermopack_obj PUBLIC ${TREND_DIR})
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     add_library(thermopack SHARED ${SOURCES})
@@ -36,32 +37,31 @@ else(MSVC)
     else(APPLE)
         set(tp_linker_flags "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/../libthermopack_export.version")
     endif(APPLE)
-    add_library(thermopack SHARED $<TARGET_OBJECTS:libthermopack>)
+    add_library(thermopack SHARED $<TARGET_OBJECTS:thermopack_obj>)
     target_link_options(thermopack PRIVATE ${tp_linker_flags})
     set_target_properties(thermopack PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    target_link_libraries(thermopack ${LAPACK_LIBRARIES})
 endif(MSVC)
-message(STATUS "Linker: ${CMAKE_LINKER}")
-set_target_properties(libthermopack PROPERTIES 
-                                    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                                    OUTPUT_NAME thermopack_static)
-target_include_directories(libthermopack PUBLIC ${TREND_DIR})
 
-target_include_directories(thermopack PUBLIC ${TREND_DIR})
+add_library(thermopack_static STATIC $<TARGET_OBJECTS:thermopack_obj>)
+set_target_properties(thermopack_static PROPERTIES 
+                                    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                                    OUTPUT_NAME thermopack)
+target_link_libraries(thermopack_static PRIVATE ${LAPACK_LIBRARIES})
 
 install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../installed/)
-install(TARGETS libthermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../installed/)
+install(TARGETS thermopack_static DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../installed/)
 install(TARGETS thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../addon/pycThermopack/thermopack)
 
 add_executable(run_thermopack ${CMAKE_CURRENT_SOURCE_DIR}/thermopack.f90)
 target_include_directories(run_thermopack PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if(NOT MSVC)
-    target_link_libraries(thermopack ${LAPACK_LIBRARIES})
-    target_link_libraries(run_thermopack libthermopack ${LAPACK_LIBRARIES})
+    target_link_libraries(run_thermopack thermopack_static)
 else()
     target_link_options(run_thermopack PRIVATE "/NODEFAULTLIB:MSVCRT")
     target_link_libraries(thermopack PUBLIC lapack blas)
-    target_link_libraries(run_thermopack libthermopack lapack blas)
+    target_link_libraries(run_thermopack thermopack_static lapack blas)
 endif()
 
 install(TARGETS run_thermopack DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../installed/)
