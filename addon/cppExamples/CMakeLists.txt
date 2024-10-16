@@ -30,7 +30,9 @@ message("${ColourBlue}Using libthermopack at : ${THERMOPACK_LIB}")
 message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_INCLUDE}")
 message("${ColourBlue}Linking thermopack using exported target thermopack")
 
-set(CMAKE_BUILD_TYPE "Release")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++17")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
