@@ -996,28 +996,20 @@ contains
   end subroutine ljs_bh_model_control
 
   subroutine ljs_bh_set_pure_params(sigma, eps_depth_divk)
-    use thermopack_var, only: base_eos_param, thermo_model, get_active_thermo_model
+    use thermopack_var, only: base_eos_param, get_active_eos
     real, intent(in) :: sigma, eps_depth_divk ! sigma/m, eps_depth_divk/K
     ! Locals
     class(base_eos_param), pointer :: eos
     type(thermo_model), pointer :: p_eos_cont
     integer :: i
-    p_eos_cont => get_active_thermo_model()
-    if (allocated(p_eos_cont%eos)) then
-      do i=1,size(p_eos_cont%eos)
-        if (associated(p_eos_cont%eos(i)%p_eos)) then
-          eos => p_eos_cont%eos(i)%p_eos
-          select type( p_eos => eos )
-          class is ( ljs_bh_eos )
-            call p_eos%set_sigma_eps(sigma, eps_depth_divk)
-          end select
-        else
-           print *,"ljs_bh_set_pure_params: eos not acociated"
-         endif
-       enddo
-     else
-       print *,"ljs_bh_set_pure_params: eos array not allocted found"
-     endif
+    eos => get_active_eos()
+    select type( p_eos => eos )
+    class is ( ljs_bh_eos )
+      p_eos%saftvrmie_param%sigma_ij(1,1) = sigma
+      p_eos%saftvrmie_param%eps_divk_ij(1,1) = eps_depth_divk
+    class default
+      print*, "ljs_bh_set_pure_params wrong active model ..."
+    end select
   end subroutine ljs_bh_set_pure_params
 
   subroutine ljs_bh_get_pure_params(sigma, eps_depth_divk)

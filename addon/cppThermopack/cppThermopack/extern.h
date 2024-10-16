@@ -3,6 +3,15 @@ extern "C" {
     void get_export_name(thermopack_var, activate_model)(const int* model_idx);
     void get_export_name(thermopack_var, delete_eos)(const int* model_idx);
 
+    double get_export_name(thermopack_var, get_tmin)();
+    void get_export_name(thermopack_var, set_tmin)(double* tmin);
+    double get_export_name(thermopack_var, get_tmax)();
+    void get_export_name(thermopack_var, set_tmax)(double* tmax);
+    double get_export_name(thermopack_var, get_pmin)();
+    void get_export_name(thermopack_var, set_pmin)(double* pmin);
+    double get_export_name(thermopack_var, get_pmax)();
+    void get_export_name(thermopack_var, set_pmax)(double* pmax);
+
     void get_export_name(eos, specificvolume)(double* T, double* p, double* z, int* phase, double* v, double* dvdt, double* dvdp, double* dvdn);
     void get_export_name(eos, molardensity)(double* T, double* p, double* z, int* phase, double* v, double* dvdt, double* dvdp, double* dvdn);
     void get_export_name(eos, zfac)(double* T, double* p, double* z, int* phase, double* zfac, double* dzdt, double* dzdp, double* dzdn);
