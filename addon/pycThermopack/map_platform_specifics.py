@@ -231,7 +231,7 @@ if __name__ == "__main__":
     parser.add_argument('--ifort', default=False, help='Set to True if thermopack has been compiled with intel-fortran (Default: False)')
     args = parser.parse_args()
 
-    pf_specifics_ = get_platform_specifics_by_trial_and_error() #  if (args.ifort is False) else get_platform_specifics_windows_ifort_whl()
+    pf_specifics_ = get_platform_specifics_by_trial_and_error()
     pf_specifics_['diff_return_mode'] = args.diffs
     pf_specifics_['version'] = VERSION_2 if (args.diffs == 'v2') else VERSION_3
 

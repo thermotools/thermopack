@@ -10,7 +10,7 @@ for ((i=0; i<$length; i++)); do
     whldir="wheel-v3-${platform}"
     dylib_dir=${dylib_dirs[$i]}
     if [ -d "$whldir" ]; then
-        echo "Processing directory: $whldir"
+        echo "--- Processing directory: $whldir ---"
         echo "Directory contains: "
         ls -AR $whldir
 
@@ -25,10 +25,10 @@ for ((i=0; i<$length; i++)); do
         cp thermopack-config.cmake ${distdir}
         cp -r addon/cppThermopack/cppThermopack ${distdir}/addon/cppThermopack
 
-        echo "Set up dist directory ${distdir}: "
+        echo "--- Set up dist directory ${distdir} ---"
         ls -AR $distdir
         
-        echo "Unpacking wheel ..." 
+        echo "--- Unpacking wheel ..." 
         cd $whldir
         unzip thermopack*
         cd ..
@@ -39,11 +39,13 @@ for ((i=0; i<$length; i++)); do
             mv ${whldir}/thermopack/${dylib_dir}/* ${distdir}/installed/${dylib_dir}
         fi
 
-        echo "Completed move to dist directory ${distdir}:"
+        echo "--- Completed move to dist directory ${distdir} ---"
         ls -AR ${distdir}
 
-        zip ${distdir}.zip ${distdir}
+        zip -r ${distdir} ${distdir}
+        echo "--- Contents of ${distdir}.zip ---"
+        unzip -l ${distdir}.zip
     else
-        echo "Directory $dir does not exist."
+        echo "Directory ${whldir} does not exist."
     fi
 done

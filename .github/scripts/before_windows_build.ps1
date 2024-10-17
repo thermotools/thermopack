@@ -9,7 +9,7 @@ echo "cmake finished ..."
 cmake --build . --config=Release --target install
 echo "build finished ..."
 # python -c "import sys; sys.path.insert(0, '../addon/pycThermopack'); import makescript; makescript.windows_make('v3')"
-python ../addon/pycThermopack/map_platform_specifics.py --diffs=$tp_version --ifort=True
+python ../addon/pycThermopack/map_platform_specifics.py --diffs=$tp_version
 echo "--- pycThermopack contents ---"
 dir ../addon/pycThermopack
 echo "--- pycThermopack/thermopack contents ---"
