@@ -16,10 +16,10 @@ for ((i=0; i<$length; i++)); do
 
         # Create dist directory and move config- and header files to expected locations
         distdir="thermopack-${platform}"
-        if [ "${platform}" == "windows-latest" ]; then
-            mkdir -p ${distdir}/installed
-        else
+        if [ "${platform}" == "ubuntu-latest" ]; then
             mkdir -p ${distdir}/installed/${dylib_dir}
+        else
+            mkdir -p ${distdir}/installed
         fi
         mkdir -p ${distdir}/addon/cppThermopack
         cp thermopack-config.cmake ${distdir}
@@ -34,8 +34,8 @@ for ((i=0; i<$length; i++)); do
         cd ..
         mv ${whldir}/thermopack/libthermopack* ${distdir}/installed
 
-        # Do not need to relocate any dylib dependencies for windows
-        if [ "${platform}" != "windows-latest" ]; then
+        # Copy dynamic dependencies to expected location (relative to thermopack.so)
+        if [ "${platform}" == "ubuntu-latest" ]; then
             mv ${whldir}/thermopack/${dylib_dir}/* ${distdir}/installed/${dylib_dir}
         fi
 

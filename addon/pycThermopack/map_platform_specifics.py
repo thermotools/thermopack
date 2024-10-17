@@ -86,7 +86,7 @@ def get_platform_specifics_by_trial_and_error():
     platform_specifics["postfix_no_module"] = ""
     platform_specifics["dyn_lib"] = ""
 
-    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dylib"]
+    dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dll", "libthermopack.dylib"]
     thermopack_dir = path.join(path.dirname(__file__), "thermopack")
     errors = []
     for lib in dynlibs:
@@ -114,35 +114,36 @@ def get_platform_specifics_by_trial_and_error():
     for pre, mod, post in itertools.product(prefixes, moduletxt, postfixes):
         export_name = pre + module + mod + method + post
         try:
-            attr = getattr(tp, export_name)
-        except AttributeError:
-            attr = None
-        #print(export_name, attr)
-        if attr is not None:
+            getattr(tp, export_name)
             platform_specifics["prefix"] = pre
             platform_specifics["module"] = mod
             platform_specifics["postfix"] = post
             break
+        except AttributeError:
+            continue
+    else:
+        raise AttributeError("Could not identify Fortran module name-mangling scheme in thermopack dynamic library!")
 
     method = "thermopack_getkij"
     for post in postfixes:
         export_name = method + post
         try:
-            attr = getattr(tp, export_name)
-        except AttributeError:
-            attr = None
-        #print(export_name, attr)
-        if attr is not None:
+            getattr(tp, export_name)
             platform_specifics["postfix_no_module"] = post
             break
+        except AttributeError:
+            continue
+    else:
+        raise AttributeError("Could not identify Fortran global name-mangling scheme in thermopack dynamic library!")
 
     if sys.platform in ("linux", "linux2"):
         platform_specifics["os_id"] = "linux"
     elif sys.platform == "darwin":
-        # Darwin means Mac OS X
-        platform_specifics["os_id"] = "darwin"
-    elif sys.platform == "win32" or sys.platform == "win64":
+        platform_specifics["os_id"] = "darwin" # Darwin means Mac OS X
+    elif sys.platform in ("win32", "win64"):
         platform_specifics["os_id"] = "win"
+    else:
+        warnings.warn(f"Unexpected platform : {sys.platform}", Warning)
 
     return platform_specifics
 
@@ -197,6 +198,15 @@ def get_platform_specifics_windows_ifort_whl():
     pf_specifics["postfix"] = "_"
     pf_specifics["postfix_no_module"] = "_"
     pf_specifics["dyn_lib"] = "libthermopack.dll"
+
+    thermopack_dir = path.join(path.dirname(__file__), "thermopack")
+    dyn_lib_path = path.join(thermopack_dir, pf_specifics['dyn_lib'])
+    try:
+        cdll.LoadLibrary(dyn_lib_path)
+    except OSError as err:
+        print('map_platform_specifics : could not load thermopack dynamic library ... exiting ...')
+        raise err
+
     return pf_specifics
 
 def warn_diff_version(diffs):
@@ -221,7 +231,7 @@ if __name__ == "__main__":
     parser.add_argument('--ifort', default=False, help='Set to True if thermopack has been compiled with intel-fortran (Default: False)')
     args = parser.parse_args()
 
-    pf_specifics_ = get_platform_specifics_by_trial_and_error() if (args.ifort is False) else get_platform_specifics_windows_ifort_whl()
+    pf_specifics_ = get_platform_specifics_by_trial_and_error() #  if (args.ifort is False) else get_platform_specifics_windows_ifort_whl()
     pf_specifics_['diff_return_mode'] = args.diffs
     pf_specifics_['version'] = VERSION_2 if (args.diffs == 'v2') else VERSION_3
 
