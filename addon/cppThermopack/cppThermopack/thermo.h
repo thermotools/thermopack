@@ -146,6 +146,31 @@ public:
     }
 
 /************************************************************************/
+// ------------------------ TVP-Property Interfaces -------------------- //
+/************************************************************************/
+
+	Property entropy_tvp(double T, double V, vector1d n, bool dsdt=false, bool dsdp=false, bool dsdn=false, int property_flag=PropertyFlag::total) const {
+		activate();
+		Property S(nc, dsdt, false, dsdp, dsdn);
+		get_export_name(eostv, entropy_tvp)(&T, &V, n.data(), &S.value_, S.dt_ptr, S.dp_ptr, S.dn_ptr, &property_flag);
+		return S;
+    }
+
+    Property enthalpy_tvp(double T, double V, vector1d n, bool dhdt=false, bool dhdp=false, bool dhdn=false, int property_flag=PropertyFlag::total) const {
+		activate();
+		Property H(nc, dhdt, false, dhdp, dhdn);
+		get_export_name(eostv, enthalpy_tvp)(&T, &V, n.data(), &H.value_, H.dt_ptr, H.dp_ptr, H.dn_ptr, &property_flag);
+		return H;
+    }
+
+	VectorProperty fugacity_tvp(double T, double V, vector1d n, bool dlnphidt=false, bool dlnphidp=false, bool dlnphidn=false) const {
+		activate();
+		VectorProperty lnphi(nc, dlnphidt, false, dlnphidp, dlnphidn);
+		get_export_name(eostv, thermo_tv)(&T, &V, n.data(), lnphi.value_.data(), lnphi.dt_ptr, lnphi.dp_ptr, lnphi.dn_ptr);
+		return lnphi;
+    }
+
+/************************************************************************/
 // --------------------------- Flash interfaces ----------------------- //
 /************************************************************************/
     FlashResult two_phase_tpflash(double T, double p, vector1d z) const {

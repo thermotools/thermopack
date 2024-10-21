@@ -48,6 +48,9 @@ target_link_libraries(tp_properties PUBLIC thermopack)
 add_executable(tv_properties tv_properties.cpp)
 target_link_libraries(tv_properties PUBLIC thermopack)
 
+add_executable(tvp_properties tvp_properties.cpp)
+target_link_libraries(tvp_properties PUBLIC thermopack)
+
 add_executable(flashes flashes.cpp)
 target_link_libraries(flashes PUBLIC thermopack)
 

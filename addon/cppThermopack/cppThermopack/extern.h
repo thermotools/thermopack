@@ -26,10 +26,13 @@ extern "C" {
     double get_export_name(eostv, pressure)(double* T, double* V, double* n, double* dpdv, double* dpdt, double* d2pdv2, double* dpdn, int* property_flag);
     void get_export_name(eostv, internal_energy_tv)(double* T, double* V, double* n, double* U, double* dudt, double* dudv, double* dudn, int* property_flag);
     void get_export_name(eostv, entropy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
+    void get_export_name(eostv, entropy_tvp)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
     void get_export_name(eostv, enthalpy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
+    void get_export_name(eostv, enthalpy_tvp)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
     void get_export_name(eostv, free_energy_tv)(double* T, double* V, double* n, double* S, double* dsdt, double* dsdv, double* dsdn, int* property_flag);
     void get_export_name(eostv, chemical_potential_tv)(double* T, double* V, double* n, double* mu, double* dmudt, double* dmudv, double* dmudn, int* property_flag);
     void get_export_name(eostv, thermo_tv)(double* T, double* V, double* n, double* lnphi, double* dt, double* dv, double* dn);
+    void get_export_name(eostv, thermo_tvp)(double* T, double* V, double* n, double* lnphi, double* dt, double* dv, double* dn);
 
     void get_export_name(tp_solver, twophasetpflash)(double* T, double* p, double* z, double* betaV, double* betaL, int* phase, double* x, double* y);
     void get_export_name(ps_solver, twophasepsflash)(double* T, double* p, double* z, double* betaV, double* betaL, double* x, double* y, double* s, int* phase, int* ierr);
