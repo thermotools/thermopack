@@ -18,6 +18,7 @@ from . import thermopack_state
 from . import lee_kesler
 from . import ljs_bh
 from . import ljs_wca
+from . import volume_translation
 
 __all__ = ["platform_specifics",
            "thermo",
@@ -37,4 +38,5 @@ __all__ = ["platform_specifics",
            "lee_kesler",
            "thermopack_state",
            "ljs_bh",
-           "ljs_wca"]
+           "ljs_wca",
+           "volume_translation"]
