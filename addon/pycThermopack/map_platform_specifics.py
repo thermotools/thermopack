@@ -7,6 +7,8 @@ import itertools
 import sysconfig
 from datetime import datetime
 import os
+import argparse
+import warnings
 
 # GNU FORTRAN
 G_PREFIX = "__"
@@ -19,6 +21,17 @@ I_MODULE = "_mp_"
 I_POSTFIX = "_"
 I_POSTFIX_NM = "_"
 
+VERSION_2 = '2.2.4b0'
+VERSION_3 = '3.b0'
+pf_specifics_path = os.path.join(os.path.dirname( __file__), "thermopack", "platform_specifics.py")
+
+class bcolor:
+    green = '\033[92m'
+    blue = '\033[34m'
+    yellow = '\033[93m'
+    red = '\033[31m'
+    default = '\033[0m'
+    
 
 def get_platform_specifics_from_platform():
     """Get platform specific stuff."""
@@ -74,19 +87,24 @@ def get_platform_specifics_by_trial_and_error():
     platform_specifics["dyn_lib"] = ""
 
     dynlibs = ["libthermopack.so", "thermopack.dll", "libthermopack.dylib"]
+    thermopack_dir = path.join(path.dirname(__file__), "thermopack")
+    errors = []
     for lib in dynlibs:
-        dyn_lib_path = path.join(path.dirname(__file__), "thermopack", lib)
+        dyn_lib_path = path.join(thermopack_dir, lib)
         try:
             tp = cdll.LoadLibrary(dyn_lib_path)
-        except OSError:
-            tp = None
-        #print(dyn_lib_path, tp)
-        if tp is not None:
             platform_specifics["dyn_lib"] = lib
             break
+        except OSError as err:
+            errors.append(err)
+            pass
     else:
-        raise FileNotFoundError(f'Could not locate ThermoPack binary! Tried '
-                                f'{[path.join(path.dirname(__file__), "thermopack", lib) for lib in dynlibs]}')
+        thermopack_contains = os.listdir(thermopack_dir)
+        load_errors = '\n\t'.join([str(err) for err in errors])
+        raise FileNotFoundError(f'Could not load ThermoPack binary!\n'
+                                f'Tried : {[path.join(thermopack_dir, lib) for lib in dynlibs]}.\n'
+                                f'{thermopack_dir} contains files : {thermopack_contains}\n'
+                                f'Errors when attempting to load :\n\t{load_errors}')
     prefixes = ["__", ""]
     moduletxt = ["_", "_MOD_", "_mp_"]
     postfixes = ["", "_"]
@@ -159,74 +177,17 @@ def write_platform_specifics_file(pf_specifics, filename):
             f.write(line)
             f.write("\n")
 
-def write_setup_file(version):
-    setup_contents = {'name': "'thermopack'",
-                      'version': f"'{version}'",
-                      'description': "'Python interface to thermopack'",
-                      'long_description': "'readme'",
-                      'long_description_content_type': "'text/markdown'",
-                      'author': "'Morten Hammer'",
-                      'author_email': "'morten.hammer@sintef.no'",
-                      'url': "'https://github.com/thermotools/thermopack'",
-                      'packages': "['thermopack']",
-                      'package_data': "{'thermopack':['*thermopack.*']}",
-                      'install_requires' : "['numpy~=1.0']"}
-
-    with open(os.path.dirname(__file__) + '/setup.py', 'w') as file:
-        file.write(f"# This file was automatically generated using the function 'write_setup_file' in \n"
-                   f"# {__file__} \n"
-                   f"# Likely called from {os.path.dirname(__file__)}/makescript.py\n"
-                   f"# Timestamp : {datetime.today().isoformat()}\n\n")
-        file.write("from distutils.core import setup\n"
-                    "from pathlib import Path\n\n"
-                    "root_dir = Path(__file__).parent # thermopack root directory\n"
-                    "readme = (root_dir / 'README_pypi.md').read_text()\n\n")
-        file.write('setup(')
-
-        for i, (k, v) in enumerate(setup_contents.items()):
-            if i > 0:
-                file.write(',')
-            file.write(f"{k}={v}\n\t")
-
-        file.write(')\n')
-
-def write_toml_file(version):
-    contents = """[build-system]
-requires = ["setuptools>=39.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "thermopack"
-version = \"""" + version + """\"
-authors = [
-  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
-]
-maintainers = [
-  { name = "Morten Hammer", email="morten.hammer@ntnu.no" },
-  { name = "Vegard Gjeldvik Jervell", email="vegard.g.jervell@ntnu.no" },
-]
-description = "Python interface to thermopack"
-readme = "README_pypi.md"
-requires-python = ">=3.6"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Fortran",
-    "Operating System :: MacOS",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: Microsoft :: Windows",
-    "License :: OSI Approved :: MIT License",
-]
-keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
-
-[project.urls]
-"Homepage" = "https://github.com/thermotools/thermopack"
-"Bug Tracker" = "https://github.com/thermotools/thermopack/issues"
-
-[dependencies]
-numpy = "^1.1"
-"""
-    with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as file:
-        file.write(contents)
+def set_toml_version(version):
+    contents = ''
+    with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'r') as ifile:
+        line = ifile.readline()
+        while line:
+            if line == 'version = "0.0.0"\n':
+                line = f'version = "{version}"\n'
+            contents += line
+            line = ifile.readline()
+    with open(f'{os.path.dirname(__file__)}/pyproject.toml', 'w') as ofile:
+        ofile.write(contents)
 
 def get_platform_specifics_windows_ifort_whl():
     pf_specifics = dict()
@@ -235,12 +196,38 @@ def get_platform_specifics_windows_ifort_whl():
     pf_specifics["module"] = "_mp_"
     pf_specifics["postfix"] = "_"
     pf_specifics["postfix_no_module"] = "_"
-    pf_specifics["dyn_lib"] = "thermopack.dll"
-    pf_specifics["diff_return_mode"] = "v2"
+    pf_specifics["dyn_lib"] = "libthermopack.dll"
     return pf_specifics
-	
+
+def warn_diff_version(diffs):
+    if diffs == 'v2':
+        warnings.warn(f'{bcolor.yellow}\nYou are building ThermoPack to use the deprecated return pattern using tuples.\n'
+                      'Future versions of ThermoPack will return differentials using the `Differential` struct found in utils.py. '
+                      'To build ThermoPack to use the new return pattern, run \n\n\t`python map_platform_specifics.py [--diffs=v3 --ifort=False]`\n'
+                      'For more information see PR#102 at https://github.com/thermotools/thermopack/pull/102\n\n'
+                      f'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n{bcolor.default}', Warning)
+    else:
+        print(f'{bcolor.blue}You are building ThermoPack using the "new" return pattern (i.e. the Differential structs found '
+                "in utils.py.) \nTHIS IS THE RECOMMENDED BUILD but I'm warning you because it is not backwards compatible.\n"
+                "The old return pattern will probably be discontinued in the future. To build "
+                'ThermoPack with the "old" return pattern (using tuples) run \n\n\t`python map_platform_specifics.py --diffs=v2 [--ifort=False]`\n\n'
+                'For information on how to adapt old code to the new return pattern, see '
+                'PR#102 at https://github.com/thermotools/thermopack/pull/102\n\n'
+                f'For more information on configuration options run \n\n\t`python map_platform_specifics.py --help\n\n{bcolor.default}')
+
 if __name__ == "__main__":
-    pf_specifics_path = os.path.join(os.path.dirname(
-        __file__), "thermopack", "platform_specifics.py")
-    pf_specifics_ = get_platform_specifics_by_trial_and_error()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--diffs', default='v3', help="Old (v2) or new (v3) return mode for differentials (Default: v3)")
+    parser.add_argument('--ifort', default=False, help='Set to True if thermopack has been compiled with intel-fortran (Default: False)')
+    args = parser.parse_args()
+
+    pf_specifics_ = get_platform_specifics_by_trial_and_error() if (args.ifort is False) else get_platform_specifics_windows_ifort_whl()
+    pf_specifics_['diff_return_mode'] = args.diffs
+    pf_specifics_['version'] = VERSION_2 if (args.diffs == 'v2') else VERSION_3
+
+    warn_diff_version(args.diffs)
+
     write_platform_specifics_file(pf_specifics_, pf_specifics_path)
+    set_toml_version(pf_specifics_['version'])
+
+    print(f'{bcolor.green}Successfully configured ThermoPack {pf_specifics_["version"]}{bcolor.default}')
