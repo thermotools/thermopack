@@ -63,6 +63,8 @@ class thermo(object):
         """Internal
         Initialize function pointers
         """
+        super(thermo, self).__init__()
+
         self.prefix = self.pf_specifics["prefix"]
         self.module = self.pf_specifics["module"]
         self.postfix = self.pf_specifics["postfix"]
