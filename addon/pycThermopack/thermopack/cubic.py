@@ -1,17 +1,12 @@
-# Import ctypes
 from ctypes import *
-# Importing Numpy (math, arrays, etc...)
 import numpy as np
 import warnings
-# Import platform to detect OS
-from sys import platform, exit
-# Import os utils
 from os import path
-# Import thermo
-from .thermo import thermo, c_len_type
+from .volume_translation import volume_translation
+from .thermo import c_len_type
 
 
-class cubic(thermo):
+class cubic(volume_translation):
     """
     Interface to cubic
     """
@@ -51,9 +46,6 @@ class cubic(thermo):
 
         self.s_get_ws_param = getattr(self.tp, self.get_export_name("", "thermopack_getwsparam"))
         self.s_set_ws_param = getattr(self.tp, self.get_export_name("", "thermopack_setwsparam"))
-
-        self.s_get_ci = getattr(self.tp, self.get_export_name("", "thermopack_get_volume_shift_parameters"))
-        self.s_set_ci = getattr(self.tp, self.get_export_name("", "thermopack_set_volume_shift_parameters"))
 
         self.s_get_covolumes = getattr(self.tp, self.get_export_name("cubic_eos", "get_covolumes"))
         self.s_get_energy_constants = getattr(self.tp, self.get_export_name("cubic_eos", "get_energy_constants"))
@@ -473,89 +465,6 @@ class cubic(thermo):
                             byref(tau_ji_c))
 
 
-    def get_ci(self, cidx):
-        """Utility
-        Get volume correction parameters
-
-        Args:
-            cidx (int): Component index
-
-        Returns:
-            ciA (float): Volume shift param of component cidx (m3/mol)
-            ciB (float): Volume shift param of component cidx (m3/mol/K)
-            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
-            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3)
-        """
-        cidx_c = c_int(cidx)
-        ciA_c = c_double(0.0)
-        ciB_c = c_double(0.0)
-        ciC_c = c_double(0.0)
-        ciD_c = c_double(0.0)
-        ciE_c = c_double(0.0)
-        ciF_c = c_double(0.0)
-        ci_type_c = c_int(0)
-        self.s_get_ci.argtypes = [POINTER(c_int),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_int)]
-
-        self.s_get_ci.restype = None
-
-        self.s_get_ci(byref(cidx_c),
-                      byref(ciA_c),
-                      byref(ciB_c),
-                      byref(ciC_c),
-                      byref(ciD_c),
-                      byref(ciE_c),
-                      byref(ciF_c),
-                      byref(ci_type_c))
-
-        return ciA_c.value, ciB_c.value, ciC_c.value, ciD_c.value, ciE_c.value, ciF_c.value, ci_type_c.value
-
-    def set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1):
-        """Utility
-        Set volume correction parameters
-
-        Args:
-            cidx (int): Component index
-            ciA (float): Volume shift param of component cidx (m3/mol)
-            ciB (float): Volume shift param of component cidx (m3/mol/K)
-            ciC (float): Volume shift param of component cidx (m3/mol/K^2)
-            ci_type (int): Volume shift type (CONSTANT=1, LINEAR=2, QUADRATIC=3, QUINTIC=6)
-        """
-        cidx_c = c_int(cidx)
-        ciA_c = c_double(ciA)
-        ciB_c = c_double(ciB)
-        ciC_c = c_double(ciC)
-        ciD_c = c_double(ciD)
-        ciE_c = c_double(ciE)
-        ciF_c = c_double(ciF)
-        ci_type_c = c_int(ci_type)
-        self.s_set_ci.argtypes = [POINTER(c_int),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_double),
-                                  POINTER(c_int)]
-
-        self.s_set_ci.restype = None
-
-        self.s_set_ci(byref(cidx_c),
-                      byref(ciA_c),
-                      byref(ciB_c),
-                      byref(ciC_c),
-                      byref(ciD_c),
-                      byref(ciE_c),
-                      byref(ciF_c),
-                      byref(ci_type_c))
-
-
     def get_covolumes(self):
         """Utility
         Get component covolumes (L/mol)
@@ -569,6 +478,7 @@ class cubic(thermo):
         self.s_get_covolumes.restype = None
         self.s_get_covolumes(b_c)
         return np.array(b_c)
+
 
     def get_energy_constants(self):
         """Utility
