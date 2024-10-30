@@ -355,15 +355,19 @@ contains
         if (str_eq(complist(i),"HE")) then
           act_mod_ptr%comps(i)%p_comp%tc = 5.1953
           act_mod_ptr%comps(i)%p_comp%pc = 2.276e5
+          act_mod_ptr%comps(i)%p_comp%mw = 4.002602
         else if (str_eq(complist(i),"H2")) then
-          act_mod_ptr%comps(i)%p_comp%tc = 33.19
+          act_mod_ptr%comps(i)%p_comp%tc = 33.145
           act_mod_ptr%comps(i)%p_comp%pc = 12.964e5
+          act_mod_ptr%comps(i)%p_comp%mw = 2.01588
         else if (str_eq(complist(i),"Ne")) then
-          act_mod_ptr%comps(i)%p_comp%tc = 44.492
-          act_mod_ptr%comps(i)%p_comp%pc = 26.79e5
+          act_mod_ptr%comps(i)%p_comp%tc = 44.4
+          act_mod_ptr%comps(i)%p_comp%pc = 2661630.8085948555
+          act_mod_ptr%comps(i)%p_comp%mw = 20.179
         else if (str_eq(complist(i),"D2")) then
           act_mod_ptr%comps(i)%p_comp%tc = 38.34
           act_mod_ptr%comps(i)%p_comp%pc = 16.796e5
+          act_mod_ptr%comps(i)%p_comp%mw = 4.0282
         end if
       enddo
     endif
