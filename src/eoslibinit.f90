@@ -352,6 +352,9 @@ contains
       beta_loc = "Quantum"
       do i=1,nc
         ! Set critical parameters according to Aasen et al. (10.1016/j.fluid.2020.112790)
+        ! Note that the critical parameters are not the same as the ones listed in Table I
+        ! of the paper, which has slightly wrong values for for H2 and Ne. However, they do
+        ! correspond to the values used in the reference EoS cited in Table I.
         if (str_eq(complist(i),"HE")) then
           act_mod_ptr%comps(i)%p_comp%tc = 5.1953
           act_mod_ptr%comps(i)%p_comp%pc = 2.276e5
@@ -368,6 +371,16 @@ contains
           act_mod_ptr%comps(i)%p_comp%tc = 38.34
           act_mod_ptr%comps(i)%p_comp%pc = 16.796e5
           act_mod_ptr%comps(i)%p_comp%mw = 4.0282
+        ! These H2 isomers were not included in the original paper
+        ! For these we use the same parameters as Leachman et al. (10.1063/1.3160306)
+        else if (str_eq(complist(i),"O-H2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 33.22
+          act_mod_ptr%comps(i)%p_comp%pc = 13.1065e5
+          act_mod_ptr%comps(i)%p_comp%mw = 2.01594
+        else if (str_eq(complist(i),"P-H2")) then
+          act_mod_ptr%comps(i)%p_comp%tc = 32.938
+          act_mod_ptr%comps(i)%p_comp%pc = 12.858e5
+          act_mod_ptr%comps(i)%p_comp%mw = 2.01588
         end if
       enddo
     endif
