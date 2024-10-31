@@ -43,19 +43,19 @@ contains
     ! Test state points
     call init_quantum_cubic("H2,NE")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 0.27635062506735163E-3, 1e-11)
+    @assertEqual(V, 0.27652353707155995E-3, 1e-11)
 
     call init_quantum_cubic("H2,D2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 0.26869372000726689E-3, 1e-11)
+    @assertEqual(V, 2.6889954630757618E-004, 1e-11)
 
     call init_quantum_cubic("NE,D2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 0.27071144987470875E-3, 1e-11)
+    @assertEqual(V, 0.27066747884535924E-3, 1e-11)
 
     call init_quantum_cubic("HE,NE")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 0.32864553263355610E-3, 1e-11)
+    @assertEqual(V, 0.32864422306179474E-3, 1e-11)
 
     call init_quantum_cubic("HE,D2")
     call specificVolume(T,P,n,VAPPH,V)
@@ -63,7 +63,32 @@ contains
 
     call init_quantum_cubic("HE,H2")
     call specificVolume(T,P,n,VAPPH,V)
-    @assertEqual(V, 0.33375935042262721E-3, 1e-11)
+    @assertEqual(V, 3.3377514385725247E-004, 1e-11)
+
+    call init_quantum_cubic("O-H2,NE")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 0.27753807535682150E-3, 1e-11)
+
+    call init_quantum_cubic("O-H2,D2")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 2.6994400019876016E-004, 1e-11)
+
+    call init_quantum_cubic("HE,O-H2")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 0.33404549077092075E-3, 1e-11)
+     
+    call init_quantum_cubic("P-H2,NE")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 0.27781602389115784E-3, 1e-11)
+
+    call init_quantum_cubic("P-H2,D2")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 2.7024728684077909E-004, 1e-11)
+
+    call init_quantum_cubic("HE,P-H2")
+    call specificVolume(T,P,n,VAPPH,V)
+    @assertEqual(V, 0.33410614314059446E-3, 1e-11)
+
 
     ! Test numerical derivatives
     cbeos => get_active_eos()

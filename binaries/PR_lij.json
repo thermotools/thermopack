@@ -6,5 +6,21 @@
     "bib_reference": "10.1016/j.fluid.2020.112790",
     "mixing_rule": "vdW",
     "lij":  -0.16
+  },
+  "LIJ-2": {
+    "comp1": "O-H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "mixing_rule": "vdW",
+    "lij": -0.16
+  },
+  "LIJ-3": {
+    "comp1": "P-H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "mixing_rule": "vdW",
+    "lij": -0.16
   }
 }
