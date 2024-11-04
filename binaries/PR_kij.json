@@ -1960,20 +1960,62 @@
     "kij": 0.18
   },
   "vdW-281": {
+    "comp1": "O-H2",
+    "comp2": "D2",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.0
+  },
+  "vdW-282": {
+    "comp1": "O-H2",
+    "comp2": "NE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.18
+  },
+  "vdW-283": {
+    "comp1": "O-H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.17
+  },
+    "vdW-284": {
+    "comp1": "P-H2",
+    "comp2": "D2",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.0
+  },
+  "vdW-285": {
+    "comp1": "P-H2",
+    "comp2": "NE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.18
+  },
+  "vdW-286": {
+    "comp1": "P-H2",
+    "comp2": "HE",
+    "ref": "QuantumCubic",
+    "bib_reference": "10.1016/j.fluid.2020.112790",
+    "kij": 0.17
+  },
+  "vdW-287": {
     "comp1": "H2O2",
     "comp2": "H2O",
     "ref": "Default",
     "bib_reference": "",
     "kij":  -0.05
   },
-  "vdW-282": {
+  "vdW-288": {
     "comp1": "H2O2",
     "comp2": "O2",
     "ref": "tcPR-ENGINEERING",
     "bib_reference": "",
     "kij":  -0.75
   },
-  "vdW-283": {
+  "vdW-289": {
     "comp1": "H2O",
     "comp2": "O2",
     "ref": "tcPR-ENGINEERING",

@@ -41,4 +41,4 @@ test = ["pytest"]
 [tool.cibuildwheel]
 test-command = "pytest {package}/../pyTests"
 test-requires = ["pytest"]
-build-verbosity = 2
+build-verbosity = 1
