@@ -96,7 +96,7 @@ jobs:
 
   release_wheels: # Create or update the release tagged Latest-beta, and upload wheels to that release.
     name: Update prerelease
-    ## if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build_wheels
     runs-on: ubuntu-latest
     permissions:

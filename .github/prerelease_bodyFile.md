@@ -14,7 +14,7 @@ unzip thermopack.zip
 ```
 
 # Binaries and headers
-Self-contained binary distributions with required headers for using the `cppThermopack` wrapper are contained in the `thermopack-<platform>.zip` assets. Downloading and unzipping the appropriate asset for your system, and running `export THERMOPACK_DIR=/path/to/thermopack-<platform>`, should allow `CMake`'s `find_library` to find `thermopack`. See the [docs on using `cppThermopack](https://thermotools.github.io/thermopack/vcurrent/getting_started_cpp.html) for help on including the headers and linking the `thermopack` library.
+Self-contained binary distributions with required headers for using the `cppThermopack` wrapper are contained in the `thermopack-<platform>.zip` assets. Downloading and unzipping the appropriate asset for your system, and running `export THERMOPACK_DIR=/path/to/thermopack-<platform>`, should allow `CMake`'s `find_library` to find `thermopack`. See the [docs on using `cppThermopack`](https://thermotools.github.io/thermopack/vcurrent/getting_started_cpp.html) for help on including the headers and linking the `thermopack` library.
 
 The distribution can also be set up from the command line with
 ```bash
