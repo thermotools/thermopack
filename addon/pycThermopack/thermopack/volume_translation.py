@@ -1,7 +1,7 @@
 # Import ctypes
 from ctypes import *
 import numpy as np
-from .thermo import thermo
+from .thermo import thermo, c_len_type
 
 
 class volume_translation(thermo):
