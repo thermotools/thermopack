@@ -57,12 +57,12 @@ jobs:
 
       - name: Prepare pyproject.toml
         if: matrix.os != 'windows'
-        run: cp ../addon/pycThermopack/pyproject_template.toml ../addon/pycThermopack/pyproject.toml
+        run: cp addon/pycThermopack/pyproject_template.toml addon/pycThermopack/pyproject.toml
       
       - name: Prepare pyproject.toml (Windows)
         if: matrix.os == 'windows'
         shell: pwsh
-        run: Copy-Item -Path "../addon/pycThermopack/pyproject_template.toml" -Destination "../addon/pycThermopack/pyproject.toml"
+        run: Copy-Item -Path "addon/pycThermopack/pyproject_template.toml" -Destination "addon/pycThermopack/pyproject.toml"
 
       - name: Build wheel
         uses: pypa/cibuildwheel@v2.19.2 # run: python -m cibuildwheel --output-dir wheelhouse
