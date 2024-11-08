@@ -44,5 +44,9 @@ if(NOT TARGET thermopack)
     set_target_properties(thermopack PROPERTIES 
                             IMPORTED_LOCATION ${THERMOPACK_LIB}
                             INTERFACE_INCLUDE_DIRECTORIES ${THERMOPACK_INCLUDE})
+    if(MSVC)
+        set_target_properties(thermopack PROPERTIES
+                                IMPORTED_IMPLIB ${THERMOPACK_STATIC_LIB})
+    endif()
     message(STATUS "ThermoPack exported target: thermopack")
 endif()
