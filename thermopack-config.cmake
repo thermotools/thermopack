@@ -21,8 +21,11 @@ if(NOT EXISTS ${THERMOPACK_LIB})
     return()
 endif()
 
-set(THERMOPACK_STATIC_LIB ${CMAKE_CURRENT_LIST_DIR}/installed)
-set(THERMOPACK_STATIC_LIB ${CMAKE_CURRENT_LIST_DIR}/installed/libthermopack${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(THERMOPACK_INSTALL_DIR ${CMAKE_CURRENT_LIST_DIR}/installed)
+set(THERMOPACK_STATIC_LIB ${THERMOPACK_INSTALL_DIR}/libthermopack${CMAKE_STATIC_LIBRARY_SUFFIX})
+if(NOT EXISTS ${THERMOPACK_STATIC_LIB})
+    set(THERMOPACK_STATIC_LIB "")
+endif()
 
 set(THERMOPACK_FOUND TRUE)
 set(THERMOPACK_INSTALLED TRUE)
@@ -41,5 +44,9 @@ if(NOT TARGET thermopack)
     set_target_properties(thermopack PROPERTIES 
                             IMPORTED_LOCATION ${THERMOPACK_LIB}
                             INTERFACE_INCLUDE_DIRECTORIES ${THERMOPACK_INCLUDE})
+    if(MSVC)
+        set_target_properties(thermopack PROPERTIES
+                                IMPORTED_IMPLIB ${THERMOPACK_STATIC_LIB})
+    endif()
     message(STATUS "ThermoPack exported target: thermopack")
 endif()

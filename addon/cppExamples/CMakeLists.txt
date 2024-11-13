@@ -30,7 +30,9 @@ message("${ColourBlue}Using libthermopack at : ${THERMOPACK_LIB}")
 message("${ColourBlue}Using cppThermopack headers at : ${THERMOPACK_INCLUDE}")
 message("${ColourBlue}Linking thermopack using exported target thermopack")
 
-set(CMAKE_BUILD_TYPE "Release")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++17")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -45,6 +47,9 @@ target_link_libraries(tp_properties PUBLIC thermopack)
 
 add_executable(tv_properties tv_properties.cpp)
 target_link_libraries(tv_properties PUBLIC thermopack)
+
+add_executable(tvp_properties tvp_properties.cpp)
+target_link_libraries(tvp_properties PUBLIC thermopack)
 
 add_executable(flashes flashes.cpp)
 target_link_libraries(flashes PUBLIC thermopack)

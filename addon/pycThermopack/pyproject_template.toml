@@ -28,7 +28,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT"]
-dependencies = ["numpy~=1.20"]
+dependencies = ["numpy~=2.0"]
 
 [project.urls]
 "Homepage" = "https://thermotools.github.io/thermopack/"

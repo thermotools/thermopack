@@ -55,6 +55,15 @@ jobs:
         if: matrix.os == 'macOS'
         run: echo "Deployment target version is ${{ env.MACOSX_DEPLOYMENT_TARGET }} / ${MACOSX_DEPLOYMENT_TARGET}"
 
+      - name: Prepare pyproject.toml
+        if: matrix.os != 'windows'
+        run: cp addon/pycThermopack/pyproject_template.toml addon/pycThermopack/pyproject.toml
+      
+      - name: Prepare pyproject.toml (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: Copy-Item -Path "addon/pycThermopack/pyproject_template.toml" -Destination "addon/pycThermopack/pyproject.toml"
+
       - name: Build wheel
         uses: pypa/cibuildwheel@v2.19.2 # run: python -m cibuildwheel --output-dir wheelhouse
         env:
@@ -122,6 +131,14 @@ jobs:
     - name: Display current directory status
       run: ls
     
+    - name: Create cpp dist
+      run: bash .github/scripts/create_cppdist.sh
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cppdist
+        path: ./thermopack-*.zip
+
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
@@ -133,4 +150,4 @@ jobs:
         commit: main
         makeLatest: true
         bodyFile: ".github/prerelease_bodyFile.md"
-        artifacts: "wheel-*.zip"
+        artifacts: "wheel-*.zip,thermopack-*.zip"

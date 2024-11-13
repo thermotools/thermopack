@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-05-27T09:36:44.720743
+Generated at: 2024-11-13T22:15:22.611133
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/morteham/Documents/codes/thermotools/thermopack_ljs/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/pypi_toc.md
         metapages/please_cite.md
@@ -13,6 +13,13 @@ The file is created by joining the contents of the files
 --->
 
 # ThermoPack
+# [ThermoPack homepage](https://thermotools.github.io/thermopack/)
+
+For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
+the version number in the sidebar.
+
+## About
 
 Thermopack is a thermodynamics library for multi-component and
 multi-phase thermodynamics developed at [SINTEF Energy
@@ -25,10 +32,6 @@ has been implemented in this software. Most of these equations of
 state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
-
-For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
-If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
-the version number in the sidebar.
 
 ![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
