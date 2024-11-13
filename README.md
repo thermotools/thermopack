@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-11-13T14:41:16.425540
+Generated at: 2024-11-13T22:15:22.614283
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/morteham/Documents/codes/thermotools/thermopack_ljs/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/github_toc.md
         metapages/please_cite.md
@@ -224,7 +224,7 @@ the default value is `--diffs=v3`. After running this command you should recieve
 
 ### CMake setup (Windows)
 
-To compile thermopack (and Lapack) with intel fortran, first run
+To compile thermopack (and Lapack) with Intel FORTRAN and MSVS, first run
 ```
 git submodule update --init --recursive
 ```
@@ -232,7 +232,7 @@ from within the `thermopack` direcory, in order to clone Lapack. Then, run
 ```
 mkdir build
 cd build
-cmake .. -G Ninja -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config=Release --target install
 ```
 Compile and install Lapack, and install the thermopack dynamic library to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
