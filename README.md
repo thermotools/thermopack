@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-05-27T09:36:44.721921
+Generated at: 2024-11-13T14:41:16.425540
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -15,6 +15,13 @@ The file is created by joining the contents of the files
 --->
 
 # ThermoPack
+# [ThermoPack homepage](https://thermotools.github.io/thermopack/)
+
+For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
+the version number in the sidebar.
+
+## About
 
 Thermopack is a thermodynamics library for multi-component and
 multi-phase thermodynamics developed at [SINTEF Energy
@@ -27,10 +34,6 @@ has been implemented in this software. Most of these equations of
 state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
-
-For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
-If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
-the version number in the sidebar.
 
 ![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
@@ -143,6 +146,19 @@ Brief description of file structure:
 
 # Installing the latest version of ThermoPack
 
+- [Using pip](#using-pip)
+- [Installing from wheels](#installing-from-wheels)
+- [Building from source](#building-from-source)
+  - [Prerequisites](#prerequisites)
+  - [CMake setup (macOS and Linux)](#cmake-setup-macos-and-linux)
+  - [CMake setup (Windows)](#cmake-setup-windows)
+- [Legacy build system (without CMake)](#legacy-build-system-without-cmake)
+  - [Linux setup](#linux-setup)
+  - [MacOS setup](#macos-setup)
+  - [Windows setup](#windows-setup)
+    - [MSYS2/Mingw-W64 setup](#msys2mingw-w64-setup)
+  - [Docker setup](#docker-setup)
+
 ## Using pip
 Thermopack has been compiled for Windows, Linux and macOS
 and made available on the [Python Package Index](https://pypi.org/project/thermopack/) (pypi), and can be
@@ -153,6 +169,9 @@ pip3 install thermopack
 ```
 
 For documentation on the version available on pypi, refer to the appropriate version number in the sidebar.
+
+## Installing from wheels
+Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
 
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
@@ -171,6 +190,66 @@ Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
 [thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
+
+For macOS and Linux, Lapack and Blas can likely be installed using `apt`, `brew`, or similar. For windows, Lapack will need to be built from source. The [CMake setup for Windows](#cmake-setup-windows) is configured to handle this automatically.
+
+### CMake setup (macOS and Linux)
+
+The `cmake`-based build system assumes that you have Lapack and gfortran installed, see above instructions for more on that.
+
+Build and install thermopack by running
+```bash
+mkdir build
+cd build
+cmake ..
+make install
+```
+
+This will ensure that the thermopack dynamic library is properly installed to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To set up the python wrapper, 
+```bash
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+this will generate the file `addon/pycThermopack/thermopack/platform_specifics.py` and install thermopack to your activated virtual environment.
+
+ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
+the `-diffs` flag when running `map_platform_specifics.py` as
+```bash
+python map_platform_specifics.py --diffs=v2 # Use tuples
+python map_platform_specifics.py --diffs=v3 # use Property
+```
+the default value is `--diffs=v3`. After running this command you should recieve a confirmation message that thermopack was successfully configured. 
+
+### CMake setup (Windows)
+
+To compile thermopack (and Lapack) with intel fortran, first run
+```
+git submodule update --init --recursive
+```
+from within the `thermopack` direcory, in order to clone Lapack. Then, run
+```
+mkdir build
+cd build
+cmake .. -G Ninja -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config=Release --target install
+```
+Compile and install Lapack, and install the thermopack dynamic library to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To configure and install the python-wrapper, run
+```
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+
+*Note:* If your thermopack dynamic library is called `libthermopack.dll`, and not `thermopack.dll`, you will instead need to run
+```
+python addon/pycThermopack/map_platform_specifics.py --ifort=True
+pip install addon/pycThermopack/
+```
+
+## Legacy build system (without CMake)
 
 ### Linux setup
 The Thermopack source code is downloaded by cloning the library to your local
@@ -271,10 +350,7 @@ how to install pycThermopack for the MSYS2 environment.
 See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main/addon/docker) for
 available Dockerfiles to run Thermopack with docker.
 
-### CMake setup
-See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
-
-# Getting Started
+# Getting Started - Python
 
 # Getting started - Python
 This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent/more_advanced.html) may also be useful.
@@ -285,17 +361,20 @@ find the appropriate version in the sidebar on the [ThermoPack homepage.](https:
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
-* [Initialising an equation of state](#initialising-an-equation-of-state)
-* [pVT properties](#pvt-properties)
-  * [Differentials](#differentials)
-* [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
-  * [Flash calculations](#flash-calculations)
-  * [Phase envelopes](#phase-envelopes)
-    * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
-    * [pxy- and Txy- envelopes](#pxy--and-txy--phase-envelopes)
-  * [Dew- and bubble points](#dew--and-bubble-points)
-* [Isolines](#isolines)
-* [Critical point](#critical-point)
+- [Getting started - Python](#getting-started---python)
+  - [Contents](#contents)
+  - [Initialising an equation of state](#initialising-an-equation-of-state)
+- [Doing calculations](#doing-calculations)
+  - [pVT-properties](#pvt-properties)
+    - [Differentials](#differentials)
+  - [Phase diagrams and Equilibria](#phase-diagrams-and-equilibria)
+    - [Flash calculations](#flash-calculations)
+    - [Phase envelopes](#phase-envelopes)
+      - [Tp- and Tv- phase envelopes](#tp--and-tv--phase-envelopes)
+      - [pxy- and txy- phase envelopes](#pxy--and-txy--phase-envelopes)
+    - [Dew- and bubble points](#dew--and-bubble-points)
+  - [Isolines](#isolines)
+  - [Critical point](#critical-point)
 
 ## Initialising an equation of state
 An overview of available equations of state can be found [here](https://thermotools.github.io/thermopack/vcurrent/method_docs.html).

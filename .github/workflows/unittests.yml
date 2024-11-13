@@ -127,7 +127,6 @@ jobs:
         continue-on-error: true
         run: |
             python addon/pycThermopack/map_platform_specifics.py
-            pip install numpy
             pip install addon/pycThermopack/[test]
             pytest addon/pyTests
             result=$(pytest addon/pyTests)

@@ -76,10 +76,10 @@ this will generate the file `addon/pycThermopack/thermopack/platform_specifics.p
 ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
 the `-diffs` flag when running `map_platform_specifics.py` as
 ```bash
-python map_platform_specifics.py -diffs=v2 # Use tuples
-python map_platform_specifics.py -diffs=v3 # use Property
+python map_platform_specifics.py --diffs=v2 # Use tuples
+python map_platform_specifics.py --diffs=v3 # use Property
 ```
-the default value is `-diffs=v3`.
+the default value is `--diffs=v3`. After running this command you should recieve a confirmation message that thermopack was successfully configured. 
 
 ### CMake setup (Windows)
 
