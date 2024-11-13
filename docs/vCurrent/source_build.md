@@ -83,7 +83,7 @@ the default value is `--diffs=v3`. After running this command you should recieve
 
 ### CMake setup (Windows)
 
-To compile thermopack (and Lapack) with intel fortran, first run
+To compile thermopack (and Lapack) with Intel FORTRAN and MSVS, first run
 ```
 git submodule update --init --recursive
 ```
@@ -91,7 +91,7 @@ from within the `thermopack` direcory, in order to clone Lapack. Then, run
 ```
 mkdir build
 cd build
-cmake .. -G Ninja -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config=Release --target install
 ```
 Compile and install Lapack, and install the thermopack dynamic library to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
