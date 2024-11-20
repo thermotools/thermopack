@@ -4,6 +4,7 @@ objects
 bin
 installed/
 build/
+dist/
 run*
 doc/dox.out
 doc/doxygen/html
@@ -51,6 +52,8 @@ TAGS
 
 *.DS_Store
 local_testing/
+tmp/
+sandbox/
 venv/
 venv*
 *.idea

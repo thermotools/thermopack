@@ -9,6 +9,13 @@
 #pragma once
 #include "thermo.h"
 
+extern "C" {
+    void get_export_name(saft_interface, sigma_ij)(size_t* i, size_t* j, double* sigma);
+    void get_export_name(saft_interface, epsilon_ij)(size_t* i, size_t* j, double* eps);
+    void get_export_name(saft_interface, sigma_eff_ij)(size_t* i, size_t* j, double* T, double* sigma_eff);
+    void get_export_name(saft_interface, epsilon_eff_ij)(size_t* i, size_t* j, double* T, double* epsilon_eff);
+}
+
 class Saft : public Thermo {
 public:
     Saft(std::string comps) : Thermo(comps){
@@ -17,11 +24,13 @@ public:
         ms = std::vector<double>(nc);
     }
 
+    // virtual void set_sigma(size_t ci, double sigma_);
     double get_sigma(size_t ci){return sigma[ci];}
     virtual std::vector<double> get_sigma(){
         return sigma;
     }
 
+    // virtual void set_eps_div_k(size_t ci, double eps_div_k_);
     double get_eps_div_k(size_t ci){return eps_div_k[ci];}
     virtual std::vector<double> get_eps_div_k(){
         return eps_div_k;
