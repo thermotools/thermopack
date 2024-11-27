@@ -27,7 +27,7 @@ Once you have downloaded and unzipped the appropriate zip file for your system, 
 ```
 Make sure to set the environment variable `THERMOPACK_DIR` to the `thermopack-<system>` directory (where `thermopack-config.cmake` is located) with `export THERMOPACK_DIR=path/to/thermopack-<system>`. You can also add this to your `.bash_profile` or similar.
 
-## Building ThermoPack
+## Building ThermoPack on macOS or Linux
 
 If you prefer to build ThermoPack from source:
 ```bash
@@ -40,11 +40,25 @@ make install
 cd ..
 export THERMOPACK_DIR=${PWD}
 ```
-This should generate the file `thermopack/installed/libthermopack.[so/dylib]`, which you will later be linking to.
+This should generate the file `thermopack/installed/libthermopack.[so/dylib/dll]`, which you will later be linking to.
+
+If you have any issues, see the [installation guide.](source_build.html)
 
 You may want to add `export THERMOPACK_DIR=path/to/thermopack` to your `.bash_profile`, or equivalent, as well.
 
-If you have any issues, see the [installation guide.](source_build.html)
+## Building ThermoPack on Windows
+Building ThermoPack from source using command prompt:
+```cmd
+git clone https://github.com/thermotools/thermopack.git
+cd thermopack
+git submodule update --init --remote --recursive
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release --target install
+cd ..
+set THERMOPACK_DIR=%cd%
+```
 
 # ThermoPack headers
 
@@ -113,7 +127,7 @@ Some sample programs using ThermoPack in C++ are found in the directory [`thermo
 mkdir build
 cd build
 cmake ..
-make
+cmake --build . --config Release
 ```
 
 This will build the examples as executables in the `build` directory.
@@ -123,4 +137,7 @@ Currently implemented examples are
 * `flashes` - Flash calculations
 * `tp_properties` - Compute properties at given temperature and pressure
 * `tv_properties` - Compute properties at given temperature and volume
+* `tvp_properties` - Compute properties at given temperature and pressure using input volume
 * `saturation` - Compute dew- and bubble points, and the critical point of a mixture
+
+Make sure `libthermopack.[so/dylib/dll]` is avaialble for the dynamic loader when running the examples by linking/copying the file to the `build` directory.
