@@ -219,7 +219,7 @@ jobs:
         if: matrix.os == 'windows-2022'
         run: |
             Write-Host "Python test result : ${{ steps.python_test_windows.outputs.statuscode }}"
-            Write-Host "C++ test result : " ${{ steps.cpp_test_windows.outputs.statuscode }}"
+            Write-Host "C++ test result : ${{ steps.cpp_test_windows.outputs.statuscode }}"
             $statusCode: $(( steps.python_test_windows.outputs.statuscode != 0 || steps.cpp_test_windows.outputs.statuscode != 0 ? 1 : 0 ))
             if ($statusCode -eq 0) {
               exit 0
