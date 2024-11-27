@@ -3186,20 +3186,43 @@ contains
   !> Return interaction potential
   !!
   !! \author Morten Hammer, October 2022
-  subroutine ljs_potential_reduced(n, r_div_sigma, pot)
+  subroutine ljs_potential_reduced(n, r_div_sigma, pot, force)
+    use hyperdual_mod
     ! Input
     integer, intent(in) :: n !< Array size
     real, intent(in) :: r_div_sigma(n) !< Intermolecular separation reduced by sigma (-)
-    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant
+    real, intent(out) :: pot(n) !< Potential divided by epsilon [-]
+    real, optional, intent(out) :: force(n) !< Reduced force [-]
+    !
+    ! Locals
+    type(hyperdual) :: r_div_sigma_hd(n) !< Intermolecular separation reduced by sigma (-)
+    type(hyperdual) :: pot_hd(n) !< Potential divided by Boltzmann constant
+    r_div_sigma_hd = r_div_sigma
+    r_div_sigma_hd(:)%f1 = 1.0_dp
+    call ljs_potential_reduced_hd(n, r_div_sigma_hd, pot_hd)
+    pot(:) = pot_hd(:)%f0
+    if (present(force)) force(:) = -pot_hd(:)%f1
+  end subroutine ljs_potential_reduced
+
+  !> Return interaction potential
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine ljs_potential_reduced_hd(n, r_div_sigma, pot)
+    use hyperdual_mod
+    ! Input
+    integer, intent(in) :: n !< Array size
+    type(hyperdual), intent(in) :: r_div_sigma(n) !< Intermolecular separation reduced by sigma (-)
+    type(hyperdual), intent(out) :: pot(n) !< Potential divided by Boltzmann constant
     !
     ! Locals
     integer :: i
-    real :: xs, xc, a, b, irm
-    xs = (26.0/7.0)**(1.0/6.0)
-    xc = 67.0/48.0 * xs
-    a = -24192.0/3211.0/xs**2
-    b = -387072.0/61009.0/xs**3
-    pot = 0
+    real :: xs, xc, a, b
+    type(hyperdual) :: irm
+    xs = (26.0_dp/7.0_dp)**(1.0_dp/6.0_dp)
+    xc = 67.0_dp/48.0_dp * xs
+    a = -24192.0_dp/3211.0_dp/xs**2
+    b = -387072.0_dp/61009.0_dp/xs**3
+    pot = 0.0_dp
     do i=1,n
       if (r_div_sigma(i) < xs) then
         irm = 1.0/r_div_sigma(i)**6
@@ -3210,7 +3233,7 @@ contains
         exit
       endif
     enddo
-  end subroutine ljs_potential_reduced
+  end subroutine ljs_potential_reduced_hd
 
 end module lj_splined
 
