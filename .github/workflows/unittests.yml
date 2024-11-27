@@ -170,12 +170,39 @@ jobs:
           cd build
           cmake ..
           make
-          examples=("basic" "flashes" "saturation" "tp_properties" "tv_properties")
+          examples=("basic" "flashes" "saturation" "tp_properties" "tv_properties"  "tvp_properties")
           nfailed=0
           for exmp in "${examples[@]}"; do echo "Running $exmp"; ./"$exmp" > /dev/null; if [[ $? -ne 0 ]]; then echo "$exmp exited with code $? (failure)."; ((nfailed++)); else echo "$exmp exit 0 (success)"; fi; done
           echo "statuscode=$nfailed" >> $GITHUB_OUTPUT
           exit $nfailed
-      
+
+      - name: Run cppExamples on Windows
+        id: cpp_test_windows
+        if: matrix.os == 'windows-2022'
+        run: |
+          cd addon/cppExamples
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --config Release
+          cd Release
+          cp ../../../../installed/libthermopack.dll .
+          $examples = @("basic.exe", "flashes.exe", "saturation.exe", "tp_properties.exe", "tv_properties.exe", "tvp_properties.exe")
+          $nfailed = 0
+          foreach ($exmp in $examples) {
+            Write-Host "Running $exmp"
+            # Run the example and suppress output
+            & "./$exmp" > $null
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "$exmp exited with code $LASTEXITCODE (failure)."
+              $nfailed++
+            } else {
+              Write-Host "$exmp exit 0 (success)"
+            }
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "statuscode=$nfailed"
+          exit $nfailed
+  
       - name: Check success
         if: matrix.os != 'windows-2022'
         run: |
@@ -191,8 +218,9 @@ jobs:
       - name: Check success Windows
         if: matrix.os == 'windows-2022'
         run: |
-            $statusCode = ${{ steps.python_test_windows.outputs.statuscode }}
-            Write-Host "Python test result: $statusCode"
+            Write-Host "Python test result : ${{ steps.python_test_windows.outputs.statuscode }}"
+            Write-Host "C++ test result : " ${{ steps.cpp_test_windows.outputs.statuscode }}
+            $statusCode: $(( steps.python_test_windows.outputs.statuscode != 0 || steps.cpp_test_windows.outputs.statuscode != 0 ? 1 : 0 ))
             if ($statusCode -eq 0) {
               exit 0
             } else {
