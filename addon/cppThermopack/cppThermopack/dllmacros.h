@@ -14,6 +14,6 @@ typedef void* ADDRESS;
     #define FORTRAN_POSTFIX _
 #endif
 
-#define _CONCAT(x, y) x##y
-#define _NEST_CONCAT(x, y) _CONCAT(x, y)
-#define get_export_name(MOD, METHOD) _NEST_CONCAT(_NEST_CONCAT(MOD_PREFIX, MOD),_NEST_CONCAT(_NEST_CONCAT(MOD_INTERTXT, METHOD), MOD_POSTFIX))
+#define _TP_CONCAT(x, y) x##y
+#define _TP_NEST_CONCAT(x, y) _TP_CONCAT(x, y)
+#define get_export_name(MOD, METHOD) _TP_NEST_CONCAT(_TP_NEST_CONCAT(MOD_PREFIX, MOD),_TP_NEST_CONCAT(_TP_NEST_CONCAT(MOD_INTERTXT, METHOD), MOD_POSTFIX))
