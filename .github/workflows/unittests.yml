@@ -33,6 +33,10 @@ jobs:
         if: matrix.os == 'windows-2022'
         uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
 
+      - name: Install ninja Linux
+        if: matrix.os == 'ubuntu-latest'
+        uses: seanmiddleditch/gha-setup-ninja@master
+
       - uses: fortran-lang/setup-fortran@v1
         id: setup-fortran
         if: matrix.os != 'macos-12'
