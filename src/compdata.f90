@@ -21,9 +21,8 @@ module compdata
        CP_POLY4_SI=8, &
        CP_MOGENSEN_SI=9, &
        CP_H2_KMOL=10, &
-       CP_TREND_SI=11, &
-       CP_SHOMATE_SI=12, &
-       CP_EINSTEIN_SI=13
+       CP_SHOMATE_SI=11, &
+       CP_EINSTEIN_SI=12
 
   ! Maximum number of cp parameters
   integer, parameter :: n_max_cp=21

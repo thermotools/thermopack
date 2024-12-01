@@ -10,5 +10,3 @@ This folder contains suplements to thermopack.
   
 **./pyUtils/**: Utility python scripts.  
   
-**./trend_interface/**: Interface to TREND library library developed by Roland Span ant Ruhr-Universität Bochum  
-  

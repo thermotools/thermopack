@@ -11,9 +11,6 @@ module eosTV
   implicit none
   save
   !
-  ! Include TREND interface
-  include 'trend_interface.f95'
-  !
   private
   public :: pressure, internal_energy_tv, free_energy_tv, entropy_tv
   public :: thermo_tv, Fres, Fideal, chemical_potential_tv
@@ -479,19 +476,9 @@ contains
     type(thermo_model), pointer :: act_mod_ptr
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      call TV_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,lnphi,&
-           lnphiT,lnphiV,lnphin)
-    case (TREND)
-      ! TREND
-      call trend_thermoTV(T,v,n,lnphi,lnphiT,lnphiV,lnphin)
-    case default
-      write(*,*) 'EoSlib error in eosTV::thermo: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
+    act_eos_ptr => get_active_eos()
+    call TV_CalcFugacity(nc,act_mod_ptr%comps,act_eos_ptr,T,v,n,lnphi,&
+         lnphiT,lnphiV,lnphin)
   end subroutine thermo_tv
 
   !----------------------------------------------------------------------
@@ -569,21 +556,11 @@ contains
     !
     !--------------------------------------------------------------------
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      call TV_CalcFres(nce,act_mod_ptr%comps,act_eos_ptr,&
-           T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn,&
-           F_VVV=F_VVV,recalculate=recalculate)
-    case (TREND)
-      ! TREND
-      call trend_calcFres(T,v,ne,F,F_T,F_V,F_n,F_TT,F_TV,F_VV,F_Tn,F_Vn,F_nn)
-    case default
-      write(*,*) 'EoSlib error in eosTV::Fres: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
+    act_eos_ptr => get_active_eos()
+    call TV_CalcFres(nce,act_mod_ptr%comps,act_eos_ptr,&
+         T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+         F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn,&
+         F_VVV=F_VVV,recalculate=recalculate)
   end subroutine Fres_ne
 
   !----------------------------------------------------------------------
@@ -659,19 +636,9 @@ contains
     !
     !--------------------------------------------------------------------
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EoSlib)
-    case (THERMOPACK)
-      ! Thermopack
-      act_eos_ptr => get_active_eos()
-      call TV_CalcFid(nce,act_mod_ptr%comps,act_eos_ptr,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-    case (TREND)
-      ! TREND
-      call trend_CalcFid(T,V,ne,F,F_T,F_V,F_TT,F_TV,F_VV,F_n,F_Tn,F_Vn,F_nn)
-    case default
-      write(*,*) 'EoSlib error in eosTV::Fideal: No such EoS libray:',act_mod_ptr%EoSlib
-      call stoperror('')
-    end select
+    act_eos_ptr => get_active_eos()
+    call TV_CalcFid(nce,act_mod_ptr%comps,act_eos_ptr,T,V,ne,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
+         F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
   end subroutine Fideal_ne
 
   !----------------------------------------------------------------------

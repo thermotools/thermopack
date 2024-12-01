@@ -31,4 +31,3 @@ Brief description of file structure:
 - `thermopack/addon/`: Add-on functionality
 - `thermopack/addon/pycThermopack/`: Python interface
 - `thermopack/addon/pyUtils/`: Python utilities for generating fortran code and makefile input.
-- `thermopack/addon/trend_interface/`: Interface for working with the TREND/EOSCG library developed by Roland Span and Ruhr-Universität Bochum

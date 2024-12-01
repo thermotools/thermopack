@@ -167,7 +167,7 @@ contains
   end subroutine getUNIFACgroupInteraction
 
   !> Initiate unifac model
-  !! 
+  !!
   subroutine cleanup_unifac(UFdb)
     !
     type (unifacdb), intent(inout) :: UFdb
