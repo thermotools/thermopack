@@ -118,7 +118,6 @@ contains
     use thermopack_var, only: base_eos_param
     use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
-    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -143,9 +142,7 @@ contains
     endif
 
     add_ideal = .not. (residual .or.  &
-         eos_single == cbeos%eosidx .or. &
-         meosGERG_mix == cbeos%eosidx .or. &
-         meos_helm_mix == cbeos%eosidx)
+         eos_single == cbeos%eosidx)
     ! Ideal gas enthalpy
     if (add_ideal) then
       call Hideal_mix(nce, comp, T, ne, h_ideal_mix, dhdt_ideal_mix, dhdp_ideal_mix, dhdz_ideal_mix)
@@ -161,16 +158,6 @@ contains
     type is ( meos_idealmix )
       call calc_multiparameter_idealmix_enthalpy(nc, p_eos, T, p, ne, phase, &
            enthalpy, dhdt, dhdp, dhdz)
-    class is ( meos_gergmix )
-      if (residual) then
-        prop = PROP_RESIDUAL
-      else
-        prop = PROP_OVERALL
-      endif
-      call p_eos%Zfac(T,p,ne,phase,Zfac)
-      v = Zfac*sum(ne)*Rgas*T/P
-      call calc_enthalpy_from_f(cbeos, T, v, ne, &
-           enthalpy, dhdt, dhdp, dhdz, contribution=prop)
     class default
       call TP_ResidEnthalpy(nce,comp,cbeos,phase,T,P,ne,enthalpy,&
            dhdt,dhdp,dhdz,gflag_opt=gflag_opt)
@@ -225,7 +212,6 @@ contains
     use thermopack_var, only: base_eos_param
     use eos_parameters, only: meos_idealmix, single_eos
     use cubic_eos, only: lk_eos
-    use gergmix, only: meos_gergmix
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -250,9 +236,7 @@ contains
     endif
 
     add_ideal = .not. (residual .or.  &
-         eos_single == cbeos%eosidx .or. &
-         meosGERG_mix == cbeos%eosidx .or. &
-         meos_helm_mix == cbeos%eosidx)
+         eos_single == cbeos%eosidx)
     ! Ideal gas entropy
     if (add_ideal) then
       call TP_Sideal_mix(nce, comp, T, P, ne, S_ideal_mix, dsdt_ideal_mix, dsdp_ideal_mix, dsdz_ideal_mix)
@@ -267,16 +251,6 @@ contains
     type is ( meos_idealmix )
       call calc_multiparameter_idealmix_entropy(nc, p_eos, T, p, ne, phase, &
            entropy, dsdt, dsdp, dsdz)
-    class is ( meos_gergmix )
-      if (residual) then
-        prop = PROP_RESIDUAL
-      else
-        prop = PROP_OVERALL
-      endif
-      call p_eos%Zfac(T,p,ne,phase,Zfac)
-      v = Zfac*sum(ne)*Rgas*T/P
-      call calc_entropy_from_f(cbeos, T, v, ne, &
-           entropy, dsdt, dsdp, dsdz, contribution=prop)
     class default
       call TP_ResidEntropy(nce,comp,cbeos,phase,T,P,ne,entropy,dSdt,dSdp,dSdz,gflag_opt)
     end select
@@ -623,7 +597,7 @@ contains
     ! Ideal contribution
     call Sideal_Vn(nce, ne, T, v, Sid, dsdn=Fid_n, d2sdndT=Fid_Tn, &
          d2sdndV=Fid_Vn, d2sdn2=Fid_nn)
-    Fid_n = -Fid_n/Rgas
+    Fid_n = -Fid_n/Rgas - 1.0
     Fid_Tn = -Fid_Tn/Rgas
     Fid_Vn = -Fid_Vn/Rgas
     Fid_nn = -Fid_nn/Rgas
@@ -668,8 +642,7 @@ contains
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
-    use hyperdual_utility, only: hyperdual_fres_wrapper
-    use gergmix, only: meos_gergmix, hd_fres_GERGMIX
+    use ideal, only: ideal_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -740,9 +713,17 @@ contains
         type is ( extcsp_eos ) ! Corresponding State Principle
           call csp_calcFres(nc,p_eos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
-        class is ( meos_gergmix ) ! GERG2008/MEOSMIX
-          call hyperdual_fres_wrapper(hd_fres_GERGMIX,p_eos,nc,T,V_eos,n,eF,ef_T,ef_V,ef_n,&
-               ef_TT,ef_VV,ef_TV,ef_Tn,ef_Vn,ef_nn)
+        type is ( ideal_eos ) ! Ideal mixture eos
+          if (present(eF)) eF = 0
+          if (present(eF_T)) eF_T = 0
+          if (present(eF_V)) eF_V = 0
+          if (present(eF_n)) eF_n = 0
+          if (present(eF_TT)) eF_TT = 0
+          if (present(eF_VV)) eF_VV = 0
+          if (present(eF_TV)) eF_TV = 0
+          if (present(eF_Tn)) eF_Tn = 0
+          if (present(eF_Vn)) eF_Vn = 0
+          if (present(eF_nn)) eF_nn = 0
         class default ! Saft eos
           call calcSaftFder_res(nc,cbeos,T,v_eos,n,eF,eF_T,eF_V,eF_n,eF_TT,&
                eF_TV,eF_VV,eF_Tn,eF_Vn,eF_nn)
@@ -989,7 +970,7 @@ contains
     use cubic_eos, only: cb_eos, cpa_eos, lk_eos
     use saftvrmie_containers, only: saftvrmie_eos
     use pc_saft_nonassoc, only: PCSAFT_eos
-    use gergmix, only: meos_gergmix
+    use ideal, only: ideal_eos
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(:) :: comp
@@ -1027,9 +1008,6 @@ contains
       call cbCalcZfac(nce,p_eos,T,p,ne,phase,Zfac,gflag_opt_local,dZdt,dZdp,dZdz)
     type is ( single_eos )
       call Zfac_single(nc,p_eos,T,p,ne,phase,Zfac,dZdt,dZdp,dZdz)
-    class is ( meos_gergmix )
-      call p_eos%Zfac(T,p,ne,phase,Zfac,phase_found)
-      call calc_Zfac_differentials()
     type is ( extcsp_eos ) ! Corresponding State Principle
       call csp_zfac(p_eos,T,P,ne,phase,zfac,dZdt,dZdp,dZdz)
     type is ( lk_eos ) ! Lee-Kesler eos
@@ -1037,6 +1015,11 @@ contains
     type is ( meos_idealmix )
       call calc_multiparameter_idealmix_zfac(nc, p_eos, T, p, ne, phase, &
            Zfac, dZdt, dZdp, dZdz)
+    type is ( ideal_eos ) ! Ideal mixture
+      Zfac = 1
+      if (present(dZdt)) dZdt = 0
+      if (present(dZdp)) dZdp = 0
+      if (present(dZdz)) dZdz = 0
     class default ! Saft eos
       call saft_zfac(nce,cbeos,phase,T,P,ne,Z=zfac,dZdT=dZdt,dZdP=dZdp,dZdn=dZdz)
     end select
@@ -1100,8 +1083,6 @@ contains
     use ideal, only: Fideal_mix_SI
     use thermopack_var, only: base_eos_param
     use eos_parameters, only: single_eos
-    use hyperdual_utility, only: hyperdual_fres_wrapper
-    use gergmix, only: meos_gergmix, hd_fid_GERGMIX
     implicit none
     integer, intent(in) :: nc
     type (gendata_pointer), intent(in), dimension(nc) :: comp
@@ -1116,9 +1097,6 @@ contains
     select type ( p_seos => cbeos )
     type is ( single_eos )
       call Fid_single(nc,comp,p_seos,T,v,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
-           F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
-    class is ( meos_gergmix ) ! GERG2008
-      call hyperdual_fres_wrapper(hd_fid_GERGMIX,p_seos,nc,T,V,n,F=F,F_T=F_T,F_V=F_V,F_n=F_n,&
            F_TT=F_TT,F_TV=F_TV,F_VV=F_VV,F_Tn=F_Tn,F_Vn=F_Vn,F_nn=F_nn)
     class default
       call Fideal_mix_SI(nc, comp, T, v, n, Fid=F, Fid_T=F_T, Fid_v=F_V, &

@@ -116,7 +116,7 @@ or simply \textit{the MBWR equation}. The MBWR-19 and MBWR-32 have
 been fitted to a range of components.
 
 MBWR equations are often used as reference equations for so-called
-\textit{Corresponding States} equations. The prevously implemented
+\textit{Corresponding States} equations. The previously implemented
 Lee-Kesler equation of state, documented in Aarnes \cite{Aarnes13}, is
 one example. Another Corresponding States equation is the SPUNG
 equation. SPUNG stands for \textit{State Research and Development
@@ -272,7 +272,7 @@ volume, $\rho = 1/v$ is the molar density, $v_{ig}$ is the specific
 volume of an ideal gas, $R$ is the universal gas constant, and $P$,
 $V$, $T$ and $n$ are pressure, volume, temperature and total number of
 moles of the fluid, respectively. For ideal gases $z=1$ for all $T$
-and $P$ and $n$, wheras for real gases $z$ is a non-constant function
+and $P$ and $n$, whereas for real gases $z$ is a non-constant function
 of $T$ and $P$ and $n$.
 
 \subsubsection*{Residual entropy}
@@ -287,7 +287,7 @@ of $T$ and $P$ and $n$.
   H^R(T,P,n) = -RT^2 \lp \dd{F}{T} \rp_{V,n} + PV - nRT, % Double-checked
 \end{equation}
 
-\subsubsection*{Logarithmic fugacity coefficent}
+\subsubsection*{Logarithmic fugacity coefficient}
 \begin{equation}
   \label{eq:lnphireduced}
   \ln \phi_i(T,P,n) = \lp \dd{F}{n_i} \rp_{T,V} - \ln z. % Double-checked
@@ -1079,7 +1079,7 @@ have been compared to their finite-difference counterparts, with
 consistent results.
 
 \subsection{Comparison with previous MBWR implementations}
-In the code there is an algorithm which calculates the component-specific coefficients for $\alpha(T,P)$ using the component-specific coefficients for $P(T,\rho)$. The coefficents for the Helmholtz energy in the MBWR-32 model with R152a as the substance, checks out with the coefficients computed by an earlier implementation in the NIST thermodynamic library REFPROP.
+In the code there is an algorithm which calculates the component-specific coefficients for $\alpha(T,P)$ using the component-specific coefficients for $P(T,\rho)$. The coefficients for the Helmholtz energy in the MBWR-32 model with R152a as the substance, checks out with the coefficients computed by an earlier implementation in the NIST thermodynamic library REFPROP.
 
 \section{Extension to mixtures: The SPUNG equation of state}
 

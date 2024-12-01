@@ -27,7 +27,7 @@ class ColorGradient:
         self.lenc = len(colors[0])
         for c in colors:
             if len(c) != self.lenc:
-                raise ValueError('All color tuples must have equal lenght!')
+                raise ValueError('All color tuples must have equal length!')
 
         self.nc = len(colors)
         self.colors = [c for c in colors]
@@ -68,7 +68,7 @@ class Colormap2D:
         self.leng = len(gradients[0])
         for g in gradients:
             if len(g) != self.leng:
-                raise ValueError('All color tuples must have equal lenght!')
+                raise ValueError('All color tuples must have equal length!')
 
         self.ng = len(gradients)
         self.gradients = [g for g in gradients]
@@ -193,5 +193,5 @@ if __name__ == '__main__':
 
     plt.xlim(min(xl), max(xl))
     plt.ylim(-2, 3)
-    plt.savefig('header.pdf', bbox_inches='tight', pad_inches=0)
+    plt.savefig('header.png', bbox_inches='tight', pad_inches=0, dpi=96)
     plt.show()

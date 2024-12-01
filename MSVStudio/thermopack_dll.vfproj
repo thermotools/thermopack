@@ -2,48 +2,54 @@
 <VisualStudioProject ProjectType="typeDynamicLibrary" ProjectCreator="Intel Fortran" Keyword="Dll" Version="11.0" ProjectIdGuid="{CF6810B6-25EF-4E4E-BD30-69BD074CAEEC}">
 	<Platforms>
 		<Platform Name="Win32"/>
-		<Platform Name="x64"/></Platforms>
+		<Platform Name="x64"/>
+	</Platforms>
 	<Configurations>
-		<Configuration Name="Debug|Win32" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
-				<Tool Name="VFResourceCompilerTool"/>
-				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
-				<Tool Name="VFCustomBuildTool"/>
-				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
-		<Configuration Name="Release|Win32" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
-				<Tool Name="VFResourceCompilerTool"/>
-				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
-				<Tool Name="VFCustomBuildTool"/>
-				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
-		<Configuration Name="Debug|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
-				<Tool Name="VFResourceCompilerTool"/>
-				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
-				<Tool Name="VFCustomBuildTool"/>
-				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
-		<Configuration Name="Release|x64" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
-				<Tool Name="VFResourceCompilerTool"/>
-				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
-				<Tool Name="VFCustomBuildTool"/>
-				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+		<Configuration Name="Debug|Win32" UseCompiler="ifortCompiler" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+			<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+			<Tool Name="VFResourceCompilerTool"/>
+			<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+			<Tool Name="VFCustomBuildTool"/>
+			<Tool Name="VFPreLinkEventTool"/>
+			<Tool Name="VFPreBuildEventTool"/>
+			<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
+			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
+		</Configuration>
+		<Configuration Name="Release|Win32" UseCompiler="ifortCompiler" OutputDirectory="$(ConfigurationName)/thermopack_dll" IntermediateDirectory="$(ConfigurationName)/thermopack_dll" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+			<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+			<Tool Name="VFResourceCompilerTool"/>
+			<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+			<Tool Name="VFCustomBuildTool"/>
+			<Tool Name="VFPreLinkEventTool"/>
+			<Tool Name="VFPreBuildEventTool"/>
+			<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
+			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
+		</Configuration>
+		<Configuration Name="Debug|x64" UseCompiler="ifortCompiler" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" WarnInterfaces="true" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true"/>
+			<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="MSVCRTD;libifcoremdd" ModuleDefinitionFile="thermopack.def" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+			<Tool Name="VFResourceCompilerTool"/>
+			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+			<Tool Name="VFCustomBuildTool"/>
+			<Tool Name="VFPreLinkEventTool"/>
+			<Tool Name="VFPreBuildEventTool"/>
+			<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
+			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
+		</Configuration>
+		<Configuration Name="Release|x64" UseCompiler="ifortCompiler" TargetName="thermopack" ConfigurationType="typeDynamicLibrary">
+			<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(OutDir)/;$(SolutionDir)/../addon/trend_interface/include" FixedFormLineLength="fixedLength132" RealKIND="realKIND8" FloatingPointExceptionHandling="fpe0" FloatingPointModel="precise" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true"/>
+			<Tool Name="VFLinkerTool" OutputFile="$(OutDir)\thermopack.dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OutDir);$(SolutionDir)/../lapack/lib/$(ConfigurationName)" IgnoreDefaultLibraryNames="libmmd;MSVCRT;libifcoremd;svml_dispmd" ModuleDefinitionFile="thermopack.def" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="lapack.lib blas.lib"/>
+			<Tool Name="VFResourceCompilerTool"/>
+			<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+			<Tool Name="VFCustomBuildTool"/>
+			<Tool Name="VFPreLinkEventTool"/>
+			<Tool Name="VFPreBuildEventTool"/>
+			<Tool Name="VFPostBuildEventTool" CommandLine="xcopy &quot;$(OutDir)\thermopack.dll&quot; &quot;$(SolutionDir)\..\addon\pycThermopack\thermopack\&quot; /F /Y"/>
+			<Tool Name="VFManifestTool" SuppressStartupBanner="true"/>
+		</Configuration>
+	</Configurations>
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
@@ -79,10 +85,6 @@
 		<File RelativePath="..\src\extcsp.f90"/>
 		<File RelativePath="..\src\external.f90"/>
 		<File RelativePath="..\src\fmt.f90"/>
-		<File RelativePath="..\src\gerg.f90"/>
-		<File RelativePath="..\src\gergdatadb.f90"/>
-		<File RelativePath="..\src\gergmix.f90"/>
-		<File RelativePath="..\src\gergmixdb.f90"/>
 		<File RelativePath="..\src\h2o_gibbs.f90"/>
 		<File RelativePath="..\src\hardsphere_bmcsl.f90"/>
 		<File RelativePath="..\src\hardsphere_wca.f90"/>
@@ -98,9 +100,6 @@
 		<File RelativePath="..\src\mbwr.f90"/>
 		<File RelativePath="..\src\mbwr_additional.f90"/>
 		<File RelativePath="..\src\mbwrdata.f90"/>
-		<File RelativePath="..\src\meosdatadb.f90"/>
-		<File RelativePath="..\src\meosmix.f90"/>
-		<File RelativePath="..\src\meosmixdb.f90"/>
 		<File RelativePath="..\src\mixdatadb.f90"/>
 		<File RelativePath="..\src\multiparameter_base.f90"/>
 		<File RelativePath="..\src\multiparameter_c3.f90"/>
@@ -123,7 +122,6 @@
 		<File RelativePath="..\src\pets.f90"/>
 		<File RelativePath="..\src\ph_solver.f90"/>
 		<File RelativePath="..\src\ps_solver.f90"/>
-		<File RelativePath="..\src\pure_fluid_meos.f90"/>
 		<File RelativePath="..\src\puresaturation.f90"/>
 		<File RelativePath="..\src\quadratures.f90"/>
 		<File RelativePath="..\src\saft_association.f90"/>
@@ -141,8 +139,6 @@
 		<File RelativePath="..\src\saftvrmie_parameters.f90"/>
 		<File RelativePath="..\src\saftvrmie_testing.f90"/>
 		<File RelativePath="..\src\saftvrmie_utils.f90"/>
-		<File RelativePath="..\src\satdensdatadb.f90"/>
-		<File RelativePath="..\src\saturated_densities.f90"/>
 		<File RelativePath="..\src\saturation.f90"/>
 		<File RelativePath="..\src\saturation_curve.f90"/>
 		<File RelativePath="..\src\saturation_point_locators.f90"/>
@@ -169,5 +165,7 @@
 		<File RelativePath="..\src\uv_solver.f90"/>
 		<File RelativePath="..\src\vls.f90"/>
 		<File RelativePath="..\src\volume_shift.f90"/>
-		<File RelativePath="..\src\wong_sandler.f90"/></Filter></Files>
-	<Globals/></VisualStudioProject>
+		<File RelativePath="..\src\wong_sandler.f90"/></Filter>
+	</Files>
+	<Globals/>
+</VisualStudioProject>

@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 2.2.0
+version: 2.2
 title: Methods in the cubic class
 permalink: /v2.2.0/cubic_methods.html
 ---
@@ -546,7 +546,7 @@ Set beta correlation
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `set_ci(self, cidx, ciA, ciB=0.0, ciC=0.0, ciD=0.0, ciE=0.0, ciF=0.0, ci_type=1)`
-Set volume correction parametrs
+Set volume correction parameters
 
 #### Args:
 

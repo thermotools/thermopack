@@ -9,7 +9,7 @@ import numpy as np
 # Importing Matplotlib (plotting)
 import matplotlib.pyplot as plt
 
-# Instanciate and init multiparameter object
+# Instantiate and init multiparameter object
 nist = multiparam("C3", "NIST_MEOS")
 
 # Plot phase envelope

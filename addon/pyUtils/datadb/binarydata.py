@@ -1,6 +1,7 @@
 """Module manipulating binary interaction data in thermopack"""
 import numpy as np
 from sys import exit
+import sys
 import os
 import math
 import json
@@ -8,6 +9,8 @@ from datetime import datetime
 from data_utils import I, N_TAGS_PER_LINE, \
     sci_print_float, print_float, get_mix_model_parameter
 from shutil import copy
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
+from tools import write_file, THERMOPACK_ROOT
 
 class binaries(object):
     """Read binary data form file, manipulate, save and generate
@@ -264,10 +267,9 @@ class binary_list(object):
         code_lines.append("")
         code_lines.append("end module mixdatadb")
 
-        with open(filename, "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
+        new_contents = '\n'.join(code_lines)
+        ofile = f'{THERMOPACK_ROOT}/src/mixdatadb.f90'
+        write_file(ofile, new_contents)
 
     def get_array_fortran_code(self,code_lines,nMax,get_tag):
         """Set up component array
@@ -414,4 +416,3 @@ class binary_list(object):
 if __name__ == "__main__":
     binl = binary_list()
     binl.save_fortran_file("mixdatadb.f90")
-    copy('mixdatadb.f90', '../../../src/mixdatadb.f90')

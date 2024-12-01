@@ -2,6 +2,8 @@
   "ident": "NC20",
   "formula": "C20H42",
   "cas_number": "112-95-8",
+  "InChI": "1S/C20H42/c1-3-5-7-9-11-13-15-17-19-20-18-16-14-12-10-8-6-4-2/h3-20H2,1-2H3",
+  "structure": "C:20;H:42",
   "name": "N-EICOSANE",
   "aliases": [
     "n-Eicosane",
@@ -62,14 +64,11 @@
     "Tmax": 1500.0
   },
   "reference_state": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "enthalpy_bib_reference": "https://webbook.nist.gov : Prosen and Rossini, 1945",
+    "enthalpy": -455.8e3,
+    "entropy_bib_reference": "HSC Chemistry 9",
+    "entropy_ref_state": "1BAR",
+    "entropy": 940.180
   },
   "rackett_factor": {
     "bib_reference": "",

@@ -97,7 +97,7 @@ contains
     solver%limit_x_values = .true.
     solver%ls_max_it = 5
     rhomin = 0
-    rhomax = rho*2
+    rhomax = maxval(rho, dim=1)*2
 
     call nonlinear_solve(solver,lnf_t_function,lnf_t_jacobian,&
          lnf_t_jacobian,limit_dx,premReturn,setXv,rho,rhomin,rhomax,param)

@@ -6,7 +6,7 @@ permalink: /vcurrent/saftvrqmie_methods.html
 ---
 
 <!--- 
-Generated at: 2023-09-28T21:06:29.066702
+Generated at: 2024-04-25T20:46:11.479261
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 saftvrqmie class. For instructions on how to use the parser routines, see the
@@ -26,6 +26,7 @@ This class implements utility methods specific to the SAFT-VRQ Mie EoS.
   * [Utility methods](#utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_deboer](#set_deboerself-ic-deboer)
     * [set_mass](#set_massself-ic-mass)
 
 ## Constructor
@@ -100,6 +101,7 @@ Set- and get methods for interaction parameters, mixing parameters ...
   * [Utility methods](#utility-methods)
     * [get_feynman_hibbs_order](#get_feynman_hibbs_orderself-c)
     * [print_saft_parameters](#print_saft_parametersself-c)
+    * [set_deboer](#set_deboerself-ic-deboer)
     * [set_mass](#set_massself-ic-mass)
 
 
@@ -130,6 +132,23 @@ Print saft parameters for component c
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index (FORTRAN)
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_deboer(self, ic, deboer)`
+Set deboer constant Lambda, an adimensional parameter Lambda = h/(sigma_i*sqrt(m_i*epsdivk_i). It is equivalent to setting mass.
+
+#### Args:
+
+&nbsp;&nbsp;&nbsp;&nbsp; **ic (int):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  Component index
+
+&nbsp;&nbsp;&nbsp;&nbsp; **Lambda (float):** 
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;  deboer parameter of
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; component ic [-]
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 

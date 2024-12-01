@@ -34,8 +34,14 @@ module ideal
   !!             -12 : Shomate Equation (Note that: Ts=T/1000)                *
   !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
   !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
+  !!             -13 : Einstein functions                                     *
+  !!                   CP(ideal)/R = CP(1) + CP(2)(CP(3)/T)**2*exp(CP(3)/T)/  *
+  !!                               (exp(CP(3)/T)-1)**2 + CP(4)(CP(5)/T)**2*   *
+  !!                               exp(CP(5)/T)/(exp(CP(5)/T)-1)**2 + ... (-) *
   !! \endverbatim
   use thermopack_var, only: Rgas
+  use numconstants, only: expMax
+  use thermopack_var, only: base_eos_param
   implicit none
   save
   ! Include TREND interface
@@ -44,16 +50,26 @@ module ideal
   !> Log cut-off value
   real, parameter :: logCutOff = 1.0e-100
 
+  type, extends(base_eos_param) :: ideal_eos
+    ! No additional states
+  contains
+    procedure, public :: allocate_and_init => ideal_eos_allocate_and_init
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_ideal_eos
+  end type ideal_eos
+
   public:: EstPsat, TP_Kideal, CPideal, Hideal, Sideal_T,&
        CPideal_mix, Hideal_mix, TP_Sideal_mix, TV_Yideal_mix, &
        Sideal_Vn, TV_Sideal_mix, Fideal_mix_SI
   public :: Hideal_apparent, TP_Sideal_apparent, Cpideal_apparent
   public :: idealEntropy_ne
-  public :: set_entropy_reference_value, get_entropy_reference_value
-  public :: set_enthalpy_reference_value, get_enthalpy_reference_value
+  public :: set_standard_entropy, get_standard_entropy
+  public :: set_enthalpy_of_formation, get_enthalpy_of_formation
   public :: set_reference_energies
+  public :: ideal_eos
 
 contains
+
   !---------------------------------------------------------------------- >
   !> The function returns the vapour pressure for a pure component
   !! for the compoentent that is found
@@ -189,7 +205,7 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: cpideal_h2
     implicit none
@@ -197,8 +213,9 @@ contains
     real, intent(in) :: T
     integer, intent(in) :: i
     real :: Cp_id
-    !
-    real :: TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: TminCp, TmaxCp, Ts, x, exp_x
 
     method_Cp: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree poynomial
@@ -277,6 +294,17 @@ contains
       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*Ts+comp%id_cp%cp(3)*Ts**2+comp%id_cp%cp(4)*Ts**3+ &
            comp%id_cp%cp(5)/(Ts**2)
 
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      Cp_id = comp%id_cp%cp(1)
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
+        exp_x = exp(x)
+        Cp_id = Cp_id + comp%id_cp%cp(2*j)*x**2*exp_x/(exp_x - 1)**2
+      enddo
+      Cp_id = Cp_id*rgas
+
     end select method_Cp
   end function CPideal
 
@@ -324,27 +352,29 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: hideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
     integer, intent(in) :: i
-    real :: H_id, TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: H_id, TminCp, TmaxCp, Ts, x, exp_x
 
     method_H: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
 
       H_id=comp%id_cp%cp(1)*T+0.5*comp%id_cp%cp(2)*T**2+comp%id_cp%cp(3)*T**3/3.0+&
            0.25*comp%id_cp%cp(4)*T**4
-      H_id=H_id*4.1868+comp%href
+      H_id=H_id*4.1868+comp%href_int
 
     case (CP_API44_MASS) ! API-project 44
 
       H_id = comp%id_cp%cp(1)+T*(comp%id_cp%cp(2)+T*(comp%id_cp%cp(3)+&
            T*(comp%id_cp%cp(4)+T*(comp%id_cp%cp(5)+T*comp%id_cp%cp(6)))))
-      H_id = H_id*comp%mw+comp%href
+      H_id = H_id*comp%mw+comp%href_int
 
       TminCp = comp%id_cp%tcpmin + 273.15
       TmaxCp = comp%id_cp%tcpmax + 273.15
@@ -359,34 +389,34 @@ contains
 
       H_id=comp%id_cp%cp(1)*T*1.8+comp%id_cp%cp(2)*(T*1.8)**2/2.0+&
            comp%id_cp%cp(3)*(T*1.8)**3/3.0
-      H_id=H_id*(4.1868/1.8)*comp%mw+comp%href
+      H_id=H_id*(4.1868/1.8)*comp%mw+comp%href_int
 
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
 
       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2/2.0+&
            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0
-      H_id=H_id+comp%href
+      H_id=H_id+comp%href_int
 
     case (CP_ICI_MASS) ! Third degree polynomial + 1/T**2 term
 
       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 - &
            comp%id_cp%cp(5)/T
-      H_id=H_id*comp%mw+comp%href
+      H_id=H_id*comp%mw+comp%href_int
 
     case (CP_CHEN_BENDER_MASS) ! Fourth degree Cp-polynomial
 
       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
            comp%id_cp%cp(5)*T**5/5.0
-      H_id=H_id*comp%mw+comp%href
+      H_id=H_id*comp%mw+comp%href_int
 
     case (CP_DIPPR_KMOL) ! DIPPR-database
 
       H_id = comp%id_cp%cp(1)*T+&
            (cosh(comp%id_cp%cp(3)/T)*comp%id_cp%cp(3)*comp%id_cp%cp(2))/(sinh(comp%id_cp%cp(3)/T))-&
            (sinh(comp%id_cp%cp(5)/T)*comp%id_cp%cp(5)*comp%id_cp%cp(4))/(cosh(comp%id_cp%cp(5)/T))
-      H_id=1.0e-3*H_id+comp%href
+      H_id=1.0e-3*H_id+comp%href_int
 
 
       TminCp = comp%id_cp%tcpmin
@@ -403,15 +433,15 @@ contains
       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
            comp%id_cp%cp(3)*T**3/3.0+comp%id_cp%cp(4)*T**4/4.0 + &
            comp%id_cp%cp(5)*T**5/5.0
-      H_id=H_id*rgas+comp%href
+      H_id=H_id*rgas+comp%href_int
 
     case (CP_MOGENSEN_SI) ! Linear function and fraction (J/mol).
       H_id=comp%id_cp%cp(1)*T+comp%id_cp%cp(2)*T**2.0/2.0 + &
            comp%id_cp%cp(3)*log(T+comp%id_cp%cp(4))
-      H_id=H_id + comp%href
+      H_id=H_id + comp%href_int
 
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
-      H_id = Hideal_H2 (comp%ident, T) + comp%href
+      H_id = Hideal_H2 (comp%ident, T) + comp%href_int
 
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
       call trend_ideal(T,i,h=H_id)
@@ -422,7 +452,19 @@ contains
       H_id=comp%id_cp%cp(1)*Ts+comp%id_cp%cp(2)*Ts**2.0/2.0 + &
            comp%id_cp%cp(3)*Ts**3/3.0+comp%id_cp%cp(4)*Ts**4/4.0 - &
            comp%id_cp%cp(5)/Ts
-      H_id=H_id*1.0e3 + comp%href
+      H_id=H_id*1.0e3 + comp%href_int
+
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      H_id = comp%id_cp%cp(1)*T
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
+        exp_x = exp(x)
+        H_id = H_id + comp%id_cp%cp(2*j)*comp%id_cp%cp(2*j+1)/(exp_x - 1)
+      enddo
+      H_id=H_id*Rgas + comp%href_int
+
     end select method_H
 
   end function Hideal
@@ -442,28 +484,29 @@ contains
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
          CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
-         CP_SHOMATE_SI
+         CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: sideal_h2
     implicit none
     type(gendata), intent(in) :: comp
     real, intent(in) :: T
     integer, intent(in) :: i
-    !
-    real :: S_id, TminCp, TmaxCp, Ts
+    ! Locals
+    integer :: j
+    real :: S_id, TminCp, TmaxCp, Ts, x, exp_x
 
     method_S: select case (comp%id_cp%cptype)
     case (CP_POLY3_CAL) ! Third degree Cp-poynomial
       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T + &
            comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3.0/3.0
       S_id = S_id*4.1868
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
     case (CP_API44_MASS) ! API-project 44
       S_id = comp%id_cp%cp(2)*log(T)+2.0*comp%id_cp%cp(3)*T+&
            3.0/2.0*comp%id_cp%cp(4)*T**2+4.0/3.0*comp%id_cp%cp(5)*T**3+&
            5.0/4.0*comp%id_cp%cp(6)*T**4
       S_id = S_id*comp%mw
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
       TminCp = comp%id_cp%tcpmin + 273.15
       TmaxCp = comp%id_cp%tcpmax + 273.15
       if ( T .LT. TminCp .OR. T .GT. TmaxCp ) then
@@ -475,24 +518,24 @@ contains
       S_id = comp%id_cp%cp(1)*log(T*1.8)+comp%id_cp%cp(2)*T*1.8 +&
            comp%id_cp%cp(3)*(T*1.8)**2/2.0
       S_id = S_id*(4.1868)*comp%mw
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
     case (CP_POLY3_SI) ! Third degree Cp-polynomial (different units)
       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
            comp%id_cp%cp(3)*T**2.0/2.0+comp%id_cp%cp(4)*T**3/3.0
       S_id = S_id
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
     case (CP_ICI_MASS) ! Third degree polynomial + 1/T**2 term
       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T +&
            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0-&
            comp%id_cp%cp(5)/(2.0*T**2)
       S_id = S_id*comp%mw
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
     case (CP_CHEN_BENDER_MASS) ! Fourth degree Cp-polynomial
       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T+&
            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
            comp%id_cp%cp(5)*T**4/4.0
       S_id = S_id*comp%mw
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
 
     case (CP_DIPPR_KMOL) ! DIPPR-database
       S_id = comp%id_cp%cp(1)*log(T)+2*comp%id_cp%cp(3)/T*comp%id_cp%cp(2)+&
@@ -500,7 +543,7 @@ contains
            comp%id_cp%cp(2)*log(exp(comp%id_cp%cp(3)/T)**2-1)-&
            2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)+2*comp%id_cp%cp(5)/T*comp%id_cp%cp(4)/&
            (exp(comp%id_cp%cp(5)/T)**2+1)+comp%id_cp%cp(4)*log(exp(comp%id_cp%cp(5)/T)**2+1)
-      S_id = 1.0e-3*S_id + comp%sref
+      S_id = 1.0e-3*S_id + comp%sref_int
 
       TminCp = comp%id_cp%tcpmin
       TmaxCp = comp%id_cp%tcpmax
@@ -515,7 +558,7 @@ contains
            comp%id_cp%cp(3)*T**2/2.0+comp%id_cp%cp(4)*T**3/3.0+&
            comp%id_cp%cp(5)*T**4/4.0
       S_id = S_id*rgas
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
 
     case (CP_MOGENSEN_SI) ! Linear function and fraction (J/mol/K).
       S_id = comp%id_cp%cp(1)*log(T)+comp%id_cp%cp(2)*T
@@ -524,10 +567,10 @@ contains
       else
         S_id = S_id+(comp%id_cp%cp(3)/comp%id_cp%cp(4))*(log(T)-log(T+comp%id_cp%cp(4)))
       endif
-      S_id = S_id + comp%sref
+      S_id = S_id + comp%sref_int
 
     case (CP_H2_KMOL) !   ! Leachman (NIST) and Valenti expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
-      S_id = sideal_H2 (comp%ident, T) + comp%sref  ! + rgas * log(rho*T/ rho0*T0)
+      S_id = sideal_H2 (comp%ident, T) + comp%sref_int  ! + rgas * log(rho*T/ rho0*T0)
 
     case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
       call trend_ideal(T,i,s=S_id)
@@ -538,7 +581,18 @@ contains
       S_id = comp%id_cp%cp(1)*log(Ts)+comp%id_cp%cp(2)*Ts +&
            comp%id_cp%cp(3)*Ts**2/2.0+comp%id_cp%cp(4)*Ts**3/3.0-&
            comp%id_cp%cp(5)/(2.0*Ts**2)
-      S_id=S_id + comp%sref
+      S_id=S_id + comp%sref_int
+
+    case (CP_EINSTEIN_SI) ! Sum of Einstein functions
+      S_id = comp%id_cp%cp(1)*log(T)
+      do j=1,(n_max_cp-1)/2
+        if (abs(comp%id_cp%cp(2*j)) < 1.0e-12) exit
+        x = comp%id_cp%cp(2*j+1)/T
+        if (x > expMax/2) cycle
+        exp_x = exp(x)
+        S_id = S_id + comp%id_cp%cp(2*j)*(x*(1/(exp_x-1) +1) - log(exp_x - 1))
+      enddo
+      S_id=S_id*Rgas + comp%sref_int
 
     end select method_S
   end function Sideal_T
@@ -1071,18 +1125,20 @@ contains
   end subroutine idealEntropy_ne
 
   !----------------------------------------------------------------------
-  !> Set ideal entropy reference value
+  !> Set standard entropy
   !> Unit: J/mol/K
   !>
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
-  subroutine set_entropy_reference_value(i,s0)
+  subroutine set_standard_entropy(i,s0, sref_state)
     use thermopack_var, only: get_active_thermo_model, thermo_model
     use thermopack_constants, only: THERMOPACK, TREND
+    use stringmod, only: str_eq
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
     real, intent(in) :: s0               !< J/mol/K - Ideal entropy
+    character(len=*), intent(in) :: sref_state !< Eiter "1BAR" or "1ATM"
     ! Locals
     type(thermo_model), pointer :: act_mod_ptr
     !--------------------------------------------------------------------
@@ -1090,7 +1146,13 @@ contains
     act_mod_ptr => get_active_thermo_model()
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
+      if (.not. (str_eq(sref_state, "1BAR") .or. &
+           str_eq(sref_state, "1ATM"))) then
+        call stoperror("Unknown entropy reference state")
+      endif
+      act_mod_ptr%comps(i)%p_comp%sref_state = trim(sref_state)
       act_mod_ptr%comps(i)%p_comp%sref = s0
+      call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
     case (TREND)
       ! TREND
       write(*,*) 'ideal::set_entropy_reference_value: not yet implemented for TREND.'
@@ -1099,17 +1161,18 @@ contains
       write(*,*) 'EoSlib error in ideal::set_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-  end subroutine set_entropy_reference_value
+  end subroutine set_standard_entropy
 
   !----------------------------------------------------------------------
-  !> Get ideal entropy reference value
+  !> Get standard entropy at 1bar
   !> Unit: J/mol/K
   !>
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
-  subroutine get_entropy_reference_value(i,s0)
-    use thermopack_var, only: get_active_thermo_model, thermo_model
+  subroutine get_standard_entropy(i,s0)
+    use thermopack_var, only: get_active_thermo_model, thermo_model, Rgas
     use thermopack_constants, only: THERMOPACK, TREND
+    use stringmod, only: str_eq
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1122,6 +1185,10 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       s0 = act_mod_ptr%comps(i)%p_comp%sref
+      if (str_eq(act_mod_ptr%comps(i)%p_comp%sref_state, "1ATM")) then
+        ! Correct to 1BAR
+        s0 = s0 - Rgas*log(1.01325)
+      endif
     case (TREND)
       ! TREND
       write(*,*) 'ideal::get_entropy_reference_value: not yet implemented for TREND.'
@@ -1130,7 +1197,7 @@ contains
       write(*,*) 'EoSlib error in ideal::get_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-  end subroutine get_entropy_reference_value
+  end subroutine get_standard_entropy
 
   !----------------------------------------------------------------------
   !> Set ideal enthalpy reference value
@@ -1138,7 +1205,7 @@ contains
   !>
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
-  subroutine set_enthalpy_reference_value(i,h0)
+  subroutine set_enthalpy_of_formation(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
     use thermopack_constants, only: THERMOPACK, TREND
     implicit none
@@ -1153,6 +1220,7 @@ contains
     select case (act_mod_ptr%EosLib)
     case (THERMOPACK)
       act_mod_ptr%comps(i)%p_comp%href = h0
+      call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
     case (TREND)
       ! TREND
       write(*,*) 'ideal::set_enthalpy_reference_value: not yet implemented for TREND.'
@@ -1161,15 +1229,15 @@ contains
       write(*,*) 'EoSlib error in ideal::set_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-  end subroutine set_enthalpy_reference_value
+  end subroutine set_enthalpy_of_formation
 
   !----------------------------------------------------------------------
-  !> Set ideal enthalpy reference value
+  !> Set enthalpy of formation
   !> Unit: J/mol
   !>
   !> \author MH, 2022-02
   !----------------------------------------------------------------------
-  subroutine get_enthalpy_reference_value(i,h0)
+  subroutine get_enthalpy_of_formation(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
     use thermopack_constants, only: THERMOPACK, TREND
     implicit none
@@ -1192,10 +1260,10 @@ contains
       write(*,*) 'EoSlib error in ideal::get_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
       call stoperror('')
     end select
-  end subroutine get_enthalpy_reference_value
+  end subroutine get_enthalpy_of_formation
 
   !---------------------------------------------------------------------- >
-  !>  Set the ideal gas reference entropy and enthalpy
+  !>  Set standard entropy and enthalpy of formation
   !!
   !! \param comps Component array
   !!
@@ -1205,19 +1273,74 @@ contains
     implicit none
     type(gendata_pointer), intent(inout) :: comps(:)
     !
-    real :: T0
     integer :: i
-    real :: s_id, h_id
-    T0 = 298.15
     do i=1,size(comps)
-      ! Test if parameters are given
-      if (comps(i)%p_comp%sref /= 0 .or. comps(i)%p_comp%href /= 0) then
-        s_id = Sideal_T(comps(i)%p_comp, i, T0) - comps(i)%p_comp%sref - Rgas*log(1e5)
-        comps(i)%p_comp%sref = comps(i)%p_comp%sref - s_id
-        h_id = Hideal(comps(i)%p_comp, i, T0) - comps(i)%p_comp%href
-        comps(i)%p_comp%href = comps(i)%p_comp%href - h_id
-      endif
+      call set_reference_energy(comps(i)%p_comp, i)
     enddo
   end subroutine set_reference_energies
+
+  !---------------------------------------------------------------------- >
+  !>  Set standard entropy and enthalpy of formation
+  !!
+  !! \param comp Component
+  !!
+  !! \author Morten Hammer
+  subroutine set_reference_energy(comp, i)
+    use compdata, only: gendata
+    use stringmod, only: str_eq
+    implicit none
+    class(gendata), intent(inout) :: comp
+    integer, intent(in) :: i
+    !
+    real :: T0
+    real :: s_id, h_id, p_ref
+    T0 = 298.15
+    ! Test if parameters are given
+    if (comp%sref /= 0 .or. comp%href /= 0) then
+      if (str_eq(comp%sref_state, "1BAR")) then
+        p_ref = 1e5
+      else if (str_eq(comp%sref_state, "1ATM")) then
+        p_ref = 1.01325e5
+      else
+        call stoperror("Unknown entropy reference state")
+      endif
+      s_id = Sideal_T(comp, i, T0) - comp%sref_int - Rgas*log(p_ref)
+      comp%sref_int = comp%sref - s_id
+      h_id = Hideal(comp, i, T0) - comp%href_int
+      comp%href_int = comp%href - h_id
+    endif
+  end subroutine set_reference_energy
+
+  subroutine ideal_eos_allocate_and_init(eos,nc,eos_label)
+    ! Passed object:
+    class(ideal_eos), intent(inout) :: eos
+    ! Input:
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+  end subroutine ideal_eos_allocate_and_init
+
+  subroutine assign_ideal_eos(This, other)
+    class(ideal_eos), intent(inout) :: this
+    class(*), intent(in)           :: other
+    !
+    select type (other)
+    class is (ideal_eos)
+      call this%assign_base_eos_param(other)
+    class default
+      print *,"assign_ideal_eos: Should not be here"
+    end select
+  end subroutine assign_ideal_eos
+
+  !> Allocate ideal eos
+  function ideal_eos_constructor(nc, eos_label) result(id_eos)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(ideal_eos) :: id_eos
+    !
+    call id_eos%allocate_and_init(nc, eos_label)
+  end function ideal_eos_constructor
 
 end module ideal

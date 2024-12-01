@@ -171,7 +171,7 @@ contains
 
     T = 298.09621346011721
     p = 7062289.7496999148
-    u = 3069.5644937746470
+    u = -383466.77968138846
     v = 1.4877859376553640E-004
     Z = [0.94980650312939319, 4.9991460192386570E-003, &
          2.0000656425762893E-004, 4.9997302858171425E-003, &
@@ -200,8 +200,8 @@ contains
     !      2.0000255631933474E-004,   4.9998959590581296E-003,   3.9997901031080342E-002]
     ! p = 7062462.0603463287
     ! t = 298.09736872541976
-    ! call enthalpy(298.09736872541976,7062462.0603463287,x,1,hl)
-    ! call enthalpy(298.09736872541976,7062462.0603463287,y,2,hg)
+    ! call enthalpy(t,p,x,LIQPH,hl)
+    ! call enthalpy(t,p,y,VAPPH,hg)
     ! beta = 0.99978624564427243
     ! betaL = 2.1375435572731154E-004
     ! h = beta*hg+betal*hl
@@ -248,10 +248,12 @@ contains
 
   @Test
   subroutine test_twoPhaseUVflash_8c_2()
+    !use eos, only: enthalpy
     ! Test UV flash an eight-component mixture
     real, dimension(8) :: z, x, y
     real :: p, T, betaL, beta, u, v
     integer :: phase
+    !real :: h, hl, hg
 
     continueOnError = .true.
 
@@ -260,7 +262,7 @@ contains
 
     T = 186.06816554198198
     p = 107354.89337141129
-    u = 3823.6215920056407
+    u = -398099.01143654285
     v = 1.3878641749508112E-002
     Z = [0.99762899999999999, 2.0000000000000009E-003, &
          1.9999999999999977E-004, 1.0000000000000017E-004, &
@@ -277,11 +279,31 @@ contains
     phase = 2
 
     call twoPhaseUVflash(T, p, z, beta, betaL, x, y, u, v, phase)
+    ! print *,"T, p, beta, betaL, phase",T, p, beta, betaL, phase
+    ! print *,"x",x
+    ! print *,"y",y
+    ! stop
     @assertTrue(T > 0)
     @assertTrue(p > 0)
     @assertTrue(beta > 0)
     @assertTrue(betaL > 0)
 
+    ! T=186.05528747778885
+    ! P=108745.87711992385
+    ! beta=0.99806612253981919
+    ! betaL=1.9338774601809195E-003
+    ! x = (/0.99972388183117766, 4.0635600786836214E-006, 6.0434029152846186E-007, &
+    !      3.0581191278591445E-007, 6.3573119170679454E-007, 2.5411291790575403E-004, &
+    !      3.1282757942099963E-008, 1.6364524684092971E-005 /)
+    ! y  = (/0.99762494090545339, 2.0038673755234729E-003, 2.0038635393313078E-004, &
+    !      1.0019316991018836E-004, 5.0095649421046122E-005, 9.5270008078466337E-006, &
+    !      1.0019315631646001E-005, 9.7022931917842303E-007 /)
+    ! call enthalpy(t,p,x,LIQPH,hl)
+    ! call enthalpy(t,p,y,VAPPH,hg)
+    ! h = beta*hg+betal*hl
+    ! u = h - p*v
+    ! print *,u
+    ! stop
   end subroutine test_twoPhaseUVflash_8c_2
 
 end module test_uv_flash

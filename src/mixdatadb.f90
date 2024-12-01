@@ -1,6 +1,6 @@
 !> Automatically generated to file mixdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2023-02-27T15:11:46.339247
+!! Time stamp: 2024-10-30T12:54:21.245300
 
 module mixdatadb
   use cubic_eos, only: kijdatadb, interGEdatadb, lijdatadb, CPAkijdata
@@ -5591,6 +5591,66 @@ module mixdatadb
   type (kijdatadb), parameter :: vdw559 = &
       kijdatadb(eosid = "PR", &
       mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "O-H2", &
+      uid2 = "D2", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw560 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "O-H2", &
+      uid2 = "NE", &
+      kijvalue = 0.18000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw561 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "O-H2", &
+      uid2 = "HE", &
+      kijvalue = 0.17000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw562 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "P-H2", &
+      uid2 = "D2", &
+      kijvalue = 0.00000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw563 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "P-H2", &
+      uid2 = "NE", &
+      kijvalue = 0.18000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw564 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "P-H2", &
+      uid2 = "HE", &
+      kijvalue = 0.17000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw565 = &
+      kijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
       ref = "Default", &
       bib_ref = "", &
       uid1 = "H2O2", &
@@ -5598,7 +5658,7 @@ module mixdatadb
       kijvalue = -0.05000000  &
       )
 
-  type (kijdatadb), parameter :: vdw560 = &
+  type (kijdatadb), parameter :: vdw566 = &
       kijdatadb(eosid = "PR", &
       mruleid = "vdW", &
       ref = "tcPR-ENGINEERING", &
@@ -5608,7 +5668,7 @@ module mixdatadb
       kijvalue = -0.75000000  &
       )
 
-  type (kijdatadb), parameter :: vdw561 = &
+  type (kijdatadb), parameter :: vdw567 = &
       kijdatadb(eosid = "PR", &
       mruleid = "vdW", &
       ref = "tcPR-ENGINEERING", &
@@ -5618,7 +5678,7 @@ module mixdatadb
       kijvalue = -0.26000000  &
       )
 
-  type (kijdatadb), parameter :: vdw562 = &
+  type (kijdatadb), parameter :: vdw568 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5628,7 +5688,7 @@ module mixdatadb
       kijvalue = 0.00500000  &
       )
 
-  type (kijdatadb), parameter :: vdw563 = &
+  type (kijdatadb), parameter :: vdw569 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5638,7 +5698,7 @@ module mixdatadb
       kijvalue = -0.00800000  &
       )
 
-  type (kijdatadb), parameter :: vdw564 = &
+  type (kijdatadb), parameter :: vdw570 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5648,7 +5708,7 @@ module mixdatadb
       kijvalue = 0.01500000  &
       )
 
-  type (kijdatadb), parameter :: vdw565 = &
+  type (kijdatadb), parameter :: vdw571 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5658,7 +5718,7 @@ module mixdatadb
       kijvalue = 0.02000000  &
       )
 
-  type (kijdatadb), parameter :: vdw566 = &
+  type (kijdatadb), parameter :: vdw572 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5668,7 +5728,7 @@ module mixdatadb
       kijvalue = 0.01000000  &
       )
 
-  type (kijdatadb), parameter :: vdw567 = &
+  type (kijdatadb), parameter :: vdw573 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5678,7 +5738,7 @@ module mixdatadb
       kijvalue = 0.00600000  &
       )
 
-  type (kijdatadb), parameter :: vdw568 = &
+  type (kijdatadb), parameter :: vdw574 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5688,7 +5748,7 @@ module mixdatadb
       kijvalue = 0.00400000  &
       )
 
-  type (kijdatadb), parameter :: vdw569 = &
+  type (kijdatadb), parameter :: vdw575 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5698,7 +5758,7 @@ module mixdatadb
       kijvalue = 0.00100000  &
       )
 
-  type (kijdatadb), parameter :: vdw570 = &
+  type (kijdatadb), parameter :: vdw576 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5708,7 +5768,7 @@ module mixdatadb
       kijvalue = -0.00100000  &
       )
 
-  type (kijdatadb), parameter :: vdw571 = &
+  type (kijdatadb), parameter :: vdw577 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5718,7 +5778,7 @@ module mixdatadb
       kijvalue = -0.01500000  &
       )
 
-  type (kijdatadb), parameter :: vdw572 = &
+  type (kijdatadb), parameter :: vdw578 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5728,7 +5788,7 @@ module mixdatadb
       kijvalue = 0.02600000  &
       )
 
-  type (kijdatadb), parameter :: vdw573 = &
+  type (kijdatadb), parameter :: vdw579 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5738,7 +5798,7 @@ module mixdatadb
       kijvalue = 0.01800000  &
       )
 
-  type (kijdatadb), parameter :: vdw574 = &
+  type (kijdatadb), parameter :: vdw580 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5748,7 +5808,7 @@ module mixdatadb
       kijvalue = 0.01900000  &
       )
 
-  type (kijdatadb), parameter :: vdw575 = &
+  type (kijdatadb), parameter :: vdw581 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5758,7 +5818,7 @@ module mixdatadb
       kijvalue = 0.06200000  &
       )
 
-  type (kijdatadb), parameter :: vdw576 = &
+  type (kijdatadb), parameter :: vdw582 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5768,7 +5828,7 @@ module mixdatadb
       kijvalue = 0.01300000  &
       )
 
-  type (kijdatadb), parameter :: vdw577 = &
+  type (kijdatadb), parameter :: vdw583 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5778,7 +5838,7 @@ module mixdatadb
       kijvalue = 0.01300000  &
       )
 
-  type (kijdatadb), parameter :: vdw578 = &
+  type (kijdatadb), parameter :: vdw584 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5788,7 +5848,7 @@ module mixdatadb
       kijvalue = 0.02100000  &
       )
 
-  type (kijdatadb), parameter :: vdw579 = &
+  type (kijdatadb), parameter :: vdw585 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5798,7 +5858,7 @@ module mixdatadb
       kijvalue = 0.03000000  &
       )
 
-  type (kijdatadb), parameter :: vdw580 = &
+  type (kijdatadb), parameter :: vdw586 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5808,7 +5868,7 @@ module mixdatadb
       kijvalue = 0.00500000  &
       )
 
-  type (kijdatadb), parameter :: vdw581 = &
+  type (kijdatadb), parameter :: vdw587 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5818,7 +5878,7 @@ module mixdatadb
       kijvalue = -0.00300000  &
       )
 
-  type (kijdatadb), parameter :: vdw582 = &
+  type (kijdatadb), parameter :: vdw588 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5828,7 +5888,7 @@ module mixdatadb
       kijvalue = 0.09300000  &
       )
 
-  type (kijdatadb), parameter :: vdw583 = &
+  type (kijdatadb), parameter :: vdw589 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5838,7 +5898,7 @@ module mixdatadb
       kijvalue = 0.12800000  &
       )
 
-  type (kijdatadb), parameter :: vdw584 = &
+  type (kijdatadb), parameter :: vdw590 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5848,7 +5908,7 @@ module mixdatadb
       kijvalue = 0.05700000  &
       )
 
-  type (kijdatadb), parameter :: vdw585 = &
+  type (kijdatadb), parameter :: vdw591 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5858,7 +5918,7 @@ module mixdatadb
       kijvalue = 0.13100000  &
       )
 
-  type (kijdatadb), parameter :: vdw586 = &
+  type (kijdatadb), parameter :: vdw592 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5868,7 +5928,7 @@ module mixdatadb
       kijvalue = 0.10900000  &
       )
 
-  type (kijdatadb), parameter :: vdw587 = &
+  type (kijdatadb), parameter :: vdw593 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5878,7 +5938,7 @@ module mixdatadb
       kijvalue = 0.12700000  &
       )
 
-  type (kijdatadb), parameter :: vdw588 = &
+  type (kijdatadb), parameter :: vdw594 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5888,7 +5948,7 @@ module mixdatadb
       kijvalue = 0.13500000  &
       )
 
-  type (kijdatadb), parameter :: vdw589 = &
+  type (kijdatadb), parameter :: vdw595 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5898,7 +5958,7 @@ module mixdatadb
       kijvalue = 0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw590 = &
+  type (kijdatadb), parameter :: vdw596 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5908,7 +5968,7 @@ module mixdatadb
       kijvalue = 0.08900000  &
       )
 
-  type (kijdatadb), parameter :: vdw591 = &
+  type (kijdatadb), parameter :: vdw597 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5918,7 +5978,7 @@ module mixdatadb
       kijvalue = 0.04600000  &
       )
 
-  type (kijdatadb), parameter :: vdw592 = &
+  type (kijdatadb), parameter :: vdw598 = &
       kijdatadb(eosid = "PT", &
       mruleid = "vdW", &
       ref = "Patel1982", &
@@ -5928,7 +5988,7 @@ module mixdatadb
       kijvalue = 0.05300000  &
       )
 
-  type (kijdatadb), parameter :: vdw593 = &
+  type (kijdatadb), parameter :: vdw599 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5938,7 +5998,7 @@ module mixdatadb
       kijvalue = -0.00780000  &
       )
 
-  type (kijdatadb), parameter :: vdw594 = &
+  type (kijdatadb), parameter :: vdw600 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5948,7 +6008,7 @@ module mixdatadb
       kijvalue = 0.02000000  &
       )
 
-  type (kijdatadb), parameter :: vdw595 = &
+  type (kijdatadb), parameter :: vdw601 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5958,7 +6018,7 @@ module mixdatadb
       kijvalue = 0.00900000  &
       )
 
-  type (kijdatadb), parameter :: vdw596 = &
+  type (kijdatadb), parameter :: vdw602 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5968,7 +6028,7 @@ module mixdatadb
       kijvalue = 0.02410000  &
       )
 
-  type (kijdatadb), parameter :: vdw597 = &
+  type (kijdatadb), parameter :: vdw603 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5978,7 +6038,7 @@ module mixdatadb
       kijvalue = 0.00560000  &
       )
 
-  type (kijdatadb), parameter :: vdw598 = &
+  type (kijdatadb), parameter :: vdw604 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5988,7 +6048,7 @@ module mixdatadb
       kijvalue = 0.01900000  &
       )
 
-  type (kijdatadb), parameter :: vdw599 = &
+  type (kijdatadb), parameter :: vdw605 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -5998,7 +6058,7 @@ module mixdatadb
       kijvalue = 0.09100000  &
       )
 
-  type (kijdatadb), parameter :: vdw600 = &
+  type (kijdatadb), parameter :: vdw606 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6008,7 +6068,7 @@ module mixdatadb
       kijvalue = 0.01120000  &
       )
 
-  type (kijdatadb), parameter :: vdw601 = &
+  type (kijdatadb), parameter :: vdw607 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6018,7 +6078,7 @@ module mixdatadb
       kijvalue = -0.00220000  &
       )
 
-  type (kijdatadb), parameter :: vdw602 = &
+  type (kijdatadb), parameter :: vdw608 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6028,7 +6088,7 @@ module mixdatadb
       kijvalue = -0.01000000  &
       )
 
-  type (kijdatadb), parameter :: vdw603 = &
+  type (kijdatadb), parameter :: vdw609 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6038,7 +6098,7 @@ module mixdatadb
       kijvalue = 0.00670000  &
       )
 
-  type (kijdatadb), parameter :: vdw604 = &
+  type (kijdatadb), parameter :: vdw610 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6048,7 +6108,7 @@ module mixdatadb
       kijvalue = 0.00560000  &
       )
 
-  type (kijdatadb), parameter :: vdw605 = &
+  type (kijdatadb), parameter :: vdw611 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6058,7 +6118,7 @@ module mixdatadb
       kijvalue = 0.10000000  &
       )
 
-  type (kijdatadb), parameter :: vdw606 = &
+  type (kijdatadb), parameter :: vdw612 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6068,7 +6128,7 @@ module mixdatadb
       kijvalue = -0.01000000  &
       )
 
-  type (kijdatadb), parameter :: vdw607 = &
+  type (kijdatadb), parameter :: vdw613 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6078,7 +6138,7 @@ module mixdatadb
       kijvalue = 0.02300000  &
       )
 
-  type (kijdatadb), parameter :: vdw608 = &
+  type (kijdatadb), parameter :: vdw614 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6088,7 +6148,7 @@ module mixdatadb
       kijvalue = 0.00110000  &
       )
 
-  type (kijdatadb), parameter :: vdw609 = &
+  type (kijdatadb), parameter :: vdw615 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6098,7 +6158,7 @@ module mixdatadb
       kijvalue = 0.02040000  &
       )
 
-  type (kijdatadb), parameter :: vdw610 = &
+  type (kijdatadb), parameter :: vdw616 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6108,7 +6168,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw611 = &
+  type (kijdatadb), parameter :: vdw617 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6118,7 +6178,7 @@ module mixdatadb
       kijvalue = -0.06300000  &
       )
 
-  type (kijdatadb), parameter :: vdw612 = &
+  type (kijdatadb), parameter :: vdw618 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6128,7 +6188,7 @@ module mixdatadb
       kijvalue = 0.05000000  &
       )
 
-  type (kijdatadb), parameter :: vdw613 = &
+  type (kijdatadb), parameter :: vdw619 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6138,7 +6198,7 @@ module mixdatadb
       kijvalue = 0.10400000  &
       )
 
-  type (kijdatadb), parameter :: vdw614 = &
+  type (kijdatadb), parameter :: vdw620 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6148,7 +6208,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw615 = &
+  type (kijdatadb), parameter :: vdw621 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6158,7 +6218,7 @@ module mixdatadb
       kijvalue = 0.00400000  &
       )
 
-  type (kijdatadb), parameter :: vdw616 = &
+  type (kijdatadb), parameter :: vdw622 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6168,7 +6228,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw617 = &
+  type (kijdatadb), parameter :: vdw623 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6178,7 +6238,7 @@ module mixdatadb
       kijvalue = -0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw618 = &
+  type (kijdatadb), parameter :: vdw624 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6188,73 +6248,13 @@ module mixdatadb
       kijvalue = 0.09500000  &
       )
 
-  type (kijdatadb), parameter :: vdw619 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "C2", &
-      kijvalue = 0.15000000  &
-      )
-
-  type (kijdatadb), parameter :: vdw620 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "C2_1", &
-      kijvalue = 0.15000000  &
-      )
-
-  type (kijdatadb), parameter :: vdw621 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "C3", &
-      kijvalue = 0.15000000  &
-      )
-
-  type (kijdatadb), parameter :: vdw622 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "H2O", &
-      kijvalue = 0.07400000  &
-      )
-
-  type (kijdatadb), parameter :: vdw623 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "IC4", &
-      kijvalue = 0.15000000  &
-      )
-
-  type (kijdatadb), parameter :: vdw624 = &
-      kijdatadb(eosid = "SRK", &
-      mruleid = "vdW", &
-      ref = "Default", &
-      bib_ref = "", &
-      uid1 = "CO2", &
-      uid2 = "IC5", &
-      kijvalue = 0.15000000  &
-      )
-
   type (kijdatadb), parameter :: vdw625 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
       bib_ref = "", &
       uid1 = "CO2", &
-      uid2 = "NC10", &
+      uid2 = "C2", &
       kijvalue = 0.15000000  &
       )
 
@@ -6264,7 +6264,7 @@ module mixdatadb
       ref = "Default", &
       bib_ref = "", &
       uid1 = "CO2", &
-      uid2 = "NC11", &
+      uid2 = "C2_1", &
       kijvalue = 0.15000000  &
       )
 
@@ -6274,7 +6274,7 @@ module mixdatadb
       ref = "Default", &
       bib_ref = "", &
       uid1 = "CO2", &
-      uid2 = "NC4", &
+      uid2 = "C3", &
       kijvalue = 0.15000000  &
       )
 
@@ -6284,11 +6284,71 @@ module mixdatadb
       ref = "Default", &
       bib_ref = "", &
       uid1 = "CO2", &
+      uid2 = "H2O", &
+      kijvalue = 0.07400000  &
+      )
+
+  type (kijdatadb), parameter :: vdw629 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw630 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "IC5", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw631 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC10", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw632 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC11", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw633 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
+      uid2 = "NC4", &
+      kijvalue = 0.15000000  &
+      )
+
+  type (kijdatadb), parameter :: vdw634 = &
+      kijdatadb(eosid = "SRK", &
+      mruleid = "vdW", &
+      ref = "Default", &
+      bib_ref = "", &
+      uid1 = "CO2", &
       uid2 = "NC5", &
       kijvalue = 0.15000000  &
       )
 
-  type (kijdatadb), parameter :: vdw629 = &
+  type (kijdatadb), parameter :: vdw635 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6298,7 +6358,7 @@ module mixdatadb
       kijvalue = 0.10000000  &
       )
 
-  type (kijdatadb), parameter :: vdw630 = &
+  type (kijdatadb), parameter :: vdw636 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6308,7 +6368,7 @@ module mixdatadb
       kijvalue = -0.05100000  &
       )
 
-  type (kijdatadb), parameter :: vdw631 = &
+  type (kijdatadb), parameter :: vdw637 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6318,7 +6378,7 @@ module mixdatadb
       kijvalue = 0.08800000  &
       )
 
-  type (kijdatadb), parameter :: vdw632 = &
+  type (kijdatadb), parameter :: vdw638 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6328,7 +6388,7 @@ module mixdatadb
       kijvalue = 0.07100000  &
       )
 
-  type (kijdatadb), parameter :: vdw633 = &
+  type (kijdatadb), parameter :: vdw639 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6338,7 +6398,7 @@ module mixdatadb
       kijvalue = 0.00900000  &
       )
 
-  type (kijdatadb), parameter :: vdw634 = &
+  type (kijdatadb), parameter :: vdw640 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6348,7 +6408,7 @@ module mixdatadb
       kijvalue = 0.06000000  &
       )
 
-  type (kijdatadb), parameter :: vdw635 = &
+  type (kijdatadb), parameter :: vdw641 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6358,7 +6418,7 @@ module mixdatadb
       kijvalue = 0.06000000  &
       )
 
-  type (kijdatadb), parameter :: vdw636 = &
+  type (kijdatadb), parameter :: vdw642 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6368,7 +6428,7 @@ module mixdatadb
       kijvalue = 0.05000000  &
       )
 
-  type (kijdatadb), parameter :: vdw637 = &
+  type (kijdatadb), parameter :: vdw643 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6378,7 +6438,7 @@ module mixdatadb
       kijvalue = 0.04000000  &
       )
 
-  type (kijdatadb), parameter :: vdw638 = &
+  type (kijdatadb), parameter :: vdw644 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6388,7 +6448,7 @@ module mixdatadb
       kijvalue = 0.04000000  &
       )
 
-  type (kijdatadb), parameter :: vdw639 = &
+  type (kijdatadb), parameter :: vdw645 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6398,7 +6458,7 @@ module mixdatadb
       kijvalue = 0.03000000  &
       )
 
-  type (kijdatadb), parameter :: vdw640 = &
+  type (kijdatadb), parameter :: vdw646 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6408,7 +6468,7 @@ module mixdatadb
       kijvalue = 0.01700000  &
       )
 
-  type (kijdatadb), parameter :: vdw641 = &
+  type (kijdatadb), parameter :: vdw647 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6418,7 +6478,7 @@ module mixdatadb
       kijvalue = 0.03400000  &
       )
 
-  type (kijdatadb), parameter :: vdw642 = &
+  type (kijdatadb), parameter :: vdw648 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6428,7 +6488,7 @@ module mixdatadb
       kijvalue = 0.06000000  &
       )
 
-  type (kijdatadb), parameter :: vdw643 = &
+  type (kijdatadb), parameter :: vdw649 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6438,7 +6498,7 @@ module mixdatadb
       kijvalue = 0.07500000  &
       )
 
-  type (kijdatadb), parameter :: vdw644 = &
+  type (kijdatadb), parameter :: vdw650 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6448,7 +6508,7 @@ module mixdatadb
       kijvalue = 0.09000000  &
       )
 
-  type (kijdatadb), parameter :: vdw645 = &
+  type (kijdatadb), parameter :: vdw651 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6458,7 +6518,7 @@ module mixdatadb
       kijvalue = 0.11300000  &
       )
 
-  type (kijdatadb), parameter :: vdw646 = &
+  type (kijdatadb), parameter :: vdw652 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6468,7 +6528,7 @@ module mixdatadb
       kijvalue = 0.08700000  &
       )
 
-  type (kijdatadb), parameter :: vdw647 = &
+  type (kijdatadb), parameter :: vdw653 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6478,7 +6538,7 @@ module mixdatadb
       kijvalue = 0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw648 = &
+  type (kijdatadb), parameter :: vdw654 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6488,7 +6548,7 @@ module mixdatadb
       kijvalue = 0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw649 = &
+  type (kijdatadb), parameter :: vdw655 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6498,7 +6558,7 @@ module mixdatadb
       kijvalue = 0.11300000  &
       )
 
-  type (kijdatadb), parameter :: vdw650 = &
+  type (kijdatadb), parameter :: vdw656 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6508,7 +6568,7 @@ module mixdatadb
       kijvalue = 0.14000000  &
       )
 
-  type (kijdatadb), parameter :: vdw651 = &
+  type (kijdatadb), parameter :: vdw657 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6518,7 +6578,7 @@ module mixdatadb
       kijvalue = 0.15000000  &
       )
 
-  type (kijdatadb), parameter :: vdw652 = &
+  type (kijdatadb), parameter :: vdw658 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6528,7 +6588,7 @@ module mixdatadb
       kijvalue = 0.14200000  &
       )
 
-  type (kijdatadb), parameter :: vdw653 = &
+  type (kijdatadb), parameter :: vdw659 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6538,7 +6598,7 @@ module mixdatadb
       kijvalue = 0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw654 = &
+  type (kijdatadb), parameter :: vdw660 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6548,7 +6608,7 @@ module mixdatadb
       kijvalue = 0.08000000  &
       )
 
-  type (kijdatadb), parameter :: vdw655 = &
+  type (kijdatadb), parameter :: vdw661 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6558,7 +6618,7 @@ module mixdatadb
       kijvalue = -0.01100000  &
       )
 
-  type (kijdatadb), parameter :: vdw656 = &
+  type (kijdatadb), parameter :: vdw662 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6568,7 +6628,7 @@ module mixdatadb
       kijvalue = 0.00540000  &
       )
 
-  type (kijdatadb), parameter :: vdw657 = &
+  type (kijdatadb), parameter :: vdw663 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6578,7 +6638,7 @@ module mixdatadb
       kijvalue = 0.00150000  &
       )
 
-  type (kijdatadb), parameter :: vdw658 = &
+  type (kijdatadb), parameter :: vdw664 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6588,7 +6648,7 @@ module mixdatadb
       kijvalue = 0.08670000  &
       )
 
-  type (kijdatadb), parameter :: vdw659 = &
+  type (kijdatadb), parameter :: vdw665 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6598,7 +6658,7 @@ module mixdatadb
       kijvalue = 0.02620000  &
       )
 
-  type (kijdatadb), parameter :: vdw660 = &
+  type (kijdatadb), parameter :: vdw666 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6608,7 +6668,7 @@ module mixdatadb
       kijvalue = 0.02990000  &
       )
 
-  type (kijdatadb), parameter :: vdw661 = &
+  type (kijdatadb), parameter :: vdw667 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6618,7 +6678,7 @@ module mixdatadb
       kijvalue = 0.03040000  &
       )
 
-  type (kijdatadb), parameter :: vdw662 = &
+  type (kijdatadb), parameter :: vdw668 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6628,7 +6688,7 @@ module mixdatadb
       kijvalue = 0.10080000  &
       )
 
-  type (kijdatadb), parameter :: vdw663 = &
+  type (kijdatadb), parameter :: vdw669 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6638,7 +6698,7 @@ module mixdatadb
       kijvalue = 0.04660000  &
       )
 
-  type (kijdatadb), parameter :: vdw664 = &
+  type (kijdatadb), parameter :: vdw670 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6648,7 +6708,7 @@ module mixdatadb
       kijvalue = 0.03990000  &
       )
 
-  type (kijdatadb), parameter :: vdw665 = &
+  type (kijdatadb), parameter :: vdw671 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6658,7 +6718,7 @@ module mixdatadb
       kijvalue = 0.05640000  &
       )
 
-  type (kijdatadb), parameter :: vdw666 = &
+  type (kijdatadb), parameter :: vdw672 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6668,7 +6728,7 @@ module mixdatadb
       kijvalue = 0.00570000  &
       )
 
-  type (kijdatadb), parameter :: vdw667 = &
+  type (kijdatadb), parameter :: vdw673 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6678,7 +6738,7 @@ module mixdatadb
       kijvalue = 0.08900000  &
       )
 
-  type (kijdatadb), parameter :: vdw668 = &
+  type (kijdatadb), parameter :: vdw674 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6688,7 +6748,7 @@ module mixdatadb
       kijvalue = 0.10320000  &
       )
 
-  type (kijdatadb), parameter :: vdw669 = &
+  type (kijdatadb), parameter :: vdw675 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6698,7 +6758,7 @@ module mixdatadb
       kijvalue = 0.12000000  &
       )
 
-  type (kijdatadb), parameter :: vdw670 = &
+  type (kijdatadb), parameter :: vdw676 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6708,7 +6768,7 @@ module mixdatadb
       kijvalue = -0.01110000  &
       )
 
-  type (kijdatadb), parameter :: vdw671 = &
+  type (kijdatadb), parameter :: vdw677 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6718,7 +6778,7 @@ module mixdatadb
       kijvalue = -0.00240000  &
       )
 
-  type (kijdatadb), parameter :: vdw672 = &
+  type (kijdatadb), parameter :: vdw678 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6728,7 +6788,7 @@ module mixdatadb
       kijvalue = 0.00130000  &
       )
 
-  type (kijdatadb), parameter :: vdw673 = &
+  type (kijdatadb), parameter :: vdw679 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6738,7 +6798,7 @@ module mixdatadb
       kijvalue = 0.03740000  &
       )
 
-  type (kijdatadb), parameter :: vdw674 = &
+  type (kijdatadb), parameter :: vdw680 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6748,7 +6808,7 @@ module mixdatadb
       kijvalue = 0.03070000  &
       )
 
-  type (kijdatadb), parameter :: vdw675 = &
+  type (kijdatadb), parameter :: vdw681 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6758,7 +6818,7 @@ module mixdatadb
       kijvalue = 0.04480000  &
       )
 
-  type (kijdatadb), parameter :: vdw676 = &
+  type (kijdatadb), parameter :: vdw682 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6768,7 +6828,7 @@ module mixdatadb
       kijvalue = -0.00780000  &
       )
 
-  type (kijdatadb), parameter :: vdw677 = &
+  type (kijdatadb), parameter :: vdw683 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6778,7 +6838,7 @@ module mixdatadb
       kijvalue = -0.00220000  &
       )
 
-  type (kijdatadb), parameter :: vdw678 = &
+  type (kijdatadb), parameter :: vdw684 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6788,7 +6848,7 @@ module mixdatadb
       kijvalue = 0.07600000  &
       )
 
-  type (kijdatadb), parameter :: vdw679 = &
+  type (kijdatadb), parameter :: vdw685 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6798,7 +6858,7 @@ module mixdatadb
       kijvalue = 0.53000000  &
       )
 
-  type (kijdatadb), parameter :: vdw680 = &
+  type (kijdatadb), parameter :: vdw686 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6808,7 +6868,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw681 = &
+  type (kijdatadb), parameter :: vdw687 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6818,7 +6878,7 @@ module mixdatadb
       kijvalue = 0.00440000  &
       )
 
-  type (kijdatadb), parameter :: vdw682 = &
+  type (kijdatadb), parameter :: vdw688 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6828,7 +6888,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw683 = &
+  type (kijdatadb), parameter :: vdw689 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6838,7 +6898,7 @@ module mixdatadb
       kijvalue = 0.00780000  &
       )
 
-  type (kijdatadb), parameter :: vdw684 = &
+  type (kijdatadb), parameter :: vdw690 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6848,7 +6908,7 @@ module mixdatadb
       kijvalue = -0.01560000  &
       )
 
-  type (kijdatadb), parameter :: vdw685 = &
+  type (kijdatadb), parameter :: vdw691 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6858,7 +6918,7 @@ module mixdatadb
       kijvalue = 0.11200000  &
       )
 
-  type (kijdatadb), parameter :: vdw686 = &
+  type (kijdatadb), parameter :: vdw692 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6868,7 +6928,7 @@ module mixdatadb
       kijvalue = 0.50000000  &
       )
 
-  type (kijdatadb), parameter :: vdw687 = &
+  type (kijdatadb), parameter :: vdw693 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6878,7 +6938,7 @@ module mixdatadb
       kijvalue = -0.01110000  &
       )
 
-  type (kijdatadb), parameter :: vdw688 = &
+  type (kijdatadb), parameter :: vdw694 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6888,7 +6948,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw689 = &
+  type (kijdatadb), parameter :: vdw695 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6898,7 +6958,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw690 = &
+  type (kijdatadb), parameter :: vdw696 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6908,7 +6968,7 @@ module mixdatadb
       kijvalue = -0.00110000  &
       )
 
-  type (kijdatadb), parameter :: vdw691 = &
+  type (kijdatadb), parameter :: vdw697 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6918,7 +6978,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw692 = &
+  type (kijdatadb), parameter :: vdw698 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6928,7 +6988,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw693 = &
+  type (kijdatadb), parameter :: vdw699 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6938,7 +6998,7 @@ module mixdatadb
       kijvalue = 0.08500000  &
       )
 
-  type (kijdatadb), parameter :: vdw694 = &
+  type (kijdatadb), parameter :: vdw700 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6948,7 +7008,7 @@ module mixdatadb
       kijvalue = 0.55000000  &
       )
 
-  type (kijdatadb), parameter :: vdw695 = &
+  type (kijdatadb), parameter :: vdw701 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6958,7 +7018,7 @@ module mixdatadb
       kijvalue = 0.00410000  &
       )
 
-  type (kijdatadb), parameter :: vdw696 = &
+  type (kijdatadb), parameter :: vdw702 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6968,7 +7028,7 @@ module mixdatadb
       kijvalue = 0.01700000  &
       )
 
-  type (kijdatadb), parameter :: vdw697 = &
+  type (kijdatadb), parameter :: vdw703 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6978,7 +7038,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw698 = &
+  type (kijdatadb), parameter :: vdw704 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6988,7 +7048,7 @@ module mixdatadb
       kijvalue = 0.11000000  &
       )
 
-  type (kijdatadb), parameter :: vdw699 = &
+  type (kijdatadb), parameter :: vdw705 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -6998,7 +7058,7 @@ module mixdatadb
       kijvalue = 0.12000000  &
       )
 
-  type (kijdatadb), parameter :: vdw700 = &
+  type (kijdatadb), parameter :: vdw706 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7008,7 +7068,7 @@ module mixdatadb
       kijvalue = 0.17000000  &
       )
 
-  type (kijdatadb), parameter :: vdw701 = &
+  type (kijdatadb), parameter :: vdw707 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7018,7 +7078,7 @@ module mixdatadb
       kijvalue = 0.13500000  &
       )
 
-  type (kijdatadb), parameter :: vdw702 = &
+  type (kijdatadb), parameter :: vdw708 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7028,7 +7088,7 @@ module mixdatadb
       kijvalue = 0.06000000  &
       )
 
-  type (kijdatadb), parameter :: vdw703 = &
+  type (kijdatadb), parameter :: vdw709 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7038,7 +7098,7 @@ module mixdatadb
       kijvalue = 0.06500000  &
       )
 
-  type (kijdatadb), parameter :: vdw704 = &
+  type (kijdatadb), parameter :: vdw710 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7048,7 +7108,7 @@ module mixdatadb
       kijvalue = 0.53000000  &
       )
 
-  type (kijdatadb), parameter :: vdw705 = &
+  type (kijdatadb), parameter :: vdw711 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7058,7 +7118,7 @@ module mixdatadb
       kijvalue = 0.52000000  &
       )
 
-  type (kijdatadb), parameter :: vdw706 = &
+  type (kijdatadb), parameter :: vdw712 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7068,7 +7128,7 @@ module mixdatadb
       kijvalue = 0.52000000  &
       )
 
-  type (kijdatadb), parameter :: vdw707 = &
+  type (kijdatadb), parameter :: vdw713 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7078,7 +7138,7 @@ module mixdatadb
       kijvalue = 0.50000000  &
       )
 
-  type (kijdatadb), parameter :: vdw708 = &
+  type (kijdatadb), parameter :: vdw714 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7088,7 +7148,7 @@ module mixdatadb
       kijvalue = 0.50000000  &
       )
 
-  type (kijdatadb), parameter :: vdw709 = &
+  type (kijdatadb), parameter :: vdw715 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7098,7 +7158,7 @@ module mixdatadb
       kijvalue = 0.50000000  &
       )
 
-  type (kijdatadb), parameter :: vdw710 = &
+  type (kijdatadb), parameter :: vdw716 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7108,7 +7168,7 @@ module mixdatadb
       kijvalue = 0.50000000  &
       )
 
-  type (kijdatadb), parameter :: vdw711 = &
+  type (kijdatadb), parameter :: vdw717 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7118,7 +7178,7 @@ module mixdatadb
       kijvalue = -0.00040000  &
       )
 
-  type (kijdatadb), parameter :: vdw712 = &
+  type (kijdatadb), parameter :: vdw718 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7128,7 +7188,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw713 = &
+  type (kijdatadb), parameter :: vdw719 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7138,7 +7198,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw714 = &
+  type (kijdatadb), parameter :: vdw720 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7148,7 +7208,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw715 = &
+  type (kijdatadb), parameter :: vdw721 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7158,7 +7218,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw716 = &
+  type (kijdatadb), parameter :: vdw722 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7168,7 +7228,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw717 = &
+  type (kijdatadb), parameter :: vdw723 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7178,7 +7238,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw718 = &
+  type (kijdatadb), parameter :: vdw724 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7188,7 +7248,7 @@ module mixdatadb
       kijvalue = 0.00190000  &
       )
 
-  type (kijdatadb), parameter :: vdw719 = &
+  type (kijdatadb), parameter :: vdw725 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7198,7 +7258,7 @@ module mixdatadb
       kijvalue = -0.00220000  &
       )
 
-  type (kijdatadb), parameter :: vdw720 = &
+  type (kijdatadb), parameter :: vdw726 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7208,7 +7268,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw721 = &
+  type (kijdatadb), parameter :: vdw727 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7218,7 +7278,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw722 = &
+  type (kijdatadb), parameter :: vdw728 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7228,7 +7288,7 @@ module mixdatadb
       kijvalue = 0.00000000  &
       )
 
-  type (kijdatadb), parameter :: vdw723 = &
+  type (kijdatadb), parameter :: vdw729 = &
       kijdatadb(eosid = "SRK", &
       mruleid = "vdW", &
       ref = "Default", &
@@ -7514,6 +7574,26 @@ module mixdatadb
       lijvalue = -0.16000000  &
       )
 
+  type (lijdatadb), parameter :: lij2 = &
+      lijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "O-H2", &
+      uid2 = "HE", &
+      lijvalue = -0.16000000  &
+      )
+
+  type (lijdatadb), parameter :: lij3 = &
+      lijdatadb(eosid = "PR", &
+      mruleid = "vdW", &
+      ref = "QuantumCubic", &
+      bib_ref = "10.1016/j.fluid.2020.112790", &
+      uid1 = "P-H2", &
+      uid2 = "HE", &
+      lijvalue = -0.16000000  &
+      )
+
   type(CPAkijdata), parameter :: cpa1 = &
       CPAkijdata(eosid = "CPA-SRK", &
       ref = "DEFAULT", &
@@ -7671,7 +7751,7 @@ module mixdatadb
       )
 
 
-  integer, parameter :: maxkij =723
+  integer, parameter :: maxkij =729
   type (kijdatadb), dimension(maxkij), parameter :: kijdb = (/&
       vdw1,vdw2,vdw3,vdw4,vdw5, &
       vdw6,vdw7,vdw8,vdw9,vdw10, &
@@ -7817,7 +7897,8 @@ module mixdatadb
       vdw706,vdw707,vdw708,vdw709,vdw710, &
       vdw711,vdw712,vdw713,vdw714,vdw715, &
       vdw716,vdw717,vdw718,vdw719,vdw720, &
-      vdw721,vdw722,vdw723 &
+      vdw721,vdw722,vdw723,vdw724,vdw725, &
+      vdw726,vdw727,vdw728,vdw729 &
   /)
 
   integer, parameter :: maxinterGEij =19
@@ -7828,9 +7909,9 @@ module mixdatadb
       ge16,ge17,ge18,ge19 &
   /)
 
-  integer, parameter :: maxlij =1
+  integer, parameter :: maxlij =3
   type (lijdatadb), dimension(maxlij), parameter :: lijdb = (/&
-      lij1 &
+      lij1,lij2,lij3 &
   /)
 
   integer, parameter :: CPAmaxkij =12

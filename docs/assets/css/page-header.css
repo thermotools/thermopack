@@ -1,7 +1,7 @@
 .page-header {
     color: #ffffff;
     text-align: center;
-    background-image: url('/thermopack/assets/graphics/header.pdf');
+    background-image: url('/thermopack/assets/graphics/header.png');
     background-position: center;
     background-size: cover; /* You can adjust this property */
 }

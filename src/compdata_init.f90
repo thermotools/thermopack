@@ -201,14 +201,30 @@ submodule (compdata) comp_init
     else
       comp_name = trim(p_comps(index)%p_comp%name)
     endif
-  end subroutine
+  end subroutine comp_name_active
+
+  module subroutine comp_structure(cname, struct)
+    character(len=*), intent(in) :: cname
+    character(len=*), intent(out) :: struct
+    ! Locals
+    integer :: cidx
+    cidx = getCompDBindex(cname)
+    if (cidx < 1 .or. cidx > maxncdb) then
+      call stoperror("Component "//trim(cname)//" not found in database")
+    endif
+    if (cidx < 1 .or. cidx > maxncdb) then
+      struct = "ERROR"
+    else
+      struct = trim(compdb(cidx)%structure)
+    endif
+  end subroutine comp_structure
 
   module subroutine set_ideal_cp_correlation(index, correlation, parameters)
     use thermopack_var, only: get_active_comps
     implicit none
     integer, intent(in) :: index
     integer, intent(in) :: correlation
-    real, intent(in) :: parameters(10)
+    real, intent(in) :: parameters(n_max_cp)
     ! Locals
     type(gendata_pointer), pointer :: p_comps(:)
     p_comps => get_active_comps()
@@ -221,7 +237,7 @@ submodule (compdata) comp_init
     implicit none
     integer, intent(in) :: index
     integer, intent(out) :: correlation
-    real, intent(out) :: parameters(10)
+    real, intent(out) :: parameters(n_max_cp)
     ! Locals
     type(gendata_pointer), pointer :: p_comps(:)
     p_comps => get_active_comps()

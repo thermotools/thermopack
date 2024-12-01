@@ -1,6 +1,7 @@
 """Module for automatic generation of FORTRAN code of PC-SAFT component and binary data."""
 import numpy as np
 from sys import exit
+import sys
 import os
 import math
 import json
@@ -11,6 +12,8 @@ from data_utils import I, N_TAGS_PER_LINE, \
     get_assoc_scheme_parameter, get_mix_model_parameter
 from binarydata import binaries, binary_list
 from shutil import copy
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docs'))
+from tools import write_file, THERMOPACK_ROOT
 
 
 class pcsaft_component(component):
@@ -284,7 +287,7 @@ def PCSAFT_class_definition():
     classes.append(2*I+"real :: eps  !< [J/mol].")
     classes.append(2*I+"real :: beta !< [-]. Also known as kappa in SAFT literature.")
     classes.append(2*I+"integer :: assoc_scheme !< Association scheme.")
-    classes.append(2*I+"! Electical moment parameters.")
+    classes.append(2*I+"! Electrical moment parameters.")
     classes.append(2*I+"real :: mu  !< Dipole-moment [D]")
     classes.append(2*I+"real :: Q !< Quadrupol-moment [ÅD]")
     classes.append(2*I+"! Bibliograpic reference")
@@ -333,14 +336,6 @@ def PCSAFT_header_and_footer():
 
         return header, footer
 
-def save_PCSAFT_fortran_file(code_lines):
-        """ Save pc_saft_datadb.f90
-        """
-        with open("pc_saft_datadb.f90", "w") as f:
-            for line in code_lines:
-                f.write(line)
-                f.write("\n")
-
 
 if __name__ == "__main__":
     # Read json files
@@ -354,5 +349,5 @@ if __name__ == "__main__":
     bin_code = binl.get_fortran_code()
     code_lines += bin_code
     code_lines += footer
-    save_PCSAFT_fortran_file(code_lines)
-    copy('pc_saft_datadb.f90', '../../../src/pc_saft_datadb.f90')
+    new_content = '\n'.join(code_lines)
+    write_file(f'{THERMOPACK_ROOT}/src/pc_saft_datadb.f90', new_content)

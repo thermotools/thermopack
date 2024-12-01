@@ -2,6 +2,8 @@
   "ident": "O-H2",
   "formula": "H2",
   "cas_number": "1333-74-0",
+  "InChI": "1S/H2/h1H",
+  "structure": "H:2",
   "name": "ORTHO-HYDROGEN",
   "aliases": [
     "OrthoHydrogen",
@@ -44,33 +46,29 @@
     "Tmax": 32.6952
   },
   "ideal_heat_capacity-1": {
-    "ref": "Default",
-    "bib_reference": "",
-    "correlation": 10,
+    "ref": "MEOS/Default",
+    "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
+    "correlation": 13,
     "cp": [
-      28.671997,
-      13.396156,
-      0.002960131,
-      -3.980744e-06,
-      2.661667e-09,
-      -6.099863e-13,
-      -11.801371,
-      0.0,
-      0.0,
-      0.0
+      2.5,
+      2.54151,
+      856.0,
+      -2.3661,
+      1444.0,
+      1.00365,
+      2194.0,
+      1.22447,
+      6968.0
     ],
-    "Tmin": 5.0,
-    "Tmax": 5.0
+    "Tmin": 14.008,
+    "Tmax": 1000.0
   },
   "reference_state": {
-    "bib_reference": "",
+    "enthalpy_bib_reference": "",
     "enthalpy": 0.0,
-    "entropy": 0.0
-  },
-  "standard_formation_energy": {
-    "bib_reference": "",
-    "enthalpy": 0.0,
-    "gibbs": 0.0
+    "entropy_bib_reference": "https://webbook.nist.gov : Cox, Wagman, et al., 1984",
+    "entropy_ref_state": "1BAR",
+    "entropy": 130.680
   },
   "rackett_factor": {
     "bib_reference": "",
@@ -85,7 +83,17 @@
     "bib_reference": ""
   },
   "SRK": {},
-  "PR": {},
+  "PR": {
+    "TWU-1": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "correlation": [
+        156.21,
+        -0.0062072,
+        5.047
+      ]
+    }
+  },
     "SAFTVRMIE-1": {
     "m": 1.000,
     "sigma": 3.2571E-10,

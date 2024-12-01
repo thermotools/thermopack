@@ -6,13 +6,13 @@ permalink: /vcurrent/cpa_methods.html
 ---
 
 <!--- 
-Generated at: 2023-11-16T19:47:21.000986
+Generated at: 2024-04-25T20:46:11.483090
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/markdown_from_docstrings.py
 The file is created by parsing the docstrings of the methods in the 
 cpa class. For instructions on how to use the parser routines, see the
 file thermopack/addon/pyUtils/docs/markdown_from_docstrings.py--->
 
-The `cpa` class, found in `addon/pycThermopack/thermopack/cpa.py`, inherrits from the cubic class, and  is the interface to the 
+The `cpa` class, found in `addon/pycThermopack/thermopack/cpa.py`, inherits from the cubic class, and  is the interface to the 
 Cubic Plus Association Equation of State. This class implements utility methods to access mixing parameters etc.
 
 ## Table of contents
@@ -23,6 +23,7 @@ Cubic Plus Association Equation of State. This class implements utility methods 
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-ic)
     * [print_cpa_report](#print_cpa_reportself)
+    * [set_cpa_formulation](#set_cpa_formulationself-simplified-elliot)
     * [set_kij](#set_kijself-c1-c2-kij_a-kij_eps)
     * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
@@ -106,6 +107,7 @@ Set- and get methods for interaction parameters, mixing parameters ...
     * [get_kij](#get_kijself-c1-c2)
     * [get_pure_params](#get_pure_paramsself-ic)
     * [print_cpa_report](#print_cpa_reportself)
+    * [set_cpa_formulation](#set_cpa_formulationself-simplified-elliot)
     * [set_kij](#set_kijself-c1-c2-kij_a-kij_eps)
     * [set_pure_params](#set_pure_paramsself-ic-params)
     * [use_simplified_cpa](#use_simplified_cpaself-simplified)
@@ -154,7 +156,18 @@ Get pure parameters
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
 ### `print_cpa_report(self)`
-Print cpa parameters  Parameters printed are the five pure parameters a0, b, epsilon, beta, c1, and the binary parameter for the cubic part, kij_a, and for the association part, kij_eps. 
+Print cpa parameters
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; Parameters printed are the five pure parameters
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; a0, b, epsilon, beta, c1, and the binary parameter
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; for the cubic part, kij_a, and for the association part, kij_eps.
+
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+
+### `set_cpa_formulation(self, simplified, elliot)`
+Set CPA formulation Args: simplified (bool): Use simplified form for rdf in CPA? elliot (bool): use Elliot mixing rule for association Deltas? 
 
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
 
