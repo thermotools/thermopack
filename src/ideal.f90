@@ -41,6 +41,7 @@ module ideal
   !! \endverbatim
   use thermopack_var, only: Rgas
   use numconstants, only: expMax
+  use thermopack_var, only: base_eos_param
   implicit none
   save
   ! Include TREND interface
@@ -48,6 +49,14 @@ module ideal
 
   !> Log cut-off value
   real, parameter :: logCutOff = 1.0e-100
+
+  type, extends(base_eos_param) :: ideal_eos
+    ! No additional states
+  contains
+    procedure, public :: allocate_and_init => ideal_eos_allocate_and_init
+    ! Assignment operator
+    procedure, pass(This), public :: assign_eos => assign_ideal_eos
+  end type ideal_eos
 
   public:: EstPsat, TP_Kideal, CPideal, Hideal, Sideal_T,&
        CPideal_mix, Hideal_mix, TP_Sideal_mix, TV_Yideal_mix, &
@@ -57,8 +66,10 @@ module ideal
   public :: set_standard_entropy, get_standard_entropy
   public :: set_enthalpy_of_formation, get_enthalpy_of_formation
   public :: set_reference_energies
+  public :: ideal_eos
 
 contains
+
   !---------------------------------------------------------------------- >
   !> The function returns the vapour pressure for a pure component
   !! for the compoentent that is found
@@ -1299,5 +1310,37 @@ contains
       comp%href_int = comp%href - h_id
     endif
   end subroutine set_reference_energy
+
+  subroutine ideal_eos_allocate_and_init(eos,nc,eos_label)
+    ! Passed object:
+    class(ideal_eos), intent(inout) :: eos
+    ! Input:
+    integer, intent(in) :: nc !< Number of components
+    character(len=*), intent(in) :: eos_label !< EOS label
+    ! Locals
+  end subroutine ideal_eos_allocate_and_init
+
+  subroutine assign_ideal_eos(This, other)
+    class(ideal_eos), intent(inout) :: this
+    class(*), intent(in)           :: other
+    !
+    select type (other)
+    class is (ideal_eos)
+      call this%assign_base_eos_param(other)
+    class default
+      print *,"assign_ideal_eos: Should not be here"
+    end select
+  end subroutine assign_ideal_eos
+
+  !> Allocate ideal eos
+  function ideal_eos_constructor(nc, eos_label) result(id_eos)
+    ! Input:
+    integer, intent(in) :: nc
+    character(len=*), intent(in) :: eos_label
+    ! Created object:
+    type(ideal_eos) :: id_eos
+    !
+    call id_eos%allocate_and_init(nc, eos_label)
+  end function ideal_eos_constructor
 
 end module ideal

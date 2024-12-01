@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-04-07T19:48:14.822375
+Generated at: 2024-11-13T22:15:22.614283
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/morteham/Documents/codes/thermotools/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/morteham/Documents/codes/thermotools/thermopack_ljs/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/github_toc.md
         metapages/please_cite.md
@@ -15,6 +15,13 @@ The file is created by joining the contents of the files
 --->
 
 # ThermoPack
+# [ThermoPack homepage](https://thermotools.github.io/thermopack/)
+
+For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
+If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
+the version number in the sidebar.
+
+## About
 
 Thermopack is a thermodynamics library for multi-component and
 multi-phase thermodynamics developed at [SINTEF Energy
@@ -27,10 +34,6 @@ has been implemented in this software. Most of these equations of
 state have been developed by other research groups around the world,
 but some of them have been developed by us. Thermopack has been a
 much-appreciated in-house powerhouse.
-
-For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
-If you are running ThermoPack installed via `pip`, make sure to check the documentation for the correct version by selecting 
-the version number in the sidebar.
 
 ![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
@@ -143,6 +146,19 @@ Brief description of file structure:
 
 # Installing the latest version of ThermoPack
 
+- [Using pip](#using-pip)
+- [Installing from wheels](#installing-from-wheels)
+- [Building from source](#building-from-source)
+  - [Prerequisites](#prerequisites)
+  - [CMake setup (macOS and Linux)](#cmake-setup-macos-and-linux)
+  - [CMake setup (Windows)](#cmake-setup-windows)
+- [Legacy build system (without CMake)](#legacy-build-system-without-cmake)
+  - [Linux setup](#linux-setup)
+  - [MacOS setup](#macos-setup)
+  - [Windows setup](#windows-setup)
+    - [MSYS2/Mingw-W64 setup](#msys2mingw-w64-setup)
+  - [Docker setup](#docker-setup)
+
 ## Using pip
 Thermopack has been compiled for Windows, Linux and macOS
 and made available on the [Python Package Index](https://pypi.org/project/thermopack/) (pypi), and can be
@@ -154,10 +170,13 @@ pip3 install thermopack
 
 For documentation on the version available on pypi, refer to the appropriate version number in the sidebar.
 
+## Installing from wheels
+Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
+
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
 the Python frontend pycThermopack. When things are properly installed, it may
-be useful to look into the examples provided in the [getting started guide](getting_started.html), and the 
+be useful to look into the examples provided in the [getting started guide](https://thermotools.github.io/thermopack/vcurrent/getting_started.html), and the 
 [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples).
 
 ### Prerequisites
@@ -171,6 +190,66 @@ Studio](https://visualstudio.microsoft.com/vs/). A solution file is found in
 [thermopack/MSVStudio](https://github.com/thermotools/thermopack/tree/main/MSVStudio),
 assuming that the Intel Fortran compiler is integrated with Microsoft Visual
 Studio.
+
+For macOS and Linux, Lapack and Blas can likely be installed using `apt`, `brew`, or similar. For windows, Lapack will need to be built from source. The [CMake setup for Windows](#cmake-setup-windows) is configured to handle this automatically.
+
+### CMake setup (macOS and Linux)
+
+The `cmake`-based build system assumes that you have Lapack and gfortran installed, see above instructions for more on that.
+
+Build and install thermopack by running
+```bash
+mkdir build
+cd build
+cmake ..
+make install
+```
+
+This will ensure that the thermopack dynamic library is properly installed to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To set up the python wrapper, 
+```bash
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+this will generate the file `addon/pycThermopack/thermopack/platform_specifics.py` and install thermopack to your activated virtual environment.
+
+ThermoPack can be configured to return computed properties as either tuples (`v2`) or using the `Property` struct (`v3`), this is toggled with
+the `-diffs` flag when running `map_platform_specifics.py` as
+```bash
+python map_platform_specifics.py --diffs=v2 # Use tuples
+python map_platform_specifics.py --diffs=v3 # use Property
+```
+the default value is `--diffs=v3`. After running this command you should recieve a confirmation message that thermopack was successfully configured. 
+
+### CMake setup (Windows)
+
+To compile thermopack (and Lapack) with Intel FORTRAN and MSVS, first run
+```
+git submodule update --init --recursive
+```
+from within the `thermopack` direcory, in order to clone Lapack. Then, run
+```
+mkdir build
+cd build
+cmake .. -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config=Release --target install
+```
+Compile and install Lapack, and install the thermopack dynamic library to `thermopack/installed` and `thermopack/addon/pycThermopack/thermopack`.
+
+To configure and install the python-wrapper, run
+```
+python addon/pycThermopack/map_platform_specifics.py
+pip install addon/pycThermopack/
+```
+
+*Note:* If your thermopack dynamic library is called `libthermopack.dll`, and not `thermopack.dll`, you will instead need to run
+```
+python addon/pycThermopack/map_platform_specifics.py --ifort=True
+pip install addon/pycThermopack/
+```
+
+## Legacy build system (without CMake)
 
 ### Linux setup
 The Thermopack source code is downloaded by cloning the library to your local
@@ -271,13 +350,10 @@ how to install pycThermopack for the MSYS2 environment.
 See [addon/docker/README.md](https://github.com/thermotools/thermopack/tree/main/addon/docker) for
 available Dockerfiles to run Thermopack with docker.
 
-### CMake setup
-See [thermopack_cmake](https://github.com/morteham/thermopack_cmake) for prototype CMake scripts to compile Thermopack.
-
-# Getting Started
+# Getting Started - Python
 
 # Getting started - Python
-This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](thermo_methods.html). For more advanced users, a look at the [more advanced page](more_advanced.html) may also be useful.
+This is a short introduction to thermopack. Once you've gotten started, we recommend a look at the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) in the GitHub repo. Comprehensive documentation for the methods available through the python interface can also be found in the [doc page for the thermo class.](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). For more advanced users, a look at the [more advanced page](https://thermotools.github.io/thermopack/vcurrent/more_advanced.html) may also be useful.
 
 *Note:* This guide applies to the most recent version of ThermoPack og GitHub. For guides applicable to versions found on PyPI,
 find the appropriate version in the sidebar on the [ThermoPack homepage.](https://thermotools.github.io/thermopack/index.html)
@@ -285,28 +361,31 @@ find the appropriate version in the sidebar on the [ThermoPack homepage.](https:
 Equations of State (EoS's) in ThermoPack are classes. To do calculations for a given mixture an EoS object must first be initialized for that mixture, as demonstrated in the [Initializing an EoS section](#initialising-an-equation-of-state). Then, a wide variety of thermodynamic computations can be done, as demonstrated in the remaining sections.
 
 ## Contents
-* [Initialising an equation of state](#initialising-an-equation-of-state)
-* [pVT properties](#pvt-properties)
-  * [Differentials](#differentials)
-* [Phase diagrams and equilibria](#phase-diagrams-and-equilibria)
-  * [Flash calculations](#flash-calculations)
-  * [Phase envelopes](#phase-envelopes)
-    * [Tp- and Tv- envelopes](#tp--and-tv--phase-envelopes)
-    * [pxy- and Txy- envelopes](#pxy--and-txy--phase-envelopes)
-  * [Dew- and bubble points](#dew--and-bubble-points)
-* [Isolines](#isolines)
-* [Critical point](#critical-point)
+- [Getting started - Python](#getting-started---python)
+  - [Contents](#contents)
+  - [Initialising an equation of state](#initialising-an-equation-of-state)
+- [Doing calculations](#doing-calculations)
+  - [pVT-properties](#pvt-properties)
+    - [Differentials](#differentials)
+  - [Phase diagrams and Equilibria](#phase-diagrams-and-equilibria)
+    - [Flash calculations](#flash-calculations)
+    - [Phase envelopes](#phase-envelopes)
+      - [Tp- and Tv- phase envelopes](#tp--and-tv--phase-envelopes)
+      - [pxy- and txy- phase envelopes](#pxy--and-txy--phase-envelopes)
+    - [Dew- and bubble points](#dew--and-bubble-points)
+  - [Isolines](#isolines)
+  - [Critical point](#critical-point)
 
 ## Initialising an equation of state
-An overview of available equations of state can be found [here](method_docs.html).
+An overview of available equations of state can be found [here](https://thermotools.github.io/thermopack/vcurrent/method_docs.html).
 
-An EoS is initialized by passing in the [fluid identifiers](Component-name-mapping.html) of the mixture, for example
+An EoS is initialized by passing in the [fluid identifiers](https://thermotools.github.io/thermopack/vcurrent/Component-name-mapping.html) of the mixture, for example
 
 ```Python
 from thermopack.saftvrmie import saftvrmie
 eos = saftvrmie('C1,CO2')
 ```
-will initialize a SAFT-VR Mie EoS for a mixture of methane and CO2. The complete list of component identifiers is in the [Fluid identifiers list](Component-name-mapping.html). PC-SAFT, SAFT-VRQ Mie and Lee-Kesler EoS are initialized in the same way, as
+will initialize a SAFT-VR Mie EoS for a mixture of methane and CO2. The complete list of component identifiers is in the [Fluid identifiers list](https://thermotools.github.io/thermopack/vcurrent/Component-name-mapping.html). PC-SAFT, SAFT-VRQ Mie and Lee-Kesler EoS are initialized in the same way, as
 ```Python
 from thermopack import saftvrmie, saftvrqmie, pcsaft, lee_kesler
 svrm = saftvrmie.saftvrmie('AR,KR') # SAFT-VR Mie EoS for Ar/Kr mixture
@@ -322,7 +401,7 @@ spcs = SPC_SAFT('NC6,NC12') # Simplified PC-SAFT
 pcps = PCP_SAFT('H2O,MEOH') # Polar PC-SAFT
 ```
 
-The cubic equations of state are found in the `cubic` module. Available cubic EoS's and more information on the individual cubics, mixing rules, etc. can be found on the [cubic page](cubic_methods.html).
+The cubic equations of state are found in the `cubic` module. Available cubic EoS's and more information on the individual cubics, mixing rules, etc. can be found on the [cubic page](https://thermotools.github.io/thermopack/vcurrent/cubic_methods.html).
 ```Python
 from thermopack.cubic import SoaveRedlichKwong, RedlichKwong, PengRobinson, PengRobinson78
 from thermopack.cubic import SchmidtWensel, PatelTeja, VanDerWaals
@@ -339,7 +418,7 @@ In addition to these, the Translated-Consisten Peng-Robinson is available as
 from thermopack.tcPR import tcPR
 tcpr = tcPR('F6S,SO2') # Translated-Consistent PR EoS for SF6/SO2 mixture
 ```
-For more fine-tuned control of the cubic EoS, the parent class [`cubic`](cubic_methods.html) can be initialised directly, to explicitly 
+For more fine-tuned control of the cubic EoS, the parent class [`cubic`](https://thermotools.github.io/thermopack/vcurrent/cubic_methods.html) can be initialised directly, to explicitly 
 set mixing rules, alpha-correlation etc.
 
 Cubic-plus association EoS's are available for the SRK and PR EoS through the `cpa` module as
@@ -364,10 +443,10 @@ eos = ext_csp('C1,C2,C3,NC4', sh_eos='SRK', sh_alpha='Classic',
               sh_mixing='vdW', ref_eos='NIST_MEOS', ref_comp='C3')
 ```
 
-For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](/thermopack/memo/index.html).
+For more information on the extended-csp EoS please see the [Examples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) and the [memo](https://thermotools.github.io/thermopack/memo/index.html).
 
 # Doing calculations
-Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](thermo_methods.html). Here, a small subset of the functionality is demonstrated.
+Now that we have an EoS initialized we can start computing stuff. The primary source on how to use individual methods in thermopack are the [specific documentation of the `thermo` class](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). Here, a small subset of the functionality is demonstrated.
 
 Note that all input is in SI units (moles/kelvin/pascal/cubic meters/joule)
 
@@ -382,9 +461,9 @@ x = [0.2, 0.8] # Molar composition
 vg, = eos.specific_volume(T, p, x, eos.VAPPH) # Molar volume of gas phase (NB: Notice the comma)
 vl, = eos.specific_volume(T, p, x, eos.LIQPH) # Molar volume of liquid phase (NB: Notice the comma)
 ```
-where `eos.VAPPH` and `eos.LIQPH` are [phase flags](phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
+where `eos.VAPPH` and `eos.LIQPH` are [phase flags](https://thermotools.github.io/thermopack/vcurrent/phase_flags.html) used to identify different phases. The commas are necessary because all output from thermopack methods are as tuples. 
 
-Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](thermo_methods.html#tv-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#tp-property-interfaces) of the [`thermo` class](thermo_methods.html)
+Similarly, pressure, internal energy, enthalpy, entropy, etc. and associated differentials can be computed via the methods `chemical_potential_tv(T, V, n)`, `internal_energy_tv(T, V, n)`, `enthalpy_tv(T, V, n)`, `helmholtz_tv(T, V, n)`, `entropy_tv(T, V, n)`. For a full overview of the available property calculations see the [TV-property interfaces](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html#tv-property-interfaces) and the [Tp-property interfaces](thermo_methods.html#tp-property-interfaces) of the [`thermo` class](thermo_methods.html)
 
 ### Differentials
 
@@ -397,7 +476,7 @@ vl, dvdT = eos.specific_volume(T, p, x, eos.LIQPH, dvdt=True) # Liquid phase mol
 _, dvdn = eos.specific_volume(T, p, x, eos.LIQPH, dvdn=True) # Liquid phase partial molar volumes
 ```
 
-Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T, p, n)$. For an overview of the different methods, see [Advanced usage: Different property interfaces](more_advanced.html). A short example is given here as:
+Differentials can be computed as functions of $(T, V, n)$ or as functions of $(T, p, n)$. For an overview of the different methods, see [Advanced usage: Different property interfaces](https://thermotools.github.io/thermopack/vcurrent/more_advanced.html). A short example is given here as:
 
 ```Python
 # Continued
@@ -431,12 +510,12 @@ _, Cv_liq = eos.internal_energy_tv(T, vl, x, dedt=True) # Liquid phase heat capa
 
 ## Phase diagrams and Equilibria
 
-As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them is the [documentation of the `thermo` class.](thermo_methods.html). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
+As with other calculations, the primary source on how available methods for flash- and equilibria calculations and how to use them is the [documentation of the `thermo` class.](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html). Here we give a short introduction, for more extensive examples see the [pyExamples](https://github.com/thermotools/thermopack/tree/main/addon/pyExamples) directory.
 
 ### Flash calculations
 Flash calculations of several kinds are handled by the methods `twophase_tpflash()`, `twophase_psflash()`, `twophase_phflash()` and `twophase_uvflash()`.
 
-See the [Flash interfaces](thermo_methods.html#flash-interfaces) in the [documentation of the `thermo` class](thermo_methods.html) for the specifics on the different flash routines.
+See the [Flash interfaces](https://thermotools.github.io/thermopack/vcurrent/thermo_methods.html#flash-interfaces) in the [documentation of the `thermo` class](thermo_methods.html) for the specifics on the different flash routines.
 
 An example calculation using `twophase_tpflash()` may be done as
 ```python
@@ -686,9 +765,9 @@ lij = cs.get_lij(1,2)
 ```
 
 ## Tuning Cubics
-Cubic Equations of state implemented in ThermoPack can be accessed through the generic [`cubic` class](cubic_methods.html).
+Cubic Equations of state implemented in ThermoPack can be accessed through the generic [`cubic` class](https://thermotools.github.io/thermopack/vcurrent/cubic_methods.html).
 This class also offers a variety of methods to tune the alpha-function, mixing rules etc. See the [documentation for 
-the `cubic` class](cubic_methods.html) for more information.
+the `cubic` class](https://thermotools.github.io/thermopack/vcurrent/cubic_methods.html) for more information.
 
 ## The different property interfaces (TV-) (Tp-) and (TVp-)
 
@@ -736,6 +815,7 @@ H_tpn, dHdt_pn, dHdn_Tp = eos.enthalpy_tvp(T, V, n, dhdt=True, dhdn=True)
 ```
 
 Besides `enthalpy_tvp`, there are currently available TVp-interfaces for `entropy_tvp` and `thermo_tvp` (logarithm of fugacity coefficients).
+
 
 # Adding new fluids
 

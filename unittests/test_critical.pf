@@ -67,7 +67,7 @@ contains
 
     T = -1.0
     v = -1.0
-    tol = 1.0e-7
+    tol = 1.0e-8
     call calcCriticalTV(t,v,Z,ierr,tol)
     @assertTrue(ierr == 0)
     p = pressure(T,v,Z)

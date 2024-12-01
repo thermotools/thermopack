@@ -996,28 +996,20 @@ contains
   end subroutine ljs_bh_model_control
 
   subroutine ljs_bh_set_pure_params(sigma, eps_depth_divk)
-    use thermopack_var, only: base_eos_param, thermo_model, get_active_thermo_model
+    use thermopack_var, only: base_eos_param, get_active_eos
     real, intent(in) :: sigma, eps_depth_divk ! sigma/m, eps_depth_divk/K
     ! Locals
     class(base_eos_param), pointer :: eos
     type(thermo_model), pointer :: p_eos_cont
     integer :: i
-    p_eos_cont => get_active_thermo_model()
-    if (allocated(p_eos_cont%eos)) then
-      do i=1,size(p_eos_cont%eos)
-        if (associated(p_eos_cont%eos(i)%p_eos)) then
-          eos => p_eos_cont%eos(i)%p_eos
-          select type( p_eos => eos )
-          class is ( ljs_bh_eos )
-            call p_eos%set_sigma_eps(sigma, eps_depth_divk)
-          end select
-        else
-           print *,"ljs_bh_set_pure_params: eos not acociated"
-         endif
-       enddo
-     else
-       print *,"ljs_bh_set_pure_params: eos array not allocted found"
-     endif
+    eos => get_active_eos()
+    select type( p_eos => eos )
+    class is ( ljs_bh_eos )
+      p_eos%saftvrmie_param%sigma_ij(1,1) = sigma
+      p_eos%saftvrmie_param%eps_divk_ij(1,1) = eps_depth_divk
+    class default
+      print*, "ljs_bh_set_pure_params wrong active model ..."
+    end select
   end subroutine ljs_bh_set_pure_params
 
   subroutine ljs_bh_get_pure_params(sigma, eps_depth_divk)
@@ -3194,20 +3186,43 @@ contains
   !> Return interaction potential
   !!
   !! \author Morten Hammer, October 2022
-  subroutine ljs_potential_reduced(n, r_div_sigma, pot)
+  subroutine ljs_potential_reduced(n, r_div_sigma, pot, force)
+    use hyperdual_mod
     ! Input
     integer, intent(in) :: n !< Array size
     real, intent(in) :: r_div_sigma(n) !< Intermolecular separation reduced by sigma (-)
-    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant
+    real, intent(out) :: pot(n) !< Potential divided by epsilon [-]
+    real, optional, intent(out) :: force(n) !< Reduced force [-]
+    !
+    ! Locals
+    type(hyperdual) :: r_div_sigma_hd(n) !< Intermolecular separation reduced by sigma (-)
+    type(hyperdual) :: pot_hd(n) !< Potential divided by Boltzmann constant
+    r_div_sigma_hd = r_div_sigma
+    r_div_sigma_hd(:)%f1 = 1.0_dp
+    call ljs_potential_reduced_hd(n, r_div_sigma_hd, pot_hd)
+    pot(:) = pot_hd(:)%f0
+    if (present(force)) force(:) = -pot_hd(:)%f1
+  end subroutine ljs_potential_reduced
+
+  !> Return interaction potential
+  !!
+  !! \author Morten Hammer, October 2022
+  subroutine ljs_potential_reduced_hd(n, r_div_sigma, pot)
+    use hyperdual_mod
+    ! Input
+    integer, intent(in) :: n !< Array size
+    type(hyperdual), intent(in) :: r_div_sigma(n) !< Intermolecular separation reduced by sigma (-)
+    type(hyperdual), intent(out) :: pot(n) !< Potential divided by Boltzmann constant
     !
     ! Locals
     integer :: i
-    real :: xs, xc, a, b, irm
-    xs = (26.0/7.0)**(1.0/6.0)
-    xc = 67.0/48.0 * xs
-    a = -24192.0/3211.0/xs**2
-    b = -387072.0/61009.0/xs**3
-    pot = 0
+    real :: xs, xc, a, b
+    type(hyperdual) :: irm
+    xs = (26.0_dp/7.0_dp)**(1.0_dp/6.0_dp)
+    xc = 67.0_dp/48.0_dp * xs
+    a = -24192.0_dp/3211.0_dp/xs**2
+    b = -387072.0_dp/61009.0_dp/xs**3
+    pot = 0.0_dp
     do i=1,n
       if (r_div_sigma(i) < xs) then
         irm = 1.0/r_div_sigma(i)**6
@@ -3218,7 +3233,7 @@ contains
         exit
       endif
     enddo
-  end subroutine ljs_potential_reduced
+  end subroutine ljs_potential_reduced_hd
 
 end module lj_splined
 

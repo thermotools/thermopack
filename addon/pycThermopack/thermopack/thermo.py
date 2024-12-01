@@ -1,5 +1,5 @@
 """
-This is the core of the pythod interface to ThermoPack. All equation of state classes on the python side inherit from
+This is the core of the python interface to ThermoPack. All equation of state classes on the python side inherit from
 the thermo class in this file. Please note that the docstrings of the methods in this file are used to generate
 the markdown-documentation found elsewhere (the ThermoTools wiki, etc.). Therefore, new methods that are implemented
 must conform to the following style guide for docstrings:
@@ -63,6 +63,8 @@ class thermo(object):
         """Internal
         Initialize function pointers
         """
+        super(thermo, self).__init__()
+
         self.prefix = self.pf_specifics["prefix"]
         self.module = self.pf_specifics["module"]
         self.postfix = self.pf_specifics["postfix"]
@@ -121,14 +123,14 @@ class thermo(object):
         self.solideos_solid_entropy = getattr(
             self.tp, self.get_export_name("solideos", "solid_entropy"))
 
-        self.eoslibinit_init_volume_translation = getattr(
-            self.tp, self.get_export_name("eoslibinit", "init_volume_translation"))
         self.eoslibinit_redefine_critical_parameters = getattr(
             self.tp, self.get_export_name("eoslibinit", "redefine_critical_parameters"))
 
         # Eos interface
         self.s_eos_specificvolume = getattr(
             self.tp, self.get_export_name("eos", "specificvolume"))
+        self.s_eos_molardensity = getattr(
+            self.tp, self.get_export_name("eos", "molardensity"))
         self.s_eos_zfac = getattr(self.tp, self.get_export_name("eos", "zfac"))
         self.s_eos_thermo = getattr(
             self.tp, self.get_export_name("eos", "thermo"))
@@ -138,6 +140,8 @@ class thermo(object):
             self.tp, self.get_export_name("eos", "enthalpy"))
         self.s_eos_compmoleweight = getattr(
             self.tp, self.get_export_name("eos", "compmoleweight"))
+        self.s_eos_moleweight = getattr(
+            self.tp, self.get_export_name("eos", "moleweight"))
         self.s_eos_getCriticalParam = getattr(
             self.tp, self.get_export_name("eos", "getcriticalparam"))
 
@@ -298,7 +302,7 @@ class thermo(object):
 
         # Get int representation of true value
         self._true_int_value = self._get_true_int_value()
-  
+
         self.add_eos()
 
     def __del__(self):
@@ -318,7 +322,7 @@ class thermo(object):
         self.s_get_true.restype = None
         self.s_get_true(byref(int_true_c))
         return int_true_c.value
-  
+
     def activate(self):
         """Internal
         Activate this instance of thermopack parameters for calculation
@@ -517,55 +521,6 @@ class thermo(object):
                                     saft_ref_len,
                                     TrendEosForCp_len)
 
-    def init_peneloux_volume_translation(self, parameter_reference="Default"):
-        """Internal
-        Initialize Peneloux volume translations
-
-        Args:
-            parameter_reference (str): String defining parameter set, Defaults to "Default"
-        """
-        self.activate()
-        volume_trans_model = "PENELOUX"
-        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
-        volume_trans_model_len = c_len_type(len(volume_trans_model))
-        ref_string_c = c_char_p(parameter_reference.encode('ascii'))
-        ref_string_len = c_len_type(len(parameter_reference))
-        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
-                                                            c_char_p,
-                                                            c_len_type,
-                                                            c_len_type]
-
-        self.eoslibinit_init_volume_translation.restype = None
-
-        self.eoslibinit_init_volume_translation(volume_trans_model_c,
-                                                ref_string_c,
-                                                volume_trans_model_len,
-                                                ref_string_len)
-
-    def disable_volume_translation(self):
-        """Internal
-        Disable volume translations
-
-        """
-        self.activate()
-        volume_trans_model = "NOSHIFT"
-        volume_trans_model_c = c_char_p(volume_trans_model.encode('ascii'))
-        volume_trans_model_len = c_len_type(len(volume_trans_model))
-        ref_string = "Default"
-        ref_string_c = c_char_p(ref_string.encode('ascii'))
-        ref_string_len = c_len_type(len(ref_string))
-        self.eoslibinit_init_volume_translation.argtypes = [c_char_p,
-                                                            c_char_p,
-                                                            c_len_type,
-                                                            c_len_type]
-
-        self.eoslibinit_init_volume_translation.restype = None
-
-        self.eoslibinit_init_volume_translation(volume_trans_model_c,
-                                                ref_string_c,
-                                                volume_trans_model_len,
-                                                ref_string_len)
-
     def redefine_critical_parameters(self, silent=True, Tc_initials=None, vc_initials=None):
         """Utility
         Recalculate critical properties of pure fluids
@@ -757,7 +712,7 @@ class thermo(object):
         temp_c = c_double(temp)
         press_c = c_double(press)
         x_c = (c_double * len(x))(*x)
-        h_c = c_double(0.0)
+        v_c = c_double(0.0)
 
         if dvdt is None:
             dvdt_c = null_pointer
@@ -780,11 +735,11 @@ class thermo(object):
         self.solideos_solid_volume(byref(temp_c),
                             byref(press_c),
                             x_c,
-                            byref(h_c),
+                            byref(v_c),
                             dvdt_c,
                             dvdp_c)
 
-        return_tuple = (h_c.value, )
+        return_tuple = (v_c.value, )
         if not dvdt is None:
             return_tuple += (dvdt_c[0], )
         if not dvdp is None:
@@ -867,12 +822,13 @@ class thermo(object):
             structure_dict[key] = int(value)
         return structure_dict
 
-    def compmoleweight(self, comp):
+    def compmoleweight(self, comp, si_units=False):
         """Utility
         Get component mole weight (g/mol)
 
         Args:
             comp (int): Component FORTRAN index
+            si_units (bool, optional) : true for output in kg/mol, false for g/mol
 
         Returns:
             float: Component mole weight (g/mol)
@@ -882,7 +838,30 @@ class thermo(object):
         self.s_eos_compmoleweight.argtypes = [POINTER(c_int)]
         self.s_eos_compmoleweight.restype = c_double
         mw_i = self.s_eos_compmoleweight(byref(comp_c))
+        if si_units:
+            mw_i = mw_i*1e-3 # kg/mol
         return mw_i
+
+    def moleweight(self, z, si_units=True):
+        """Utility
+        Get mole weight (kg/mol)
+
+        Args:
+            z (array_like): Molar composition
+            si_units (bool, optional) : true for output in kg/mol, false for g/mol
+
+        Returns:
+            float: mixture mole weight (kg/mol)
+        """
+        self.activate()
+        z_c = (c_double * len(z))(*z)
+        self.s_eos_moleweight.argtypes = [POINTER(c_double)]
+        self.s_eos_moleweight.restype = c_double
+        mw = self.s_eos_moleweight(z_c)
+        if si_units:
+            mw = mw*1e-3 # kg/mol
+        return mw
+
 
     def acentric_factor(self, i):
         '''Utility
@@ -1196,6 +1175,76 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dvdt, dvdp, dvdn), 'tpn')
         return prop.unpack()
 
+    def molar_density(self, temp, press, x, phase, drhodt=None, drhodp=None, drhodn=None):
+        """Tp-property
+        Calculate single-phase molar density
+        Note that the order of the output matches the default order of input for the differentials.
+        Note further that drhodt, drhodp and drhodn only are flags to enable calculation.
+
+        Args:
+            temp (float): Temperature (K)
+            press (float): Pressure (Pa)
+            x (array_like): Molar composition
+            phase (int): Calcualte root for specified phase
+            drhodt (bool, optional): Calculate molar density differentials with respect to temperature while pressure and composition are held constant. Defaults to None.
+            drhodp (bool, optional): Calculate molar density differentials with respect to pressure while temperature and composition are held constant. Defaults to None.
+            drhodn (bool, optional): Calculate molar density differentials with respect to mol numbers while pressure and temperature are held constant. Defaults to None.
+
+        Returns:
+            float: Molar density (mol/m3), and optionally differentials
+        """
+        self.activate()
+        null_pointer = POINTER(c_double)()
+
+        temp_c = c_double(temp)
+        press_c = c_double(press)
+        x_c = (c_double * len(x))(*x)
+        phase_c = c_int(phase)
+        rho_c = c_double(0.0)
+
+        if drhodt is None:
+            drdt_c = null_pointer
+        else:
+            drdt_c = POINTER(c_double)(c_double(0.0))
+        if drhodp is None:
+            drdp_c = null_pointer
+        else:
+            drdp_c = POINTER(c_double)(c_double(0.0))
+        if drhodn is None:
+            drdn_c = null_pointer
+        else:
+            drdn_c = (c_double * len(x))(0.0)
+
+        self.s_eos_molardensity.argtypes = [POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_int),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double),
+                                              POINTER(c_double)]
+
+        self.s_eos_molardensity.restype = None
+
+        self.s_eos_molardensity(byref(temp_c),
+                                  byref(press_c),
+                                  x_c,
+                                  byref(phase_c),
+                                  byref(rho_c),
+                                  drdt_c,
+                                  drdp_c,
+                                  drdn_c)
+        return_tuple = (rho_c.value, )
+        if not drhodt is None:
+            return_tuple += (drdt_c[0], )
+        if not drhodp is None:
+            return_tuple += (drdp_c[0], )
+        if not drhodn is None:
+            return_tuple += (np.array(drdn_c), )
+
+        prop = utils.Property.from_return_tuple(return_tuple, (drhodt, drhodp, drhodn), 'tpn')
+        return prop.unpack()
+
     def zfac(self, temp, press, x, phase, dzdt=None, dzdp=None, dzdn=None):
         """Tp-property
         Calculate single-phase compressibility
@@ -1285,7 +1334,7 @@ class thermo(object):
             ophase (int, optional): Phase flag. Only set when phase=MINGIBBSPH.
             v (float, optional): Specific volume (m3/mol)
         Returns:
-            ndarray: fugacity coefficient (-), and optionally differentials
+            ndarray: logarithm of fugacity coefficient (-), and optionally differentials
         """
         self.activate()
         null_pointer = POINTER(c_double)()
@@ -1565,7 +1614,7 @@ class thermo(object):
         prop = utils.Property.from_return_tuple(return_tuple, (dhdt, None, None), 'tpn')
         return prop.unpack()
 
-    def idealentropysingle(self,temp,press,j,dsdt=None,dsdp=None):
+    def idealentropysingle(self, temp, press, j, dsdt=None, dsdp=None):
         """Tp-property
         Calculate specific ideal entropy
         Note that the order of the output match the default order of input for the differentials.

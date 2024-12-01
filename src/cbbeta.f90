@@ -57,6 +57,10 @@ contains
              params = (/3.0696, 12.682/)
           else if (str_eq(comp(i)%p_comp%ident,"D2")) then
              params = (/1.6501, 7.309/)
+          else if (str_eq(comp(i)%p_comp%ident,"P-H2")) then
+             params = (/3.0710, 12.688/)
+          else if (str_eq(comp(i)%p_comp%ident,"O-H2")) then
+             params = (/3.0702, 12.684/)
           else
              params = (/0.0, 0.0/) ! Equivalent to beta(T)=1.0
           end if

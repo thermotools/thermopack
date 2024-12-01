@@ -267,7 +267,6 @@ subroutine thermopack_set_alpha_corr(numparam, i, corrname, c)
   alphaIdx = get_alpha_db_idx(corrname)
   select type(p_eos => act_eos_ptr)
   class is (cb_eos)
-    alphaIdx = p_eos%single(i)%alphaMethod
     call setSingleAlphaCorr(i, p_eos, alphaIdx=alphaIdx, alphaParams=c)
   class default
     print *,"thermopack_set_alpha_corr: Only for cubic eos"

@@ -735,25 +735,44 @@ contains
   end subroutine calc_d_pets
 
   ! The interaction potential
-  subroutine calc_potential_pets(eos,n,r,pot)
+  subroutine calc_potential_pets(eos,n,r,pot,force)
+    use hyperdual_mod
     class (PETS_eos), intent(in) :: eos
     integer, intent(in) :: n
     real, intent(in) :: r(:)       !< [m]
     real, intent(out) :: pot(:)       !< [K]
+    real, optional, intent(out) :: force(n) !< [K/m]
+    ! Locals.
+    type(hyperdual) :: r_hd(n) !< Intermolecular separation reduced by sigma (-)
+    type(hyperdual) :: pot_hd(n) !< Potential divided by Boltzmann constant
+    r_hd = r
+    r_hd(:)%f1 = 1.0_dp
+    call calc_potential_pets_hd(eos,n,r_hd,pot_hd)
+    pot(:) = pot_hd(:)%f0
+    if (present(force)) force(:) = -pot_hd(:)%f1
+  end subroutine calc_potential_pets
+
+  ! The interaction potential
+  subroutine calc_potential_pets_hd(eos,n,r,pot)
+    use hyperdual_mod
+    class (PETS_eos), intent(in) :: eos
+    integer, intent(in) :: n
+    type(hyperdual), intent(in) :: r(:)       !< [m]
+    type(hyperdual), intent(out) :: pot(:)    !< [K]
     ! Locals.
     integer :: i
     real, parameter :: r_cut = 2.5
     real :: pot_cut
     pot_cut = 4.0 * eos%epsdivk_pets &
            * ((1.0 / r_cut)**12 - (1.0 / r_cut)**6)
-    pot = 0
+    pot = 0.0_dp
     do i=1,n
       if (r(i) >= r_cut*eos%sigma_pets) exit
       pot(i) = 4.0 * eos%epsdivk_pets &
            * ((eos%sigma_pets / r(i))**12 - (eos%sigma_pets / r(i))**6) &
            - pot_cut
     enddo
-  end subroutine calc_potential_pets
+  end subroutine calc_potential_pets_hd
 
   subroutine pets_allocate_and_init(eos,nc,eos_label)
     ! Passed object:
