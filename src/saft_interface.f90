@@ -933,7 +933,7 @@ contains
   !> Return interaction potential between component i and j
   !!
   !! \author Morten Hammer, July 2022
-  subroutine potential(i, j, n, r, T, pot)
+  subroutine potential(i, j, n, r, T, pot, max_pot_val_in, force)
     use saftvrmie_containers, only: saftvrmie_eos, calc_DFeynHibbsij, &
          saftvrmie_param
     use saftvrmie_hardsphere, only: mie_potential_quantumcorrected_wrapper
@@ -946,35 +946,45 @@ contains
     real, intent(in) :: T !< Temperature
     integer, intent(in) :: n !< Array size
     real, intent(in) :: r(n) !< Intermolecular separation (m)
-    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant
+    real, intent(out) :: pot(n) !< Potential divided by Boltzmann constant [K]
+    real, optional, intent(out) :: force(n) !< Force divided by Boltzmann constant [K/m]
+    real, optional, intent(out) :: max_pot_val_in !< Reduced potential cutoff value (Default 500.0)
     !
     ! Locals
     type(thermo_model), pointer :: p_thermo
     class(base_eos_param), pointer :: eos
     integer :: ir, i_cut
-    real, parameter :: max_pot_val = 500.0
+    real, parameter :: max_pot_val_default = 500.0
+    real :: max_pot_val
     real :: eps_divk, sigma, r_div_sigma(n), r_cut(1), u_cut(1)
+    if (present(max_pot_val_in)) then
+      max_pot_val = max_pot_val_in
+    else
+      max_pot_val = max_pot_val_default
+    endif
     p_thermo => get_active_thermo_model()
     eos => get_active_eos()
     select type ( p_eos => eos )
     class is (ljs_bh_eos)
       sigma = p_eos%saftvrmie_param%sigma_ij(1,1)
       r_div_sigma = r/sigma
-      call ljs_potential_reduced(n, r_div_sigma, pot)
+      call ljs_potential_reduced(n, r_div_sigma, pot, force)
       eps_divk = p_eos%saftvrmie_param%eps_divk_ij(1,1)
       pot = pot*eps_divk
+      force = force*eps_divk/sigma
     class is (ljs_wca_eos)
       sigma = p_eos%sigma
       r_div_sigma = r/sigma
-      call ljs_potential_reduced(n, r_div_sigma, pot)
+      call ljs_potential_reduced(n, r_div_sigma, pot, force)
       eps_divk = p_eos%eps_divk
       pot = pot*eps_divk
+      force = force*eps_divk/sigma
     class is (saftvrmie_eos)
       ! Update Feynman--Hibbs D parameter
       if (p_eos%svrm_opt%quantum_correction_hs > 0) &
            call calc_DFeynHibbsij(nce,T,p_eos%saftvrmie_param%DFeynHibbsParam_ij, &
            p_eos%saftvrmie_var%DFeynHibbsij, p_eos%saftvrmie_var%D2FeynHibbsij)
-      pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r)
+      pot = mie_potential_quantumcorrected_wrapper(i,j, p_eos%saftvrmie_var, n, r, force)
       eps_divk = saftvrmie_param%eps_divk_ij(i,j)
       if (p_eos%svrm_opt%enable_truncation_correction) then
         ! Correct potential for truncation correction
@@ -988,16 +998,20 @@ contains
           endif
         enddo
         if (i_cut < n) pot(i_cut:n) = 0
+        if (i_cut < n .and. present(force)) force(i_cut:n) = 0
         if (p_eos%svrm_opt%enable_shift_correction) then
           if (i_cut > 1) pot(1:i_cut-1) = pot(1:i_cut-1) - u_cut(1)
         endif
       endif
     class is (sPCSAFT_eos)
-      pot = 4.0 * p_eos%eps_depth_divk(i,j) &
+      pot = 4 * p_eos%eps_depth_divk(i,j) &
            * ((p_eos%sigma(i,j) / r)**12 - (p_eos%sigma(i,j) / r)**6)
       eps_divk = p_eos%eps_depth_divk(i,j)
+      if (present(force)) &
+           force = 4 * p_eos%eps_depth_divk(i,j) &
+           * (12*(p_eos%sigma(i,j) / r)**12 - 6*(p_eos%sigma(i,j) / r)**6)/r
     class is (PETS_eos)
-      call p_eos%calc_potential_pets(n,r,pot)
+      call p_eos%calc_potential_pets(n,r,pot,force)
       eps_divk = p_eos%epsdivk_pets
     class default
       print *,"Need to implement potential function for specified model"

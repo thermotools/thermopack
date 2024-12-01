@@ -1,0 +1,153 @@
+name: cibuildwheel
+
+on:
+  push:
+      branches:
+          - main
+  pull_request:
+
+jobs:
+  build_wheels:
+    if: github.ref == 'refs/heads/main' || github.event_name != 'push'
+    name: Build ${{ matrix.tp_version }} wheels on ${{ matrix.os }}-${{ matrix.version }}
+    runs-on: ${{ matrix.os }}-${{ matrix.version }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS, ubuntu, windows]
+        version: [latest]
+        tp_version: [v2, v3]
+        include:
+            - version: 12
+              os: macOS
+              tp_version: v2
+            - version: 12
+              os: macOS
+              tp_version: v3
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: checkout submodules
+        run: git submodule update --init --recursive
+      
+      - name: Setup Linux env
+        if: matrix.os == 'ubuntu'
+        run: |
+          echo "gfortran=gfortran" >> $GITHUB_ENV
+          echo "libinspector=ls ../addon/pycThermopack/thermopack/libthermopack* | xargs ldd" >> $GITHUB_ENV
+    
+      - name: Setup macOS env
+        if: matrix.os == 'macOS'
+        run: |
+          echo "gfortran=$(which gfortran-13)" >> $GITHUB_ENV
+          echo "libinspector=otool -L ../addon/pycThermopack/thermopack/libthermopack*" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d '.' -f 1)" >> $GITHUB_ENV
+      
+      - name: Setup Windows env
+        if: matrix.os == 'windows'
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: intel-classic
+          version: '2021.12'
+
+      - name: Check macOS deployment target
+        if: matrix.os == 'macOS'
+        run: echo "Deployment target version is ${{ env.MACOSX_DEPLOYMENT_TARGET }} / ${MACOSX_DEPLOYMENT_TARGET}"
+
+      - name: Prepare pyproject.toml
+        if: matrix.os != 'windows'
+        run: cp addon/pycThermopack/pyproject_template.toml addon/pycThermopack/pyproject.toml
+      
+      - name: Prepare pyproject.toml (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: Copy-Item -Path "addon/pycThermopack/pyproject_template.toml" -Destination "addon/pycThermopack/pyproject.toml"
+
+      - name: Build wheel
+        uses: pypa/cibuildwheel@v2.19.2 # run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_ARCHS: auto64
+          CIBW_BEFORE_ALL_LINUX: |
+            yum install -y blas blas-devel
+            yum install -y lapack lapack-devel
+
+          CIBW_BEFORE_BUILD_WINDOWS: powershell -ExecutionPolicy Bypass -File .github/scripts/before_windows_build.ps1 ${{ matrix.tp_version }}
+
+          CIBW_BEFORE_BUILD: |
+            ${{ env.gfortran }} --version
+            export FC=${{ env.gfortran }}
+            mkdir build
+            cd build
+            cmake ..
+            make -j4 install
+            python ../addon/pycThermopack/map_platform_specifics.py --diffs=${{ matrix.tp_version }}
+            echo "--- pycThermopack contents ---"
+            ls ../addon/pycThermopack
+            echo "--- pycThermopack/thermopack contents ---"
+            ls ../addon/pycThermopack/thermopack
+            echo "--- Inspecting libthermopack ---"
+            ${{ env.libinspector }}
+
+          CIBW_BUILD: "*cp311*"
+          CIBW_SKIP: "*musllinux*"
+          CIBW_TEST_SKIP: "*x86_64* thermopack-2*"
+          CIBW_BUILD_VERBOSITY: 1
+        with:
+          package-dir: "./addon/pycThermopack"
+          output-dir: "./wheelhouse"
+          config-file: "{package}/pyproject.toml"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.tp_version }}-${{ matrix.os }}-${{ matrix.version }}
+          path: ./wheelhouse/*.whl
+
+  release_wheels: # Create or update the release tagged Latest-beta, and upload wheels to that release.
+    name: Update prerelease
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download created wheels
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wheel-*
+    
+    - name: Display full directory status
+      run: ls -R .
+    
+    - name: zip wheels
+      run: |
+        for dir in wheel-*; do
+        zip -r "${dir}.zip" ${dir}
+        done
+    
+    - name: Display current directory status
+      run: ls
+    
+    - name: Create cpp dist
+      run: bash .github/scripts/create_cppdist.sh
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cppdist
+        path: ./thermopack-*.zip
+
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        prerelease: true
+        updateOnlyUnreleased: true
+        removeArtifacts: true
+        name: "Latest (beta)"
+        tag: Latest-beta
+        commit: main
+        makeLatest: true
+        bodyFile: ".github/prerelease_bodyFile.md"
+        artifacts: "wheel-*.zip,thermopack-*.zip"

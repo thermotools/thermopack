@@ -147,7 +147,17 @@
     ]
   },
   "SRK": {},
-  "PR": {},
+  "PR": {
+    "TWU-2": {
+      "ref": "QuantumCubic",
+      "bib_reference": "10.1016/j.fluid.2020.112790",
+      "correlation": [
+        156.21,
+        -0.0062072,
+        5.047
+      ]
+    }
+  },
   "SAFTVRMIE-1": {
     "m": 1.000,
     "sigma": 3.2557E-10,

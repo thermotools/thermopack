@@ -1386,7 +1386,7 @@ Contains
     endif
   end subroutine calc_mie_potential_quantumcorrected
 
-  function mie_potential_quantumcorrected_wrapper(i, j, s_vc, n, r) result(U_divk)
+  function mie_potential_quantumcorrected_wrapper(i, j, s_vc, n, r, force) result(U_divk)
     !--------------------------------------------------------------------
     !  2022 - Morten Hammer
     !
@@ -1398,6 +1398,7 @@ Contains
     integer, intent(in) :: n                          !< size of r
     real, intent(in) :: r(n)                          !< particle distances [m]
     real :: U_divk(n)                                 !< value of interaction div. by kB
+    real, optional, intent(out) :: force(n)           !< Force divided by Boltzmann constant [K/m]
     ! Loals
     integer :: ir
     do ir=1,n
@@ -1411,8 +1412,9 @@ Contains
            saftvrmie_param%Quantum_const_1r_ij(i,j),&
            saftvrmie_param%Quantum_const_2a_ij(i,j),&
            saftvrmie_param%Quantum_const_2r_ij(i,j),&
-           r(ir),U_divk(ir))
+           r(ir),U_divk(ir),U_divk_r=force(ir))
     enddo
+    if (present(force)) force = -force
   end function mie_potential_quantumcorrected_wrapper
 
   subroutine calc_hardsphere_zeta_and_derivatives(nc,T,V,n,&

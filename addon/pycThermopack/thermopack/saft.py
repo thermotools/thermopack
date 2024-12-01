@@ -464,7 +464,7 @@ class saft(thermo):
         self.activate()
         self.s_print_binary_mix_report()
 
-    def potential(self, ic, jc, r, temp):
+    def potential(self, ic, jc, r, temp, force=False, max_red_pot_val=500.0):
         """Utility
         Get potential energy divided by Boltzmann constant as a function of r
 
@@ -472,8 +472,10 @@ class saft(thermo):
             ic, jc (int): Component indices (FORTRAN)
             r (array_like): Distance between particles (m)
             temp (float): Temperature (K)
+            force (logical, optional): Calculate force? Default False
+            max_red_pot_val_in (float): Maximum reduced potential value (-)
         Returns:
-            array_like: Potential energy divided by Boltzmann constant (K)
+            array_like: Potential energy divided by Boltzmann constant (K). Optionally force (K/m).
         """
         self.activate()
         ic_c = c_int(ic)
@@ -482,10 +484,17 @@ class saft(thermo):
         temp_c = c_double(temp)
         r_c = (c_double * len(r))(*r)
         pot_c = (c_double * len(r))(0.0)
+        max_red_pot_val_c = c_double(max_red_pot_val)
+        if force:
+            force_c = (c_double * len(r))(0.0)
+        else:
+            force_c = POINTER(c_double)()
 
         self.s_potential.argtypes = [POINTER(c_int),
                                      POINTER(c_int),
                                      POINTER(c_int),
+                                     POINTER(c_double),
+                                     POINTER(c_double),
                                      POINTER(c_double),
                                      POINTER(c_double),
                                      POINTER(c_double)]
@@ -497,9 +506,11 @@ class saft(thermo):
                          byref(n_c),
                          r_c,
                          byref(temp_c),
-                         pot_c)
+                         pot_c,
+                         byref(max_red_pot_val_c),
+                         force_c)
 
-        return np.array(pot_c)
+        return (np.array(pot_c), np.array(force_c)) if force else np.array(pot_c)
 
     def adjust_mass_to_de_boer_parameter(self, c, de_boer):
         """Utility

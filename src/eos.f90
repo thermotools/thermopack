@@ -11,7 +11,7 @@ module eos
   !
   private
   public :: thermo
-  public :: zfac, entropy, enthalpy, specificVolume, pseudo
+  public :: zfac, entropy, enthalpy, specificVolume, molardensity, pseudo
   public :: pseudo_safe
   public :: twoPhaseEnthalpy, twoPhaseEntropy, twoPhaseSpecificVolume
   public :: twoPhaseInternalEnergy
@@ -200,6 +200,39 @@ contains
       dvdx = dvdx*Rgas*t/p + z*Rgas*t/p
     endif
   end subroutine specificVolume
+
+  !----------------------------------------------------------------------
+  !> Calculate single-phase molar density given composition, temperature and
+  !> pressure
+  !>
+  !> \author VGJ, 2024-10-04
+  !----------------------------------------------------------------------
+  subroutine molardensity(t,p,x,phase,rho,drdt,drdp,drdx)
+    implicit none
+    ! Transferred variables
+    integer, intent(in) :: phase !< Phase identifyer
+    real, intent(in) :: t !< K - Temperature
+    real, intent(in) :: p !< Pa - Pressure
+    real, dimension(1:nc), intent(in) :: x !< Compozition
+    real, intent(out) :: rho !< m3/mol - Specific volume
+    real, optional, intent(out) :: drdt !< m3/mol/K - Specific volume differential wrpt. temperature
+    real, optional, intent(out) :: drdp !< m3/mol/Pa - Specific volume differential wrpt. pressure
+    real, optional, dimension(1:nc), intent(out) :: drdx !< m3/mol - Specific volume differential wrpt. mole numbers
+    ! Locals
+    real :: v, dvdt, dvdp
+    real, dimension(1:nc) :: dvdx
+    call specificVolume(t, p, x, phase, v, dvdt, dvdp, dvdx)
+    rho = 1. / v
+    if (present(drdt)) then
+      drdt = - (1. / v**2) * dvdt
+    endif
+    if (present(drdp)) then
+      drdp = - (1. / v**2) * dvdp
+    endif
+    if (present(drdx)) then
+      drdx = - (1. / v**2) * dvdx
+    endif
+  end subroutine molardensity
 
   !----------------------------------------------------------------------
   !> Calculate gas-liquid or single-phase specific volume given composition,
@@ -660,7 +693,7 @@ contains
   !>
   !> \author MH, 2014-01
   !----------------------------------------------------------------------
-  subroutine ideal_enthalpy_single(t,j,h,dhdt,dhdp)
+  subroutine ideal_enthalpy_single(t,j,h,dhdt)
     use ideal, only: Hideal_apparent, Cpideal_apparent
     use eos_parameters, only: single_eos
     implicit none
@@ -669,7 +702,6 @@ contains
     integer, intent(in) :: j                !< Component index
     real, intent(out) :: h                  !< J/mol - Ideal enthalpy
     real, optional, intent(out) :: dhdt     !< J/mol/K - Temperature differential of ideal enthalpy
-    real, optional, intent(out) :: dhdp     !< J/mol/Pa - Pressure differential of ideal enthalpy
     ! Locals
     type(thermo_model), pointer :: act_mod_ptr
     class(base_eos_param), pointer :: act_eos_ptr
@@ -689,12 +721,9 @@ contains
       act_mod_ptr => get_active_thermo_model()
       h = Hideal_apparent(act_mod_ptr%comps,j,T)
       if (present(dhdt)) then
-        dhdt = CPideal_apparent(act_mod_ptr%comps, j, T) ! J/mol/K^2
+        dhdt = CPideal_apparent(act_mod_ptr%comps, j, T) ! J/mol/K
       end if
     endif
-    if (present(dhdp)) then
-      dhdp=0.0
-    end if
   end subroutine ideal_enthalpy_single
 
   !----------------------------------------------------------------------
