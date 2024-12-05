@@ -11,13 +11,13 @@ import csv
 cb = cubic("CO2,H2O","SRK")
 cb.init_hydrate()
 
-Z_H2O = np.array([30.0, 100.0, 200.0, 400.0])*1e-6
+Z_H2O = np.array([30.0, 100.0, 250.0])*1e-6
 initial_pressure = 1.0e3
 minimum_temperature = 100.0
 maximum_pressure = 150.0e5
 p_scaling = 1.0e-6
-colors = [ "black", "blue", "red", "green"]
-linestyles = [ "-", "--", ":", "-."]
+colors = [ "black", "blue", "red", "green", "m"]
+linestyles = [ "-", "--", ":", "-.", "."]
 
 z = np.zeros((2))
 for i in range(len(Z_H2O)):
@@ -37,12 +37,20 @@ for i in range(len(Z_H2O)):
     plt.plot(t_hyd_vals, p_hyd_vals*p_scaling, linestyle="--", color=colors[i],
              label="Hyd. H2O: {} ppm".format(round(z[-1]*1e6)))
 
+# z = np.ones((2))*0.5
+# t_hyd_vals, p_hyd_vals = cb.get_hydrate_apperance_curve(initial_pressure, z,
+#                                                         minimum_temperature,
+#                                                         maximum_pressure)
+# plt.plot(t_hyd_vals, p_hyd_vals*p_scaling, linestyle="--", color="orange",
+#          label="Hyd. excess H2O")
 
 plt.title("SRK: CO2 and variable H2O")
 leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
+plt.tight_layout()
+plt.savefig("hydrate_co2.pdf")
 
 plt.figure()
 cb.init("CO2,N2,H2O","SRK","Classic","Classic")
@@ -76,5 +84,7 @@ leg = plt.legend(loc="best", numpoints=1)
 leg.get_frame().set_linewidth(0.0)
 plt.ylabel(r"$P$ (MPa)")
 plt.xlabel(r"$T$ (K)")
+plt.tight_layout()
+plt.savefig("hydrate_co2_n2.pdf")
 plt.show()
 plt.clf()
