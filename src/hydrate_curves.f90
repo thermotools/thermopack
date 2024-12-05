@@ -160,14 +160,13 @@ contains
           call locate_hydrate_envelope_crossing_2ph(X1,X2,param,Xsol)
           !call print_envelope_point_tv(Xsol,param)
           call map_hydrate_curve_single_phase_fluid(Xsol,param,p_dew_start,p_max,T_min,nmxs,Ta,va,ns)
-          !print *,"ns",ns
-          call tppl_comprised%add_single_phase_curve(Ta,va,ns,inverted=(n_cross == 1))
+          if (n_cross == 1) &
+               call tppl_comprised%add_single_phase_curve(Ta,va,ns,inverted=(n_cross == 1))
           if (n_cross == 1) then
             call tppl%reset()
             call map_hydrate_curve_two_phase_fluid(Xsol,param,p_dew_start,p_max,T_min,tppl)
             !call tppl%print()
             call tppl_comprised%add_tppl(tppl,inverted=.false.)
-            !print *,"tppl%n",tppl%n
           else
             T = exp(Xsol(nc+1))
             v = exp(Xsol(nc+2))
@@ -176,9 +175,11 @@ contains
             if (abs(T-tppl%list(tppl%n)%T)/T > 1.0e-5 .or. abs(P-tppl%list(tppl%n)%P)/P  > 1.0e-5) then
               call tppl%reset()
               call map_hydrate_curve_two_phase_fluid(Xsol,param,p_dew_start,p_max,T_min,tppl)
-              !print *,"2 tppl%n",tppl%n
+              !call tppl%print()
               call tppl_comprised%add_tppl(tppl,inverted=.true.)
             endif
+            if (n_cross > 1) &
+               call tppl_comprised%add_single_phase_curve(Ta,va,ns,inverted=.false.)
           endif
         endif
       endif
@@ -927,6 +928,7 @@ contains
     real :: Z(nc), param(nc+2), sgn, Told, beta_lin, dbeta
     real :: dS, tuning, dP, dPds, dS_max, dS_min, ln_spec, dT
     real :: X1(nc), X2(nc), K(nc), T_test, P_test, v3, X3(nc)
+    real :: X_3ph(2*nc+7)
     integer :: smax
     logical :: recalculate
     logical :: exit_after_saving
@@ -934,6 +936,7 @@ contains
     real, parameter :: maxdT = 10.0, maxdP = 15.0, maxdbeta = 0.05
     real, parameter :: excessive_dT = 25.0
     real, parameter :: beta_limit = 0.025
+    real :: v1,v2,K2(nc),bG,bL,bW
     !
     exit_after_saving = .false.
     recalculate = .false.
@@ -970,9 +973,9 @@ contains
       iter = newton_two_phase_fluid_hydrate_curve(X,param,T_test,P_test,ierr)
       ! Stabillity?
       K = exp(X(1:nc))
-      X2 = Z/(1-beta+beta*K)
+      X2 = Z/(1-X(nc+4)+X(nc+4)*K)
       X1 = K*X2
-      if (.not. isStable2ph(t_test,p_test,beta,X1,exp(X(nc+2)),X2,exp(X(nc+3)),X3,v3)) then
+      if (.not. isStable2ph(t_test,p_test,X(nc+4),X1,exp(X(nc+2)),X2,exp(X(nc+3)),X3,v3)) then
         sgn = 1 ! Go oposite direction
       endif
       X = Xold ! Reset X
@@ -986,10 +989,15 @@ contains
       dXdSold = dXdS
       call hyd_twoph_newton_tv_extrapolate(X,param,dXdS,dPds)
       smax = maxloc(abs(dXdS),dim=1)
+      s = nint(param(nc+1))
       if ((.not. smax == s) .and. tppl%n > 1) then
-        s = smax
-        ! Rescaling the sensitivities
-        sgn = sign(1.0,X(s) - Xold(s))
+        !if (s == nc+5) then ! Pressure specification
+          s = smax
+          sgn = sign(1.0,X(s) - Xold(s))
+        !else
+        !  sgn = sign(1.0,dXdS(smax)*dXdS(s))*sgn
+        !  s = smax
+        !endif
         dPds = dPds / dXdS(s)
         dXdS = dXdS / dXdS(s)
         dXdSold = dXdSold / dXdSold(s)
@@ -1011,21 +1019,22 @@ contains
         dS = max(min(maxdbeta/abs(dXdS(nc+4)),dS_max),dS_min)
       endif
       beta_lin = X(nc+4) + dXdS(nc+4)*dS*sgn
-      if (dXdS(nc+4)*sgn < 0.0 .and. beta_lin < beta_limit) then
-        if (beta_lin <= 0.0) then
-          set_beta_lin = .true.
-          beta_lin =  0
-          dS = X(nc+4)/abs(dXdS(nc+4))
-        endif
+      if ((dXdS(nc+4)*sgn < -1.0e-5 .and. beta_lin < beta_limit) .or. &
+           (dXdS(nc+4)*sgn > 1.0e-5 .and. beta_lin > 1-beta_limit)) then
         s = nc+4
         param(nc+1) = real(s)
-      else if (dXdS(nc+4)*sgn > 0.0 .and. beta_lin > 1-beta_limit) then
-        if (beta_lin >= 1.0) then
-          set_beta_lin = .true.
-          beta_lin = 1
-          dbeta = abs(1 - X(nc+4))
-          dS = dbeta/abs(dXdS(nc+4))
-        endif
+      endif
+      if (beta_lin <= 0.0) then
+        set_beta_lin = .true.
+        beta_lin =  0
+        dS = X(nc+4)/abs(dXdS(nc+4))
+        s = nc+4
+        param(nc+1) = real(s)
+      else if (beta_lin >= 1.0) then
+        set_beta_lin = .true.
+        beta_lin = 1
+        dbeta = abs(1 - X(nc+4))
+        dS = dbeta/abs(dXdS(nc+4))
         s = nc+4
         param(nc+1) = real(s)
       endif
@@ -1046,6 +1055,27 @@ contains
 
       call wrap_newton_two_phase_fluid_hydrate_curve(param,&
            Pold,dpds,Xold,X,dXds,sgn,s,ds,T,P,ierr,iter)
+
+      ! Stabillity test
+      K = exp(X(1:nc))
+      X2 = Z/(1-X(nc+4)+X(nc+4)*K)
+      X1 = K*X2
+      if (.not. isStable2ph(T,P,X(nc+4),X1,exp(X(nc+2)),X2,exp(X(nc+3)),X3,v3)) then
+        ! Locate endpoint
+        call set_three_phase_variables_tv(Z,T,exp(X(nc+2)),exp(X(nc+3)),v3,X1,X2,X3,X(nc+4),1-X(nc+4),0.0,X_3ph)
+        param(nc+1) = 2*nc+6
+        param(nc+2) = 0.0
+        iter = newton_three_phase_fluid_hydrate_curve(X_3ph,param,T,P,ierr)
+        if (ierr == 0) then
+          call get_three_phase_variables_tv(X_3ph,Z,T,P,v1,v2,v3,X1,X2,X3,K,K2,bG,bL,bW)
+          X(1:nc) = log(X1/X2)
+          X(nc+1) = log(T)
+          X(nc+2) = log(v1)
+          X(nc+3) = log(v2)
+          X(nc+4) = bG
+        endif
+        exit_after_saving = .true.
+      endif
 
       !Exit at thermo limit or defined pressure
       if (p < p_min) then
@@ -1638,8 +1668,10 @@ contains
   !>
   !> \author MH, 2021-12
   !-----------------------------------------------------------------------------
-  subroutine hyd_twoph_newton_tv_extrapolate_test()
+  subroutine hyd_twoph_newton_tv_extrapolate_test(Xin,Zin)
     implicit none
+    real, optional, dimension(nc+4) :: Xin
+    real, optional, dimension(nc) :: Zin
     ! Locals
     real, dimension(nc+4) :: Xvar1, Xvar2, Xvar0
     real, parameter, dimension(6) :: XvarInit = (/1.9652658382049047E-003, &
@@ -1648,7 +1680,7 @@ contains
     character(len=15), dimension(nc+5) :: var_names
     real, dimension(nc+2) :: param
     real, dimension(nc+4) :: dXdS
-    real :: T, ln_s, dpds, p1, p2, ds, p
+    real :: T, ln_s, dpds, p1, p2, ds, p, eps
     integer :: s, ierr, iter
     real :: Z(nc)
     ! Debug
@@ -1663,9 +1695,14 @@ contains
     var_names(6) = "beta"
     var_names(7) = "dlnP"
     !call init_cubic("CO2,H2O","SRK")
-    z = (/1-100.0e-6,100.0e-6/)
+    if (present(Xin) .and. present(Zin)) then
+      Xvar0 = Xin
+      z = Zin
+    else
+      Xvar0 = XvarInit
+      z = (/1-100.0e-6,100.0e-6/)
+    endif
     param(1:nc) = Z
-    Xvar0 = XvarInit
     s = nc+4
     param(nc+1) = real(s)
     ln_s = Xvar0(s)
@@ -1673,13 +1710,16 @@ contains
     iter = newton_two_phase_fluid_hydrate_curve(Xvar0,param,T,P,ierr)
     !call get_two_phase_variables_tv(Xvar0,Z,T,P,v1,v2,X1,X2,K,beta)
     !print *,"iter,ierr",iter,ierr
-    ds = 1.0e-4
+    eps = 1.0e-4
 
     ! Loop
     do s=1,nc+5
+      print *,"s",s
+      ds = eps
       param(nc+1) = real(s)
       call hyd_twoph_newton_tv_extrapolate(Xvar0,param,dXdS,dpds)
       if (s <= nc+4) then
+        ds = ds/maxval(abs(dXdS))
         param(nc+2) = Xvar0(s) - ds
       else
         param(nc+2) = log(p) - ds
@@ -2095,6 +2135,35 @@ contains
       p = pressure(t,vY,Y)
     endif
   end subroutine get_three_phase_variables_tv
+
+  subroutine set_three_phase_variables_tv(Z,T,vY,vX,vW,Y,X,W,beta,betaL,betaW,Xvar)
+    ! Input
+    real, dimension(nc), intent(in) :: Z, Y, X, W
+    real, intent(in) :: T, vY, vX, vW, beta, betaL, betaW
+    ! Output
+    real, intent(out) :: Xvar(2*nc+7)
+    ! Locals
+    integer :: i
+    real :: Kx(nc), Ky(nc)
+    Xvar(2*nc+6) = betaW
+    Xvar(2*nc+7) = betaL
+    Xvar(2*nc+1) = log(t)
+    Xvar(2*nc+2) = beta
+    Xvar(2*nc+3) = log(vY)
+    Xvar(2*nc+4) = log(vX)
+    Xvar(2*nc+5) = log(vW)
+    do i=1,nc
+      if (Z(i) > 0.0) then
+        Ky(i) = Y(i)/W(i)
+        Kx(i) = X(i)/W(i)
+      else
+        Ky(i) = 1
+        Kx(i) = 1
+      endif
+    enddo
+    Xvar(nc+1:2*nc) = log(Ky)
+    Xvar(1:nc) = log(Kx)
+  end subroutine set_three_phase_variables_tv
 
   !-----------------------------------------------------------------------------
   !> Print X state
@@ -2610,18 +2679,30 @@ contains
     endif
     ! Additional test for beta
     if (Xx(2*nc+2)+dxx(2*nc+2) < 0.0) then
-      scaling = -Xx(2*nc+2)/dxx(2*nc+2)
-      dxx = dxx * scaling
+      if (Xx(2*nc+2) == 0.0) then
+        dxx(2*nc+2) = 0
+      else
+        scaling = -Xx(2*nc+2)/dxx(2*nc+2)
+        dxx = dxx * scaling
+      endif
     endif
     ! Additional test for betaW
     if (Xx(2*nc+6)+dxx(2*nc+6) < 0.0) then
-      scaling = -Xx(2*nc+6)/dxx(2*nc+6)
-      dxx = dxx * scaling
+      if (Xx(2*nc+6) == 0.0) then
+        dxx(2*nc+6) = 0
+      else
+        scaling = -Xx(2*nc+6)/dxx(2*nc+6)
+        dxx = dxx * scaling
+      endif
     endif
     ! Additional test for betaL
     if (xx(2*nc+7) + dxx(2*nc+7) < 0.0) then
-      scaling =  xx(2*nc+7)/dxx(2*nc+7)
-      dxx = dxx * scaling
+      if (Xx(2*nc+7) == 0.0) then
+        dxx(2*nc+7) = 0
+      else
+        scaling =  xx(2*nc+7)/dxx(2*nc+7)
+        dxx = dxx * scaling
+      endif
     endif
   end subroutine limit_threeph_dx_line
 
