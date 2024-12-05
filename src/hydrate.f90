@@ -26,7 +26,7 @@ module hydrate
   real, parameter :: Ttriple = 273.16
   integer :: water_idx = -1
   logical :: use_solid_ice_eos = .true.
-  logical, parameter :: verbose = .false.
+  logical, parameter :: hydrate_verbose = .false.
 
   !> This data structure stores parameters for the
   !> Kihara potenital
@@ -116,7 +116,7 @@ contains
     ! Locals
     real, dimension(nc) :: x,y
     integer :: ierr, i
-    write(*,*) "Initializing hydrate model."
+    if (hydrate_verbose) write(*,*) "Initializing hydrate model."
 
     water_idx = -1
     do i=1,nc
@@ -152,7 +152,7 @@ contains
       call solid_init("H2O")
     endif
 
-    write(*,*) "Initialization done."
+    if (hydrate_verbose) write(*,*) "Initialization done."
   end subroutine init_hydrate_model
 
   !-----------------------------------------------------------------!
