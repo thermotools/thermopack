@@ -27,7 +27,8 @@ class hydrate(thermo):
     #################################
 
     def init_hydrate(self, parameter_reference="Default"):
-        """Initialize hydrate model in thermopack
+        """Internal
+        Initialize hydrate model in thermopack
 
         Args:
             parameter_reference (str, optional): Which parameters to use?. Defaults to "Default".
@@ -51,7 +52,8 @@ class hydrate(thermo):
     #################################
 
     def fugacity_water_in_hydrate(self, T, P, z, phase):
-        """Get fugacity of water in hydrate
+        """Tp-property
+        Get fugacity of water in hydrate
 
         Args:
             T (float): Temperature (K)
@@ -84,7 +86,8 @@ class hydrate(thermo):
         return fug_c.value
 
     def fugacity_water_in_hydrate_tv(self, T, V, n):
-        """Get fugacity of water in hydrate
+        """TV-property
+        Get fugacity of water in hydrate
 
         Args:
             T (float): Temperature (K)
@@ -129,7 +132,8 @@ class hydrate(thermo):
 
     def get_hydrate_apperance_curve(self, minimum_pressure, z, minimum_temperature,
                                     maximum_pressure, print_to_file=False):
-        """Get the hydrate appearance curve curve
+        """Saturation interface
+        Get the hydrate appearance curve curve
 
         Args:
             minimum_pressure (float): Start mapping form minimum pressure (Pa).
@@ -142,6 +146,13 @@ class hydrate(thermo):
             ndarray: Pressure values (Pa)
         """
         self.activate()
+        i_H2O = self.getcompindex("H2O")
+        if i_H2O < 1:
+            raise Exception("Water not present. Not able to calculate hydrate curves.")
+        else:
+            if z[i_H2O-1] > 250.0e-6:
+                raise Exception("Numerics currently only supports low water amounts when calculating hydrate curves. " +
+                                "Please reduce water content to 250 pmm or below.")
         nmax = 5000
         z_c = (c_double * len(z))(*z)
         min_temp_c = c_double(minimum_temperature)
