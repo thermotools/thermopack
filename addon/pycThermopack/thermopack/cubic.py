@@ -3,11 +3,10 @@ import numpy as np
 import warnings
 from os import path
 from .thermo import c_len_type
-from .hydrate import hydrate
 from .volume_translation import volume_translation
 
 
-class cubic(hydrate,volume_translation):
+class cubic(volume_translation):
     """
     Interface to cubic
     """
