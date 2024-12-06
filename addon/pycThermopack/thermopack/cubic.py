@@ -2,8 +2,8 @@ from ctypes import *
 import numpy as np
 import warnings
 from os import path
-from .volume_translation import volume_translation
 from .thermo import c_len_type
+from .volume_translation import volume_translation
 
 
 class cubic(volume_translation):

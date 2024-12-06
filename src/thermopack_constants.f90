@@ -22,7 +22,7 @@ module thermopack_constants
   integer, parameter :: TWOPH=0,LIQPH=1,VAPPH=2,MINGIBBSPH=3,&
        SINGLEPH=4,SOLIDPH=5,FAKEPH=6,VAPSOLPH=7
   !> Liquid phase type identifiers
-  integer, parameter :: NONWATER=-1, WATER=-2
+  integer, parameter :: NONWATER=-1, WATER=-2, STDLIQ=-3
   !> Library used to solve EoS
   integer, parameter :: THERMOPACK=1, TREND=2
   !> Method to discriminate between liquid and vapor in the event of an

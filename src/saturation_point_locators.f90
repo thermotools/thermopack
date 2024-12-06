@@ -919,7 +919,7 @@ contains
       ierr = 0
       ! Get phase envelope, including critical point in T,p
       call envelopePlot(z,300.0,1.0e5,spec=1,beta_in=1.0,Pmax=2.0e7,nmax=n_max,&
-           Ta=Ta,pa=pa,Ki=Ki,betai=betai,n=nenv,crit=crit)
+           Ta=Ta,pa=pa,Ka=Ki,betaa=betai,n=nenv,crit=crit)
       T_c = crit(1)
       p_c = crit(2)
       call specificvolume(t_c,p_c,Z,LIQPH,v_c)

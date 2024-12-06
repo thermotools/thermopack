@@ -59,7 +59,7 @@ module nonlinear_solvers
 
   abstract interface
     subroutine function_template(f,x,p)
-      integer, intent(out) :: f(:)
+      real, intent(out) :: f(:)
       real, intent(in) :: x(:)
       real, intent(inout) :: p(:)
     end subroutine function_template
@@ -67,7 +67,7 @@ module nonlinear_solvers
 
   abstract interface
     subroutine jacobian_template(J,x,p)
-      integer, intent(out) :: J(:,:)
+      real, intent(out) :: J(:,:)
       real, intent(in) :: x(:)
       real, intent(inout) :: p(:)
     end subroutine jacobian_template
@@ -82,7 +82,7 @@ module nonlinear_solvers
   public :: approximate_jacobian, approximate_jacobian_2nd, &
        approximate_jacobian_4th
   public :: function_template, jacobian_template
-
+  public :: test_differentials
   public :: newton_1d
 contains
 
@@ -940,5 +940,35 @@ contains
     end do
     if (iter > max_iter) call stoperror("newton_1d method: Error...")
   end function newton_1d
+
+  subroutine test_differentials(X,param,fun,jac)
+    implicit none
+    real, intent(in) :: X(:)
+    real, intent(inout) :: param(:)
+    !procedure(function_template) :: fun
+    !procedure(jacobian_template) :: jac
+    external :: fun
+    external :: jac
+    ! Internal
+    integer :: i
+    real, parameter :: eps = 1.0e-5
+    real, dimension(size(X)) :: XX1, G0, G1, G2
+    real, dimension(size(X),size(X)) :: J0
+
+    call fun(G0,X,param)
+    print *,G0
+    call jac(J0,X,param)
+    do i=1,size(X)
+      XX1 = X
+      XX1(i) = X(i) - eps
+      call fun(G1,XX1,param)
+      XX1(i) = X(i) + eps
+      call fun(G2,XX1,param)
+      print *,"i",i
+      print *,(G2-G1)/eps/2
+      print *,J0(:,i)
+    enddo
+    stop
+  end subroutine test_differentials
 
 end module nonlinear_solvers

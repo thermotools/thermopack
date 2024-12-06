@@ -27,9 +27,63 @@ module saturation_curve
   contains
     procedure, public :: print => aep_print
   end type aep
-
-  ! TODO:
-  ! sat_successive need to use beta_in, nbot only beta=0 and beta=1
+  !
+  ! Error codes from envelopePlot
+  integer, parameter :: ER_OK = 0, ER_NOINITIALPOINT = 1, ER_PMAX_TMIN = 2
+  integer, parameter :: ER_STABILITY = 3, ER_NMAX = 4, ER_NOSOL = 5, ER_TRIPLE = 6
+  !
+  type envelope_plot_control
+    ! In
+    integer :: spec = specP ! Solve initial point with specification
+    real :: beta_in = 1 ! Gas phase molar fraction
+    real :: Pmax = -1 ! Exit on maximum pressure
+    !
+    logical :: set_pmin = .false. ! Use minimum pressure
+    real :: Pmin = -1        ! Minimum pressure, overrides Pstart
+    !
+    logical :: calc_cricond = .false. ! Calculate cricondenbar/cricondentherm
+    real  :: criconden(4) = -1 ! tcb,pcb,tct,pct
+    !
+    logical :: calc_critical = .false. ! Calculate critical point
+    real  :: crit(2) = -1      ! tc, pc
+    !
+    logical :: override_ds = .false. ! Ovveride default step length
+    real :: dS_override = -1  ! Override step length
+    real :: step_size_factor ! Scale maximum allowed step-size
+    !
+    logical :: exit_on_triple_point = .false. ! Exit if passing triple point
+    !
+    logical :: override_exit_temperature = .false. ! Override default exit temperature
+    real  :: Tme = -1 ! Exit on temp
+    !
+    logical :: set_y_phase = .false. ! Allow for LLE
+    integer  :: Yph = -1 ! Phase type identifyer - option to do LLE
+    !
+    real :: sgn_in = 1 ! Step direction
+    !
+    logical :: do_not_switch_formulation = .false. ! Do not switch formulation
+    !
+    logical :: override_K_init = .false. ! Use user specified K-valaues
+    real, allocatable :: K_init(:)   ! User specified K-values
+    !
+    logical :: do_stability_check = .false. ! Perfrom stabillity test?
+    ! Out
+    real, allocatable :: Wstab(:)   ! Return if stab check fails
+    integer  :: Wph = 0 ! Phase type identifyer for Wstab
+    !
+    integer :: returnCause = ER_OK ! Reason of return
+  contains
+    procedure, public :: set_minimum_pressure => epc_set_minimum_pressure
+    procedure, public :: set_minimum_temperature => epc_set_minimum_temperature
+    procedure, public :: set_ds_override => epc_set_ds_override
+    procedure, public :: set_second_phase => epc_set_second_phase
+    procedure, public :: set_K_init => epc_set_K_init
+    procedure, public :: unset_all => epc_unset_all
+    procedure, public :: allocate => epc_allocate
+    procedure, public :: deallocate => epc_deallocate
+    procedure, public :: envelope_plot => envelope_plot_epc
+    procedure, public :: get_return_cause_txt => epc_get_return_cause_txt
+  end type envelope_plot_control
 
   public :: aep,AZ_NONE,AZ_PAEP,AZ_CAEP,AZ_HAEP
   public :: envelopePlot,singleCompSaturation
@@ -38,6 +92,9 @@ module saturation_curve
   public :: extrapolate_to_saturation_line
   public :: extrapolate_beta
   public :: ISO_P, ISO_T, ISO_S, ISO_H, ISO_LABEL
+  public :: ER_NOINITIALPOINT, ER_PMAX_TMIN, ER_STABILITY
+  public :: ER_OK, ER_NMAX, ER_NOSOL, ER_TRIPLE
+  public :: isStable, envelope_plot_control, get_step_direction
   public :: pure_fluid_saturation_wrapper
 
 contains
@@ -47,7 +104,7 @@ contains
   !>
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
-  subroutine newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_s)
+  subroutine newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_s,Yphase)
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, dimension(nc+2), intent(out) :: dXdS
@@ -55,17 +112,22 @@ contains
     real, intent(in) :: beta
     real, intent(in) :: ln_s
     integer, intent(in) :: s
+    integer, optional, intent(in) :: Yphase
     ! Locals
     real, dimension(nc+2,nc+2) :: Jac
     integer, dimension(nc+2) :: INDX
     integer :: INFO
-    real, dimension(nc+3) :: param
+    real, dimension(nc+4) :: param
 
     param(1:nc) = Z
     param(nc+1) = beta
     param(nc+2) = real(s)
     param(nc+3) = ln_s
-
+    if (present(Yphase)) then
+      param(nc+4) = real(Yphase)
+    else
+      param(nc+4) = VAPPH
+    endif
     call sat_diff_newton(Jac,Xvar,param)
     dXdS(1:nc+1) = 0.0
     dXdS(nc+2) = 1.0
@@ -220,7 +282,7 @@ contains
       t = exp(Xvar(nc+1))
       p = exp(Xvar(nc+2))
       ! Solve for saturation point
-      iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr)
+      iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr=ierr)
       if (ierr /= 0) then
         ! Are we shooting out of the two-phase region
         ! Try reducing step size
@@ -271,7 +333,7 @@ contains
       endif
       Xvar = Xvar + dXvardS*dS
       ! Solve for saturation point
-      iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr)
+      iter = sat_newton(Z,K,t,p,beta,s,ln_s,ierr=ierr)
       if (ierr /= 0) then
         ierr = -100 ! Trace envelope to find crossing
         ! Reset K, T and P
@@ -297,17 +359,13 @@ contains
   end subroutine extrapolate_to_saturation_line
 
   !-----------------------------------------------------------------------------
-  !> Plot saturation line in TP space
+  !> Plot saturation curve in TP space - interface without envelope_plot_control
   !>
-  !> \author MH, 2012-03-05, Modified EA, 2014-10, 2015-01
+  !> \author MH, 2020-11
   !-----------------------------------------------------------------------------
   subroutine envelopePlot(Z,T_init,p_init,spec,beta_in,Pmax,nmax,&
-       Ta,Pa,Ki,betai,n,criconden,crit,dS_override,&
+       Ta,Pa,Ka,betaa,n,criconden,crit,dS_override,&
        exitOnTriplePoint,Tme,step_size_factor)
-    use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
-    use thermo_utils, only: isSingleComp
-    use eosTV, only: pressure
-    use eosdata, only: eosLK
     implicit none
     ! Input:
     real,           intent(in)  :: Z(nc)       ! Total molar comp. (-)
@@ -321,8 +379,8 @@ contains
     ! Output:
     real,           intent(out) :: Ta(nmax)    ! Sat. temp. values (K)
     real,           intent(out) :: pa(nmax)    ! Sat. pres. values (Pa)
-    real,           intent(out) :: Ki(nmax,nc) ! Equilibrium constants
-    real,           intent(out) :: betai(nmax) ! Phase fraction
+    real,           intent(out) :: Ka(nmax,nc) ! Equilibrium constants
+    real,           intent(out) :: betaa(nmax) ! Phase fraction
     integer,        intent(out) :: n           ! Number of points found
     real, optional, intent(out) :: criconden(4)! tcb,pcb,tct,pct
     real, optional, intent(out) :: crit(2)     ! tc, pc
@@ -330,6 +388,58 @@ contains
     logical, optional, intent(in) :: exitOnTriplePoint ! Exit if passing triple point
     real, optional, intent(in)  :: Tme ! Exit on temperature
     real, optional, intent(in)  :: step_size_factor ! Scale the default step size limits, and in effect the step size
+    ! Locals
+    type(envelope_plot_control) :: epc
+    real :: v1a(nmax)   ! Sat. vol. values (m3/mol) - dummy
+    real :: v2a(nmax)   ! Sat. vol. values (m3/mol) - dummy
+    ! Map inputs to epc type
+    epc%spec = spec
+    epc%beta_in = beta_in
+    epc%Pmax = Pmax
+    !
+    if (present(criconden)) epc%calc_cricond = .true.
+    if (present(crit)) epc%calc_critical = .true.
+    !
+    if (present(dS_override)) call epc%set_ds_override(dS_override)
+    epc%step_size_factor = 1.0
+    if (present(step_size_factor)) epc%step_size_factor = step_size_factor
+    !
+    if (present(exitOnTriplePoint)) epc%exit_on_triple_point = exitOnTriplePoint
+    !
+    if (present(Tme)) call epc%set_minimum_temperature(Tme)
+    !
+    call epc%envelope_plot(Z,T_init,p_init,nmax,Ta,Pa,v1a,v2a,Ka,betaa,n)
+    if (epc%calc_cricond) criconden = epc%criconden
+    if (epc%calc_critical) crit = epc%crit
+
+    if (epc%returnCause /= ER_OK .and. verbose) print *,trim(epc%get_return_cause_txt())
+  end subroutine envelopePlot
+
+  !-----------------------------------------------------------------------------
+  !> Plot saturation curve in TP space
+  !>
+  !> \author MH, 2012-03-05, Modified EA, 2014-10, 2015-01
+  !-----------------------------------------------------------------------------
+  subroutine envelope_plot_epc(epc,Z,T_init,p_init,nmax,Ta,Pa,v1a,v2a,Ka,betaa,n)
+    use critical, only: calcCritical, calcStabMinEig, calcCriticalTV
+    use thermo_utils, only: isSingleComp
+    use eosTV, only: pressure
+    use eosdata, only: eosLK
+    implicit none
+    class(envelope_plot_control), intent(inout) :: epc
+    ! Input:
+    real,           intent(in)  :: Z(nc)       ! Total molar comp. (-)
+    real,           intent(in)  :: T_init      ! T-guess initial point (K)
+    real,           intent(in)  :: p_init      ! p-guess initial point (Pa)
+    integer,        intent(in)  :: nmax        ! Maximum number of points
+    ! Output:
+    real,           intent(out) :: Ta(nmax)    ! Sat. temp. values (K)
+    real,           intent(out) :: pa(nmax)    ! Sat. pres. values (Pa)
+    real,           intent(out) :: v1a(nmax)   ! Sat. vol. values (m3/mol) - dummy
+    real,           intent(out) :: v2a(nmax)   ! Sat. vol. values (m3/mol) - dummy
+    real,           intent(out) :: Ka(nmax,nc) ! Equilibrium constants
+    real,           intent(out) :: betaa(nmax) ! Phase fraction
+    integer,        intent(out) :: n           ! Number of points found
     ! Internal:
     real  :: T,p
     real, dimension(nc) :: K, lnfugG, lnfugL
@@ -340,7 +450,7 @@ contains
     integer :: smax,zmax
     real :: ln_spec,beta,lambda,lambda_old,lambda_min
     real :: dT,dP,dTold,dPold,dPdT,dTdP,dPdTold,dTdPold
-    logical :: cricon, doBub,calcCrit
+    logical :: doBub
     logical :: excessive_jump
     logical :: have_switched_formulation
     logical :: should_switch_formulation
@@ -349,27 +459,27 @@ contains
     real, parameter :: maxdT = 25.0, maxdP = 10.0
     real :: dS_max, dS_min, v
     integer :: n_crit
+    integer :: Yphase
     type(thermo_model), pointer :: act_mod_ptr
     act_mod_ptr => get_active_thermo_model()
     ! Set initial guess for first point
     T = T_init
     p = p_init
 
-    have_switched_formulation = .false.
+    have_switched_formulation = epc%do_not_switch_formulation
     should_switch_formulation = .false.
     recalculate = .false.
     exit_after_saving = .false.
 
-    cricon = .false.
-    if (present(criconden) .and. (beta_in == 0.0 .or. beta_in == 1.0)) then
-      cricon = .true.
-      criconden = 0.0
+    epc%criconden = 0
+    if (epc%calc_cricond .and. ( &
+         (.not. (epc%beta_in == 0.0 .or. epc%beta_in == 1.0) .or. &
+         (epc%set_y_phase .and. epc%Yph == LIQPH) ))) then
+        epc%calc_cricond = .false.
     endif
 
-    calcCrit = .false.
-    if (present(crit) .and. (beta_in == 0.0 .or. beta_in == 1.0)) then
-      calcCrit = .true.
-      crit = 0.0
+    if (epc%calc_critical .and. (epc%beta_in == 0.0 .or. epc%beta_in == 1.0)) then
+      epc%crit = 0.0
       lambda_old = 500.0
       lambda_min = 400.0
       lambda = lambda_old
@@ -377,12 +487,14 @@ contains
     endif
 
     n = 0
-    beta = beta_in
+    beta = epc%beta_in
 
-    if (spec == specP) then
+    if (epc%spec == SPECP) then
       ln_spec = log(p)
-    else if (spec == specT) then
+    else if (epc%spec == SPECT) then
       ln_spec = log(t)
+    else if (epc%spec > 2 .and. epc%spec <= nc+2 .and. epc%override_K_init) then
+      ln_spec = log(epc%K_init(epc%spec-2))
     else
       print *,'envelopePlot: Error in initial spec'
       call exit(1)
@@ -390,95 +502,115 @@ contains
 
     zmax = maxloc(Z,dim=1)
     if (isSingleComp(Z)) then
-      dS_max = 0.2e5
-      if (present(step_size_factor)) then
-        dS_max = dS_max*step_size_factor
+      dS_max = 0.2e5*epc%step_size_factor
+      call singleCompSaturation(Z,t,p,epc%spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
+      Ka = 1.0
+      betaa = 0.0
+      if (epc%calc_cricond) then
+        epc%criconden(1) = Ta(n)
+        epc%criconden(2) = Pa(n)
+        epc%criconden(3) = Ta(n)
+        epc%criconden(4) = Pa(n)
       endif
-      call singleCompSaturation(Z,t,p,spec,Ta,Pa,nmax,n,maxDeltaP=dS_max)
-      Ki = 1.0
-      betai = 0.0
-      if (cricon) then
-        criconden(1) = Ta(n)
-        criconden(2) = Pa(n)
-        criconden(3) = Ta(n)
-        criconden(4) = Pa(n)
-      endif
-      if (calcCrit) then
-        crit(1) = Ta(n)
-        crit(2) = Pa(n)
+      if (epc%calc_critical) then
+        epc%crit(1) = Ta(n)
+        epc%crit(2) = Pa(n)
       endif
       return
     endif
 
-    if (present(dS_override)) then
-      dS_max = dS_override
+    if (epc%override_ds) then
+      dS_max = epc%ds_override
     else
-      dS_max = 0.25
-      if (present(step_size_factor)) then
-        dS_max = dS_max*step_size_factor
-      endif
+      dS_max = 0.25*epc%step_size_factor
     endif
     dS_min = min(0.25*dS_max, 0.05)
     dS = dS_min
     tuning = 1.2
-    sgn = 1.0
+    sgn = epc%sgn_in
 
     ! Temperature limits
     Tmin = tpTmin
     Tmax = tpTmax
-    if (present(Tme)) Tmin = Tme
-
-    ! Generate initial K values
-    if (beta_in < 0.5) then
-      doBub = .true.
-    else
-      doBub = .false.
+    !Exit at specified temperature
+    if (epc%override_exit_temperature) then
+      Tmin = max(epc%Tme, Tmin)
     endif
 
-    ! Find temperature/pressure in correct range
-    if (spec == specP) then
-      call PureSat(T,P,Z,.true.)
+    if (epc%set_y_phase) then
+      Yphase = epc%Yph
+      if (Yphase == LIQPH) then
+        ! Two liquid phases - no point switching formulation
+        have_switched_formulation = .true.
+      endif
     else
-      call PureSat(T,P,Z,.false.)
+      Yphase = VAPPH
     endif
-    call thermo(t,p,z,VAPPH,lnfugG)
-    call thermo(t,p,z,LIQPH,lnfugL)
-    if (abs(sum(lnfugG-lnfugL)) > 1.0e-3) then
-      K = exp(lnfugL-lnfugG)
+
+    if (.not. epc%override_K_init) then
+      if (epc%set_y_phase) then
+        print *,'Phase identifyers ignored'
+        Yphase = VAPPH
+      endif
+      ! Generate initial K values
+      if (epc%beta_in < 0.5) then
+        doBub = .true.
+      else
+        doBub = .false.
+      endif
+      ! Find temperature/pressure in correct range
+      if (epc%spec == specP) then
+        call PureSat(T,P,Z,.true.)
+      else
+        call PureSat(T,P,Z,.false.)
+      endif
+      call thermo(t,p,z,VAPPH,lnfugG)
+      call thermo(t,p,z,LIQPH,lnfugL)
+      if (abs(sum(lnfugG-lnfugL)) > 1.0e-3) then
+        K = exp(lnfugL-lnfugG)
+      else
+        call sat_wilsonK(Z,K,t,p,epc%spec,doBub)
+      endif
+      ! Set early return
+      return_iter = 200
+      call sat_successive(Z,K,t,p,epc%spec,doBub,return_iter)
+      s = ispec(epc%spec)
+      iter = sat_newton(Z,K,t,p,beta,s,ln_spec)
+      if (iter >= sat_max_iter) then
+        print *,'envelopePlot: Initial point not found.'
+        epc%returnCause = ER_NOINITIALPOINT
+        return
+      endif
+      if (verbose) then
+        print *,'*****************************'
+        print *,'Phase envelope:'
+        print *,'T,P:',t,p
+      endif
     else
-      call sat_wilsonK(Z,K,t,p,spec,doBub)
-    endif
-    ! Set early return
-    return_iter = 200
-    call sat_successive(Z,K,t,p,spec,doBub,return_iter)
-    s = ispec(spec)
-    iter = sat_newton(Z,K,t,p,beta,s,ln_spec)
-    if (iter >= sat_max_iter) then
-      print *,'envelopePlot: Initial point not found.'
-      call exit(1)
-    endif
-    if (verbose) then
-      print *,'*****************************'
-      print *,'Phase envelope:'
-      print *,'T,P:',t,p
+      s = ispec(epc%spec)
+      K = epc%K_init
     endif
 
     Xvar(1:nc) = log(K)
     Xvar(nc+1) = log(t)
     Xvar(nc+2) = log(p)
-    Pstart = p
+    if (epc%set_pmin) then
+      Pstart = epc%Pmin
+    else
+      Pstart = p
+    endif
 
     ! Set output
     n = 1
-    call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ki,betai,nmax)
+    call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ka,betaa,nmax)
 
-    if (cricon) then
+    if (epc%calc_cricond) then
       call dPdTcalc(dPold,dTold,Z,K,beta,t,p)
     endif
 
     do while (n < nmax)
       dXdSold = dXdS
-      call newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_spec)
+      call newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_spec,Yphase)
       smax = maxloc(abs(dXdS),dim=1)
       if ((.not. smax == s) .and. n > 1) then
         s = smax
@@ -488,23 +620,18 @@ contains
         dXdSold = dXdSold / dXdSold(s)
       endif
 
-      !if (i > 1) then
-      !  snew = Xvar(s) + dS
-      !  call poly(nc+2,Xold(s),Xvar(s),Xold,Xvar,dXdSold,dXdS,snew,Xnew)
-      !else
-
       Xold = Xvar
       Xvar = Xold + dXdS*dS*sgn
-      if (s == nc+2 .and. Xvar(s) > log(Pmax)) then
+      if (s == nc+2 .and. Xvar(s) > log(epc%Pmax)) then
         ! Solve for Pmax
-        Xvar = Xold + dXdS*(log(Pmax) - Xold(s))
+        Xvar = Xold + dXdS*(log(epc%Pmax) - Xold(s))
       endif
       K = exp(Xvar(1:nc))
       t = exp(Xvar(nc+1))
       p = exp(Xvar(nc+2))
       ln_spec = Xvar(s)
 
-      iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+      iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
       excessive_jump = (abs(exp(Xold(nc+1)) - t) > maxdT) .OR. &
            (abs(exp(Xold(nc+2)) - p)/1e5 > maxdP)
       if (ierr /= 0 .OR. excessive_jump) then
@@ -515,7 +642,7 @@ contains
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
         ln_spec = Xvar(s)
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
         excessive_jump = (abs(exp(Xold(nc+1)) - t) > maxdT) .OR. &
              (abs(exp(Xold(nc+2)) - p)/1e5 > maxdP)
       endif
@@ -527,7 +654,7 @@ contains
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
         ln_spec = Xvar(s)
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
         excessive_jump = (abs(exp(Xold(nc+1)) - t) > maxdT) .OR. &
              (abs(exp(Xold(nc+2)) - p)/1e5 > maxdP)
       endif
@@ -556,7 +683,7 @@ contains
         endif
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
         excessive_jump = (abs(exp(Xold(nc+1)) - t) > maxdT) .OR. &
              (abs(exp(Xold(nc+2)) - p)/1e5 > maxdP)
         if (.not. have_switched_formulation) then
@@ -572,6 +699,7 @@ contains
       endif
       if (ierr /= 0 .OR. excessive_jump) then
         ! Give up
+        epc%returnCause = ER_NOSOL
         exit
       endif
 
@@ -584,13 +712,14 @@ contains
         s = nc+2
         recalculate = .true.
         ln_spec = log(Pstart)
-      else if (p > Pmax) then
+      else if (p >= epc%Pmax) then
         s = nc+2
         recalculate = .true.
-        ln_spec = log(Pmax)
+        ln_spec = log(epc%Pmax)
       endif
-      ! Is temperature decreasing? - And below Tme?
-      if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tmin) then
+      ! Is temperature decreasing? - And below Tmin + safety limit?
+      if (Xvar(nc+1) - Xold(nc+1) < 0.0 .and. T < Tmin + 0.01) then
+        ! Exit at temperature
         s = nc+1
         ln_spec = log(Tmin)
         recalculate = .true.
@@ -604,7 +733,7 @@ contains
         K = exp(Xvar(1:nc))
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
         Xvar(1:nc) = log(K)
         Xvar(nc+1) = log(t)
         Xvar(nc+2) = log(p)
@@ -613,43 +742,36 @@ contains
 
       ! Set output
       n = n + 1
-      call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ki,betai,nmax)
-      if (n == nmax .OR. exit_after_saving) then
+      call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ka,betaa,nmax)
+      if (n == nmax) then
+        epc%returnCause = ER_NMAX
         exit ! Exit before cricon calculations
       endif
 
-      if (present(exitOnTriplePoint)) then
-        if (exitOnTriplePoint) then
-          ! Have we passed a triple point?
-          if (passedTriplePoint(Xold,Xvar,Z,beta)) then
-            return
+      if (epc%exit_on_triple_point) then
+        ! Have we passed a triple point?
+        if (passedTriplePoint(Xold,Xvar,Z,beta)) then
+          epc%returnCause = ER_TRIPLE
+          return
+        endif
+      endif
+
+      if (epc%do_stability_check) then
+        if (.not. isStable(t,p,Z,K,Yphase,beta,epc%Wstab,epc%Wph)) then
+          if (verbose) then
+            print *,'Not stable any more....',t,p
           endif
+          epc%returnCause = ER_STABILITY
+          return
         endif
       endif
 
-      !Exit at defined pressure
-      if (p >= Pmax*(1.0 - machine_prec*100)) then
-        ! Attempt to solve for Pmax
-        ln_spec = log(Pmax)
-        s = nc+2
-        ! Rescaling the sensitivities
-        dXdS = dXdS / dXdS(s)
-        Xvar = Xold + dXdS*(ln_spec-Xold(s))
-        K = exp(Xvar(1:nc))
-        t = exp(Xvar(nc+1))
-        p = exp(Xvar(nc+2))
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
-        if (ierr == 0) then
-          ! Replace last point
-          Xvar(1:nc) = log(K)
-          Xvar(nc+1) = log(t)
-          Xvar(nc+2) = log(p)
-          call setEnvelopePoint(Xvar,Z,beta,n,Ta,Pa,Ki,betai,nmax)
-        endif
-        exit
+      if (exit_after_saving) then
+        epc%returnCause = ER_PMAX_TMIN
+        exit ! Exit before cricon calculations
       endif
 
-      if (calcCrit) then
+      if (epc%calc_critical) then
         lambda_old = lambda
         if (beta > 0.5) then
           phase = VAPPH
@@ -659,13 +781,13 @@ contains
         lambda = calcStabMinEig(t,p,z,phase)
         lambda_min = min(lambda,lambda_min)
         if (lambda > lambda_old .and. lambda_min == lambda_old) then
-          crit(1) = Ta(n-1)
-          crit(2) = Pa(n-1)
+          epc%crit(1) = Ta(n-1)
+          epc%crit(2) = Pa(n-1)
           n_crit = n-1
         endif
       endif
 
-      if (cricon) then
+      if (epc%calc_cricond) then
         call dPdTcalc(dP,dT,Z,K,beta,t,p)
         if (abs(dT) > abs(dP)) then
           ! Look for cricondenbar
@@ -677,16 +799,16 @@ contains
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .false.,ierr)
             if (ierr == 0) then
-              if (criconden(2) < exp(XvarCricon(nc+2))) then
-                criconden(1) = exp(XvarCricon(nc+1))
-                criconden(2) = exp(XvarCricon(nc+2))
+              if (epc%criconden(2) < exp(XvarCricon(nc+2))) then
+                epc%criconden(1) = exp(XvarCricon(nc+1))
+                epc%criconden(2) = exp(XvarCricon(nc+2))
               endif
               ! Add point to envelope
               Ta(n+1) = Ta(n)
               Pa(n+1) = Pa(n)
-              Ki(n+1,:) = Ki(n,:)
-              betai(n+1) = betai(n)
-              call setEnvelopePoint(XvarCricon,Z,beta,n,Ta,Pa,Ki,betai,nmax)
+              Ka(n+1,:) = Ka(n,:)
+              betaa(n+1) = betaa(n)
+              call setEnvelopePoint(XvarCricon,Z,beta,n,Ta,Pa,Ka,betaa,nmax)
               n = n + 1
             endif
           endif
@@ -700,16 +822,16 @@ contains
                  min(Pa(n),Pa(n-1)),max(Ta(n),Ta(n-1)),min(Ta(n),Ta(n-1)),&
                  .true.,ierr)
             if (ierr == 0) then
-              if (criconden(3) < exp(XvarCricon(nc+1))) then
-                criconden(3) = exp(XvarCricon(nc+1))
-                criconden(4) = exp(XvarCricon(nc+2))
+              if (epc%criconden(3) < exp(XvarCricon(nc+1))) then
+                epc%criconden(3) = exp(XvarCricon(nc+1))
+                epc%criconden(4) = exp(XvarCricon(nc+2))
               endif
               ! Add point to envelope
               Ta(n+1) = Ta(n)
               Pa(n+1) = Pa(n)
-              Ki(n+1,:) = Ki(n,:)
-              betai(n+1) = betai(n)
-              call setEnvelopePoint(XvarCricon,Z,beta,n,Ta,Pa,Ki,betai,nmax)
+              Ka(n+1,:) = Ka(n,:)
+              betaa(n+1) = betaa(n)
+              call setEnvelopePoint(XvarCricon,Z,beta,n,Ta,Pa,Ka,betaa,nmax)
               n = n + 1
             endif
           endif
@@ -724,7 +846,7 @@ contains
       ! to switch until it can be done error-free.
       if (should_switch_formulation) then
         call changeFormulation(beta,Xvar,Xold,K,s,ln_spec,sgn)
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,Yphase=Yphase,ierr=ierr)
         ! If error-free, change phase now. If not, try again next time.
         if (ierr == 0 .and. &
              abs(Ta(n)-t)/max(Ta(n),t) < 1.0e-5 .and. &
@@ -746,18 +868,18 @@ contains
       if (iter < 3) then
         dS = dS * tuning
       else if (iter > 5) then
-        dS = dS * (1.0 - tuning)
+        dS = dS/tuning
       endif
       dS = max(min(dS,dS_max),dS_min)
     enddo
 
-    if (calcCrit) then
-      if (crit(1) > 0.0 .and. crit(2) > 0.0) then
+    if (epc%calc_critical) then
+      if (epc%crit(1) > 0.0 .and. epc%crit(2) > 0.0) then
         ! Use initial guess from envelope mapping
-        T = crit(1)
-        P = crit(2)
+        T = epc%crit(1)
+        P = epc%crit(2)
         call specificvolume(t,p,Z,LIQPH,v)
-        call calcCritical(crit(1),crit(2),Z,VAPPH,ierr)
+        call calcCritical(epc%crit(1),epc%crit(2),Z,VAPPH,ierr)
       else
         ! Force calculation using calcCriticalTV, without
         ! an initial guess
@@ -770,19 +892,19 @@ contains
         call calcCriticalTV(t,v,Z,ierr,1.0e-8)
         if (ierr == 0) then
           p = pressure(t,v,Z)
-          crit(1) = t
-          crit(2) = p
+          epc%crit(1) = t
+          epc%crit(2) = p
         endif
       endif
       if (ierr /= 0) then
-        crit = -1.0
+        epc%crit = -1.0
       else if (n < nmax) then
         ! Add critical point to envelope output
-        call insertCriticalPoint(crit(1),crit(2),Ta,Pa,Ki,betai,nmax,n_crit,n)
+        call insertCriticalPoint(epc%crit(1),epc%crit(2),Ta,Pa,Ka,betaa,nmax,n_crit,n)
       endif
     endif
 
-  end subroutine envelopePlot
+  end subroutine envelope_plot_epc
 
   !-----------------------------------------------------------------------------
   !> Add critical point to envelope points
@@ -1584,13 +1706,13 @@ contains
       p0 = p
       T = safe_bubT(P,X,Y,ierr)
       if (log_linear_loc) then
-        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        n = min(nint((log(pci)-log(P))/max_dlnp)+2,nmax)
         dlnp = (log(pci)-log(P))/(n-1)
         do iter=1,n
           pa(iter) = exp(log(p0) + dlnp*(iter-1))
         enddo
       else
-        n = min(int((pci-P)/maxDelP)+1,nmax)
+        n = min(nint((pci-P)/maxDelP)+2,nmax)
         dP = (pci-P)/(n-1)
         do iter=1,n
           pa(iter) = p0 + dP*(iter-1)
@@ -1602,13 +1724,13 @@ contains
       T0 = T
       P = safe_bubP(T,X,Y,ierr)
       if (log_linear_loc) then
-        n = min(int((log(pci)-log(P))/max_dlnp)+1,nmax)
+        n = min(nint((log(pci)-log(P))/max_dlnp)+2,nmax)
         dlnT = (log(tci)-log(T))/(n-1)
         do iter=1,n
           ta(iter) = exp(log(T0) + dlnT*(iter-1))
         enddo
       else
-        n = min(int((pci-P)/maxDelP)+1,nmax)
+        n = min(nint((pci-P)/maxDelP)+2,nmax)
         dT = (tci-T)/(n-1)
         do iter=1,n
           ta(iter) = T0 + dT*(iter-1)
@@ -1875,7 +1997,7 @@ contains
     sgn = 1.0
     specification = specP
     s = ispec(specification) ! index of fixed variable in Xvar below (here nc+2)
-    iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+    iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr=ierr)
     if (ierr /= 0) then
       if (present(ierr_out)) then
         ierr_out = ierr
@@ -1938,7 +2060,7 @@ contains
         exit
       endif
 
-      iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+      iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr=ierr)
       if (ierr /= 0) then
         ! Something went wrong.
         ! Attempt to make the step shorter.
@@ -1947,7 +2069,7 @@ contains
         t = exp(Xvar(nc+1))
         p = exp(Xvar(nc+2))
         ln_spec = Xvar(s)
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr=ierr)
         if (ierr /= 0) then
           ! Something went wrong.
           ! Attempt to make the step longer.
@@ -1956,7 +2078,7 @@ contains
           t = exp(Xvar(nc+1))
           p = exp(Xvar(nc+2))
           ln_spec = Xvar(s)
-          iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+          iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr=ierr)
           if (ierr /= 0) then
             if (present(ierr_out)) then
               ierr_out = ierr
@@ -2027,7 +2149,7 @@ contains
       ! to switch until it can be done error-free.
       if (should_switch_formulation) then
         call changeFormulation(beta,Xvar,Xold,K,s,ln_spec,sgn)
-        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr)
+        iter = sat_newton(Z,K,t,p,beta,s,ln_spec,ierr=ierr)
         ! If error-free, change phase now. If not, try again next time.
         if (ierr == 0) then
           Xvar(1:nc) = log(K)
@@ -2381,5 +2503,237 @@ contains
     print *,"vg",a%vg
     print *,"vl",a%vl
   end subroutine aep_print
+
+  !-----------------------------------------------------------------------------
+  !> Get step direction K-value starting point
+  !>
+  !> \author MH, 2016-04
+  !-----------------------------------------------------------------------------
+  subroutine get_step_direction(t,p,Z,K,beta,stepVar,sgn,Yphase)
+    implicit none
+    real, intent(in) :: t,p,beta
+    real, dimension(nc), intent(in) :: Z,K
+    integer, intent(in)  :: Yphase ! Set Y phase identefyer
+    ! Output
+    real, intent(out) :: sgn
+    integer, intent(out) :: stepVar
+    ! Locals
+    real, dimension(nc) :: Wstab, Kl
+    real, dimension(nc+2) :: Xvar, dXdS
+    real :: ds, ln_spec, tl, pl
+    integer :: s, iter, ierr, smax(1), Wphase
+    ! Set variables
+    Xvar(1:nc) = log(K)
+    Xvar(nc+1) = log(T)
+    Xvar(nc+2) = log(p)
+    ! Extrapolate
+    s = nc+2
+    stepVar = 1
+    ln_spec = Xvar(s)
+    call newton_extrapolate(Z,Xvar,dXdS,beta,s,ln_spec,Yphase)
+    smax = maxloc(abs(dXdS))
+    s = smax(1)
+    dXdS = dXdS / dXdS(s)
+    if (s < nc+1) then
+      stepVar = s + 2
+    else if (s == nc + 1) then
+      stepVar = 2
+    else
+      stepVar = 1
+    endif
+
+    ! Small perturbation
+    ds = 1.0e-3
+    sgn = 1.0
+    Xvar = Xvar + dXdS*ds*sgn
+    Kl = exp(Xvar(1:nc))
+    tl = exp(Xvar(nc+1))
+    pl = exp(Xvar(nc+2))
+    ln_spec = Xvar(s)
+    iter = sat_newton(Z,Kl,tl,pl,beta,s,ln_spec,Yphase,ierr)
+    if (ierr /= 0) then
+      sgn = -1.0
+    else
+      if (.not. isStable(tl,pl,Z,Kl,Yphase,beta,Wstab,Wphase)) then
+        sgn = -1.0
+      endif
+    endif
+  end subroutine get_step_direction
+
+  !-----------------------------------------------------------------------------
+  !> Test if new liquid phase should be introduced
+  !>
+  !> \author MH, 2015-09
+  !-----------------------------------------------------------------------------
+  function isStable(t,p,Z,K,Yphase,beta,W,Wphase) result(isS)
+    use eos, only: thermo
+    use thermopack_constants, only: LIQPH, VAPPH, WATER, NONWATER
+    use stability, only: stabcalcW, stabilityLimit
+    use thermo_utils, only: waterComponentFraction, wilsonK
+    implicit none
+    real, intent(in) :: t,p,beta
+    integer, intent(in) :: Yphase
+    real, dimension(nc), intent(in) :: Z,K
+    real, dimension(nc), intent(out) :: W
+    integer, intent(out) :: Wphase
+    logical :: isS
+    ! Locals
+    integer :: nd, Zphase, pid, i
+    real :: XX(2,nc),lnFugZ(nc),lnFugW(nc),tpd
+    real, dimension(nc) :: Kw,dKwdp,dKwdt
+    real, parameter :: stab_lim_test = stabilityLimit*1.0e4
+
+    if (beta > 0.5) then
+      Zphase = Yphase
+      XX(2,:) = Z/K
+    else
+      Zphase = LIQPH
+      XX(2,:) = K*Z
+    endif
+
+    call thermo(t,p,Z,zPhase,lnFugZ)
+    nd = 2
+    XX(1,:) = Z
+
+    ! Look for water or liquid phase
+    if (waterComponentFraction(XX(2,:)) > 0.8) then
+      pid = NONWATER
+      Wphase = VAPPH
+    else
+      pid = WATER
+      Wphase = LIQPH
+    endif
+    !print *,"Wphase",Wphase
+    !print *,"pid,NONWATER,WATER",pid,NONWATER,WATER
+    call wilsonK(t,p,Kw,dKwdp,dKwdt,pid)
+    if (Wphase == LIQPH) then
+      W = Z/Kw
+    else
+      W = Kw*Z
+    endif
+    !print *,"W",W
+    tpd = stabcalcW(nd,1,t,p,XX,W,Wphase,lnFugZ,lnFugW,preTermLim=-1000.0)
+    !print *,"W",W
+    isS = (tpd > stab_lim_test)
+    !if (.not. isS) print *,"tpd",tpd
+    if (.not. isS) return
+    !
+    Wphase = LIQPH
+    ! Loop all possible phases
+    do i=1,nc
+      W = 0.0
+      W(i) = 1.0
+      tpd = stabcalcW(nd,1,t,p,XX,W,Wphase,lnFugZ,lnFugW,preTermLim=-1000.0)
+      isS = (tpd > stab_lim_test)
+      !if (.not. isS) print *,"tpd",tpd,stab_lim_test
+      if (.not. isS) exit
+    enddo
+  end function isStable
+
+  ! enelope plot control
+  subroutine epc_set_minimum_pressure(epc, pmin)
+    class(envelope_plot_control), intent(inout) :: epc
+    real, intent(in) :: pmin
+    !
+    epc%set_pmin = .true.
+    epc%Pmin = pmin
+  end subroutine epc_set_minimum_pressure
+
+  subroutine epc_set_minimum_temperature(epc, tmin)
+    class(envelope_plot_control), intent(inout) :: epc
+    real, intent(in) :: tmin
+    !
+    epc%override_exit_temperature = .true.
+    epc%tme = tmin
+  end subroutine epc_set_minimum_temperature
+
+  subroutine epc_set_ds_override(epc, dS)
+    class(envelope_plot_control), intent(inout) :: epc
+    real, intent(in) :: dS
+    !
+    epc%override_ds = .true.
+    epc%dS_override = ds
+  end subroutine epc_set_ds_override
+
+  subroutine epc_set_second_phase(epc, phase)
+    class(envelope_plot_control), intent(inout) :: epc
+    integer, intent(in) :: phase
+    !
+    epc%set_y_phase = .true.
+    epc%Yph = phase
+  end subroutine epc_set_second_phase
+
+  subroutine epc_set_K_init(epc, K)
+    class(envelope_plot_control), intent(inout) :: epc
+    real, intent(in) :: K(:)
+    !
+    epc%override_K_init = .true.
+    if (.not. allocated(epc%K_init)) &
+         call stoperror("envelope_plot_control K_init not allocated")
+    epc%K_init = K
+  end subroutine epc_set_K_init
+
+  subroutine epc_allocate(epc, nc)
+    class(envelope_plot_control), intent(inout) :: epc
+    integer, intent(in) :: nc
+    ! Locals
+    integer :: istat
+    call epc%deallocate()
+    istat = 0
+    allocate(epc%K_init(nc), epc%Wstab(nc), stat=istat)
+    if (istat /= 0) &
+         call stoperror("envelope_plot_control K_init and Wph not properly allocated")
+  end subroutine epc_allocate
+
+  subroutine epc_deallocate(epc)
+    class(envelope_plot_control), intent(inout) :: epc
+    ! Locals
+    integer :: istat
+    istat = 0
+    if (allocated(epc%K_init)) deallocate(epc%K_init, stat=istat)
+    if (allocated(epc%Wstab)) deallocate(epc%Wstab, stat=istat)
+    if (istat /= 0) &
+         call stoperror("envelope_plot_control K_init and Wph not properly allocated")
+  end subroutine epc_deallocate
+
+  subroutine epc_unset_all(epc)
+    class(envelope_plot_control), intent(inout) :: epc
+    !
+    epc%set_pmin = .false.
+    epc%override_exit_temperature = .false.
+    epc%override_ds = .false.
+    epc%set_y_phase = .false.
+    epc%do_not_switch_formulation = .false.
+    epc%returnCause = ER_OK
+    epc%calc_cricond = .false.
+    epc%calc_critical = .false.
+    epc%exit_on_triple_point = .false.
+    epc%override_K_init = .false.
+    epc%sgn_in = 1
+  end subroutine epc_unset_all
+
+  function epc_get_return_cause_txt(epc) result(rTxt)
+    class(envelope_plot_control), intent(in) :: epc
+    character(len=17) :: rTxt !< Retrun text
+    !
+    select case(epc%returnCause)
+    case (ER_OK)
+      rTxt = 'ER_OK'
+    case (ER_NOINITIALPOINT)
+      rTxt = 'ER_NOINITIALPOINT'
+    case (ER_PMAX_TMIN)
+      rTxt = 'ER_PMAX_TMIN'
+    case (ER_STABILITY)
+      rTxt = 'ER_STABILITY'
+    case (ER_NMAX)
+      rTxt = 'ER_NMAX'
+    case (ER_NOSOL)
+      rTxt = 'ER_NOSOL'
+    case (ER_TRIPLE)
+      rTxt = 'ER_TRIPLE'
+    case default
+      call stoperror('No such return flag from envelopePlot!')
+    end select
+  end function epc_get_return_cause_txt
 
 end module saturation_curve

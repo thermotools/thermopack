@@ -3,10 +3,11 @@ module quadratures
   private
   save
 
-  integer, parameter :: max_n_quadrature = 61
+  integer, parameter :: max_n_quadrature = 101
   integer, parameter :: GAUSS_10 = 1, GAUSS_KRONROD_21 = 2, GAUSS_15 = 3, &
        GAUSS_KRONROD_31 = 4, GAUSS_20 = 5, GAUSS_KRONROD_41 = 6, &
-       GAUSS_25 = 7, GAUSS_KRONROD_51 = 8, GAUSS_30 = 9, GAUSS_KRONROD_61 = 10
+       GAUSS_25 = 7, GAUSS_KRONROD_51 = 8, GAUSS_30 = 9, GAUSS_KRONROD_61 = 10, &
+       GAUSS_40 = 11, GAUSS_KRONROD_81 = 12, GAUSS_50 = 13, GAUSS_KRONROD_101 = 14
 
   real, parameter :: w_G10(5) = (/0.066671344308688137593568809893332d0, &
        0.149451349150580593145776339657697d0, &
@@ -284,13 +285,268 @@ module quadratures
        0.051426128537459025933862879215781d0, &
        0.051494729429451567558340433647099d0/)
 
+  real, parameter :: w_G40(20) = (/0.004521277098533191258471732878186d0, &
+       0.010498284531152813614742171067279d0, &
+       0.016421058381907888712863484882364d0, &
+       0.022245849194166957261504324184209d0, &
+       0.027937006980023401098489157507721d0, &
+       0.033460195282547847392678183086411d0, &
+       0.038782167974472017639972031290446d0, &
+       0.043870908185673271991674686041715d0, &
+       0.048695807635072232061434160448146d0, &
+       0.053227846983936824354996479772261d0, &
+       0.057439769099391551366617730910426d0, &
+       0.061306242492928939166537996408399d0, &
+       0.064804013456601038074554529566753d0, &
+       0.067912045815233903825690108231924d0, &
+       0.070611647391286779695483630855287d0, &
+       0.072886582395804059060510683442518d0, &
+       0.074723169057968264200189336261325d0, &
+       0.076110361900626242371558075922495d0, &
+       0.077039818164247965588307534283810d0, &
+       0.077505947978424811263723962958326d0 /)
 
+  real, parameter :: x_K81(41) = (/0.999707559258700016521224542135975d0, &
+       0.998237709710559200349622702420586d0, &
+       0.995250573446072750365609540167236d0, &
+       0.990726238699457006453054352221372d0, &
+       0.984722839864250061029333414883313d0, &
+       0.977259949983774262663370283712904d0, &
+       0.968323126854149900903767488022081d0, &
+       0.957916819213791655804540999452759d0, &
+       0.946071837162500038201834808353102d0, &
+       0.932812808278676533360852166845206d0, &
+       0.918149543072898876829091092648999d0, &
+       0.902098806968874296728253330868493d0, &
+       0.884692008701089745969167315684816d0, &
+       0.865959503212259503820781808354620d0, &
+       0.845923985587310717420752701760632d0, &
+       0.824612230833311663196320230666099d0, &
+       0.802060566140252127165482480523067d0, &
+       0.778305651426519387694971545506495d0, &
+       0.753379803438942198171952108613898d0, &
+       0.727318255189927103280996451754931d0, &
+       0.700162977487329931030678212434438d0, &
+       0.671956684614179548379354514961494d0, &
+       0.642739524305579962537243991643825d0, &
+       0.612553889667980237952612450230695d0, &
+       0.581447065829130006529895012029855d0, &
+       0.549467125095128202075931305529518d0, &
+       0.516660607386383705977367523526867d0, &
+       0.483075801686178712908566574244823d0, &
+       0.448764513638163763915231133546001d0, &
+       0.413779204371605001524879745803714d0, &
+       0.378171435473588924568470742042670d0, &
+       0.341994090825758473007492481179194d0, &
+       0.305302441735246719539454997260379d0, &
+       0.268152185007253681141184344808596d0, &
+       0.230598521880719497004361036276727d0, &
+       0.192697580701371099715516852065150d0, &
+       0.154506879379394477092729965824551d0, &
+       0.116084070675255208483451284408024d0, &
+       0.077486588331282841691154866126172d0, &
+       0.038772417506050821933193444024623d0, &
+       0.000000000000000000000000000000000d0 /)
+
+  real, parameter :: w_K81(41) = (/0.000787863323894371498720271554897d0, &
+       0.002207485735726777962168809225312d0, &
+       0.003765228679341922074194372776889d0, &
+       0.005271942714885473911009114007495d0, &
+       0.006731813485207399963420793251973d0, &
+       0.008197576386751482449561053253662d0, &
+       0.009675401484017187915035491712986d0, &
+       0.011131321664027503749386166237335d0, &
+       0.012554384768517266031774949416019d0, &
+       0.013962559866980614042573292767308d0, &
+       0.015361326359102452973067193653462d0, &
+       0.016734532475002583196166653896928d0, &
+       0.018073868408818190580191164167277d0, &
+       0.019387645894317741004830712156548d0, &
+       0.020679043273528175315386985115765d0, &
+       0.021938187335833093461400812673274d0, &
+       0.023158931013377024144415426316573d0, &
+       0.024345690182273359270080453250651d0, &
+       0.025500217603130127604115365581321d0, &
+       0.026615737499024686758584061586932d0, &
+       0.027687626111061091515434162190230d0, &
+       0.028718386841092123287744302424950d0, &
+       0.029708927277776594641577677914864d0, &
+       0.030654360891411525378236034929974d0, &
+       0.031551223619115362481714935956744d0, &
+       0.032400982507605944285169274565134d0, &
+       0.033204044341257560400535983776656d0, &
+       0.033956862834209806251352173002291d0, &
+       0.034656935843497533946135050486840d0, &
+       0.035305144708621841038888919750798d0, &
+       0.035901602783628104427494261642348d0, &
+       0.036443826530340924758064516845268d0, &
+       0.036930169534048554604577014911286d0, &
+       0.037361180025469218088172501046717d0, &
+       0.037736801263093544152572379691711d0, &
+       0.038055463778852420990729803545407d0, &
+       0.038316324005174859678476802979817d0, &
+       0.038519741749950726936209044850196d0, &
+       0.038665555439141040397419244259678d0, &
+       0.038753029378752386140211474363657d0, &
+       0.038782104764282805386402596525660d0 /)
+
+  real, parameter :: w_G50(25) = (/0.002908622553155140958400724342855d0, &
+       0.006759799195745401502778878177984d0, &
+       0.010590548383650969263569681499240d0, &
+       0.014380822761485574419378908927324d0, &
+       0.018115560713489390351259943422355d0, &
+       0.021780243170124792981592069062691d0, &
+       0.025360673570012390440194878385443d0, &
+       0.028842993580535198029906373113232d0, &
+       0.032213728223578016648165827323004d0, &
+       0.035459835615146154160734611000976d0, &
+       0.038568756612587675244770150236386d0, &
+       0.041528463090147697422411978964067d0, &
+       0.044327504338803275492022286830394d0, &
+       0.046955051303948432965633013634988d0, &
+       0.049400938449466314921243580751433d0, &
+       0.051655703069581138489905295840095d0, &
+       0.053710621888996246523458797255665d0, &
+       0.055557744806212517623567425612269d0, &
+       0.057189925647728383723029315065993d0, &
+       0.058600849813222445835122436630848d0, &
+       0.059785058704265457509576405312585d0, &
+       0.060737970841770216031750015384811d0, &
+       0.061455899590316663756406786083915d0, &
+       0.061936067420683243384087509780831d0, &
+       0.062176616655347262321033107360613d0 /)
+
+  real, parameter :: x_K101(51) = (/0.999811901364364718987527641919798d0, &
+       0.998866404420071050185459444974219d0, &
+       0.996944387018876178305525212845516d0, &
+       0.994031969432090712585108200420695d0, &
+       0.990165010669680009423926636581596d0, &
+       0.985354084048005882309009625632489d0, &
+       0.979587296760769429389934285477469d0, &
+       0.972864385106692073713344104606252d0, &
+       0.965201651066145200492091417191296d0, &
+       0.956610955242807942997745644156622d0, &
+       0.947094034244939443763358878335334d0, &
+       0.936656618944877933780874947272497d0, &
+       0.925313546474801886217295012185979d0, &
+       0.913078556655791893089735642771657d0, &
+       0.899959887564294617893351215942538d0, &
+       0.885967979523613048637540982466754d0, &
+       0.871119198204100310411166312767947d0, &
+       0.855429769429946084611362643934757d0, &
+       0.838912586967224395826694531159822d0, &
+       0.821582070859335948356254110873940d0, &
+       0.803456868050459411045831323443399d0, &
+       0.784555832900399263905305196340991d0, &
+       0.764895679372351522552133910094053d0, &
+       0.744494302226068538260536252682194d0, &
+       0.723372766022592515792219411565173d0, &
+       0.701552468706822251089546257883656d0, &
+       0.679053389406747271477505746235289d0, &
+       0.655896465685439360781624864003680d0, &
+       0.632105068445064876452264441653175d0, &
+       0.607702927184950239180381796391833d0, &
+       0.582712817817836532300593419286049d0, &
+       0.557158304514650054315522909625802d0, &
+       0.531064824522708139568714443653527d0, &
+       0.504458144907464201651459131849141d0, &
+       0.477363392233043036202388411133488d0, &
+       0.449806334974038789147131467778376d0, &
+       0.421814157310613097028696397672990d0, &
+       0.393414311897565127394229253823817d0, &
+       0.364633828861614277214850918755173d0, &
+       0.335500245419437356836988257291072d0, &
+       0.306042119229184609083523224582383d0, &
+       0.276288193779531990327645278521130d0, &
+       0.246266947398144025978412330606819d0, &
+       0.216007236876041756847284532617101d0, &
+       0.185538581722772772700285880158933d0, &
+       0.154890589998145902071628620941110d0, &
+       0.124092724359160371783001135672160d0, &
+       0.093174701560086140854450377639600d0, &
+       0.062166564819416169080162369062494d0, &
+       0.031098338327188876112328989665949d0, &
+       0.000000000000000000000000000000000d0 /)
+
+  real, parameter :: w_K101(51) = (/0.000506761668034891368003230056794d0, &
+       0.001420110238166357058489241609105d0, &
+       0.002423103745820573271868019959701d0, &
+       0.003394590892897237430856627279828d0, &
+       0.004337703605263735783543423606253d0, &
+       0.005286907084310700814966310905226d0, &
+       0.006246761652893468805278461192944d0, &
+       0.007195855913758331771047709011574d0, &
+       0.008127533662559387378680372942460d0, &
+       0.009053906853132000734829846383187d0, &
+       0.009979080512771972715200068965555d0, &
+       0.010893031149145421391853736320484d0, &
+       0.011790732100542854676267459488075d0, &
+       0.012678061837012244403571737226388d0, &
+       0.013557616011559140930458157803340d0, &
+       0.014423324872289546908736058736990d0, &
+       0.015271463812173062587031639835810d0, &
+       0.016105363478293306328795864483334d0, &
+       0.016926657875738541082113555463924d0, &
+       0.017731168466700687369451433287130d0, &
+       0.018516042461777473742240817149347d0, &
+       0.019283323521808148253018898011621d0, &
+       0.020034045830719434860935189792576d0, &
+       0.020765128471719162242080239721667d0, &
+       0.021474338201809933451719273439764d0, &
+       0.022162984926601566106843498326675d0, &
+       0.022831717568874006991633399959920d0, &
+       0.023478184078910193004586090503346d0, &
+       0.024100625877218305976665760144698d0, &
+       0.024699903537325739494760209714837d0, &
+       0.025276412574832709146478978607374d0, &
+       0.025828336809121795208844863774061d0, &
+       0.026354306818690138454725762609577d0, &
+       0.026854896362906597368937147115206d0, &
+       0.027330331890109643833054043505442d0, &
+       0.027779223892439833361406855758960d0, &
+       0.028200540579478679146298601877462d0, &
+       0.028594668383406057739047317910105d0, &
+       0.028961719790501033567571417319567d0, &
+       0.029300667035119782336840778651545d0, &
+       0.029610784940459955030252135399657d0, &
+       0.029892335817039792458804648308740d0, &
+       0.030145353774570835194075130209130d0, &
+       0.030369133200164873181378495665854d0, &
+       0.030563237706310037205460535834084d0, &
+       0.030727845669416690205934370165812d0, &
+       0.030862934121709973760264323329606d0, &
+       0.030968095623668437958542109562984d0, &
+       0.031043173996945701068760645698648d0, &
+       0.031088287782405219104218184906343d0, &
+       0.031103366641749575467154644934577d0 /)
+  !
+  abstract interface
+    subroutine integrand(r,n,param,fun,fun_T)
+      real, intent(in)    :: r
+      integer, intent(in) :: n
+      real, intent(in)    :: param(n)
+      real, intent(out)   :: fun, fun_T
+    end subroutine integrand
+  end interface
+  !
+  abstract interface
+    subroutine integrand_2(r,n,param,fun,fun_T,fun_r)
+      real, intent(in)    :: r
+      integer, intent(in) :: n
+      real, intent(in)    :: param(n)
+      real, intent(out)   :: fun, fun_T, fun_r
+    end subroutine integrand_2
+  end interface
+  !
   public :: max_n_quadrature
   public :: GAUSS_10, GAUSS_KRONROD_21, GAUSS_15, GAUSS_KRONROD_31
   public :: GAUSS_20, GAUSS_KRONROD_41, GAUSS_25, GAUSS_KRONROD_51
-  public :: GAUSS_30, GAUSS_KRONROD_61
+  public :: GAUSS_30, GAUSS_KRONROD_61, GAUSS_40, GAUSS_KRONROD_81
+  public :: GAUSS_50, GAUSS_KRONROD_101
   public :: get_quadrature_positions, get_quadrature_weights
   public :: calc_quadrature_error
+  public :: integrate_with_differential_const_bound, integrate_with_differential
+  public :: integrand
 
 contains
 
@@ -306,74 +562,68 @@ contains
     integer, intent(in) :: quad
     ! Locals
     integer :: i
+    real :: x_copy(max_n_quadrature)
     select case(quad)
-    case(GAUSS_10)
-      n = 10
-      do i=1,5
-        x(i) = -x_K21(2*i)
-        x(5+i) = x_K21(12-2*i)
+    case(GAUSS_10, GAUSS_15, GAUSS_20, GAUSS_25, GAUSS_30, GAUSS_40, GAUSS_50)
+      select case(quad)
+      case(GAUSS_10)
+        n = 10
+        x_copy(1:n+1) = x_K21
+      case(GAUSS_15)
+        n = 15
+        x_copy(1:n+1) = x_K31
+      case(GAUSS_20)
+        n = 20
+        x_copy(1:n+1) = x_K41
+      case(GAUSS_25)
+        n = 25
+        x_copy(1:n+1) = x_K51
+      case(GAUSS_30)
+        n = 30
+        x_copy(1:n+1) = x_K61
+      case(GAUSS_40)
+        n = 40
+        x_copy(1:n+1) = x_K81
+      case(GAUSS_50)
+        n = 50
+        x_copy(1:n+1) = x_K101
+      end select
+      do i=1,n/2
+        x(i) = -x_copy(2*i)
+        x(n/2+i) = x_copy(n+2-2*i)
       enddo
-    case(GAUSS_KRONROD_21)
-      n = 21
-      do i=1,10
-        x(i) = -x_K21(i)
-        x(11+i) = x_K21(11-i)
+    case(GAUSS_KRONROD_21, GAUSS_KRONROD_31, GAUSS_KRONROD_41, &
+         GAUSS_KRONROD_51, GAUSS_KRONROD_61, GAUSS_KRONROD_81, &
+         GAUSS_KRONROD_101)
+      select case(quad)
+      case(GAUSS_KRONROD_21)
+        n = 10
+        x_copy(1:n+1) = x_K21
+      case(GAUSS_KRONROD_31)
+        n = 15
+        x_copy(1:n+1) = x_K31
+      case(GAUSS_KRONROD_41)
+        n = 20
+        x_copy(1:n+1) = x_K41
+      case(GAUSS_KRONROD_51)
+        n = 25
+        x_copy(1:n+1) = x_K51
+      case(GAUSS_KRONROD_61)
+        n = 30
+        x_copy(1:n+1) = x_K61
+      case(GAUSS_KRONROD_81)
+        n = 40
+        x_copy(1:n+1) = x_K81
+      case(GAUSS_KRONROD_101)
+        n = 50
+        x_copy(1:n+1) = x_K101
+      end select
+      do i=1,n
+        x(i) = -x_copy(i)
+        x(n+1+i) = x_copy(n+1-i)
       enddo
-      x(11) = x_K21(11)
-    case(GAUSS_15)
-      n = 15
-      do i=1,7
-        x(i) = -x_K31(2*i)
-        x(8+i) = x_K31(16-2*i)
-      enddo
-      x(8) = x_K31(16)
-    case(GAUSS_KRONROD_31)
-      n = 31
-      do i=1,15
-        x(i) = -x_K31(i)
-        x(16+i) = x_K31(16-i)
-      enddo
-      x(16) = x_K31(16)
-    case(GAUSS_20)
-      n = 20
-      do i=1,10
-        x(i) = -x_K41(2*i)
-        x(10+i) = x_K41(22-2*i)
-      enddo
-    case(GAUSS_KRONROD_41)
-      n = 41
-      do i=1,20
-        x(i) = -x_K41(i)
-        x(21+i) = x_K41(21-i)
-      enddo
-      x(21) = x_K41(21)
-    case(GAUSS_25)
-      n = 25
-      do i=1,12
-        x(i) = -x_K51(2*i)
-        x(13+i) = x_K51(26-2*i)
-      enddo
-      x(13) = x_K51(26)
-    case(GAUSS_KRONROD_51)
-      n = 51
-      do i=1,25
-        x(i) = -x_K51(i)
-        x(26+i) = x_K51(26-i)
-      enddo
-      x(26) = x_K51(26)
-    case(GAUSS_30)
-      n = 30
-      do i=1,15
-        x(i) = -x_K61(2*i)
-        x(15+i) = x_K61(32-2*i)
-      enddo
-    case(GAUSS_KRONROD_61)
-      n = 61
-      do i=1,30
-        x(i) = -x_K61(i)
-        x(31+i) = x_K61(31-i)
-      enddo
-      x(31) = x_K61(31)
+      x(n+1) = x_copy(n+1)
+      n = 2*n + 1
     case default
       call stoperror("Unknown quadrature")
     end select
@@ -391,74 +641,68 @@ contains
     integer, intent(in) :: quad
     ! Locals
     integer :: i
+    real :: w_copy(max_n_quadrature)
     select case(quad)
-    case(GAUSS_10)
-      n = 10
-      do i=1,5
-        w(i) = w_G10(i)
-        w(5+i) = w_G10(6-i)
+    case(GAUSS_10, GAUSS_15, GAUSS_20, GAUSS_25, GAUSS_30, GAUSS_40, GAUSS_50)
+      select case(quad)
+      case(GAUSS_10)
+        n = 10
+        w_copy(1:size(w_G10)) = w_G10
+      case(GAUSS_15)
+        n = 15
+        w_copy(1:size(w_G15)) = w_G15
+      case(GAUSS_20)
+        n = 20
+        w_copy(1:size(w_G20)) = w_G20
+      case(GAUSS_25)
+        n = 25
+        w_copy(1:size(w_G25)) = w_G25
+      case(GAUSS_30)
+        n = 30
+        w_copy(1:size(w_G30)) = w_G30
+      case(GAUSS_40)
+        n = 40
+        w_copy(1:size(w_G40)) = w_G40
+      case(GAUSS_50)
+        n = 50
+        w_copy(1:size(w_G50)) = w_G50
+      end select
+      do i=1,n/2
+        w(i) = w_copy(i)
+        w(n/2+i) = w_copy(n/2+1-i)
       enddo
-    case(GAUSS_KRONROD_21)
-      n = 21
-      do i=1,10
-        w(i) = w_K21(i)
-        w(11+i) = w_K21(11-i)
+    case(GAUSS_KRONROD_21, GAUSS_KRONROD_31, GAUSS_KRONROD_41, &
+         GAUSS_KRONROD_51, GAUSS_KRONROD_61, GAUSS_KRONROD_81, &
+         GAUSS_KRONROD_101)
+      select case(quad)
+      case(GAUSS_KRONROD_21)
+        n = 10
+        w_copy(1:n+1) = w_K21
+      case(GAUSS_KRONROD_31)
+        n = 15
+        w_copy(1:n+1) = w_K31
+      case(GAUSS_KRONROD_41)
+        n = 20
+        w_copy(1:n+1) = w_K41
+      case(GAUSS_KRONROD_51)
+        n = 25
+        w_copy(1:n+1) = w_K51
+      case(GAUSS_KRONROD_61)
+        n = 30
+        w_copy(1:n+1) = w_K61
+      case(GAUSS_KRONROD_81)
+        n = 40
+        w_copy(1:n+1) = w_K81
+      case(GAUSS_KRONROD_101)
+        n = 50
+        w_copy(1:n+1) = w_K101
+      end select
+      do i=1,n
+        w(i) =  w_copy(i)
+        w(n+1+i) = w_copy(n+1-i)
       enddo
-      w(11) = w_K21(11)
-    case(GAUSS_15)
-      n = 15
-      do i=1,7
-        w(i) = w_G15(i)
-        w(8+i) = w_G15(8-i)
-      enddo
-      w(8) = w_G15(8)
-    case(GAUSS_KRONROD_31)
-      n = 31
-      do i=1,15
-        w(i) = w_K31(i)
-        w(16+i) = w_K31(16-i)
-      enddo
-      w(16) = w_K31(16)
-    case(GAUSS_20)
-      n = 20
-      do i=1,10
-        w(i) = w_G20(i)
-        w(10+i) = w_G20(11-i)
-      enddo
-    case(GAUSS_KRONROD_41)
-      n = 41
-      do i=1,20
-        w(i) = w_K41(i)
-        w(21+i) = w_K41(21-i)
-      enddo
-      w(21) = w_K41(21)
-    case(GAUSS_25)
-      n = 25
-      do i=1,12
-        w(i) = w_G25(i)
-        w(13+i) = w_G25(13-i)
-      enddo
-      w(13) = w_G25(13)
-    case(GAUSS_KRONROD_51)
-      n = 51
-      do i=1,25
-        w(i) = w_K51(i)
-        w(26+i) = w_K51(26-i)
-      enddo
-      w(26) = w_K51(26)
-    case(GAUSS_30)
-      n = 30
-      do i=1,15
-        w(i) = w_G30(i)
-        w(15+i) = w_G30(16-i)
-      enddo
-    case(GAUSS_KRONROD_61)
-      n = 61
-      do i=1,30
-        w(i) = w_K61(i)
-        w(31+i) = w_K61(31-i)
-      enddo
-      w(31) = w_K61(31)
+      w(n+1) = w_copy(n+1)
+      n = 2*n + 1
     case default
       call stoperror("Unknown quadrature")
     end select
@@ -476,10 +720,11 @@ contains
     integer :: i, nG
     real :: f_int_G
     select case(quad)
-    case(GAUSS_10,GAUSS_15,GAUSS_20,GAUSS_25,GAUSS_30)
+    case(GAUSS_10,GAUSS_15,GAUSS_20,GAUSS_25,GAUSS_30,GAUSS_40,GAUSS_50)
       q_err = 0.0
     case(GAUSS_KRONROD_21,GAUSS_KRONROD_31,GAUSS_KRONROD_41,&
-         GAUSS_KRONROD_51,GAUSS_KRONROD_61)
+         GAUSS_KRONROD_51,GAUSS_KRONROD_61,GAUSS_KRONROD_81,&
+         GAUSS_KRONROD_101)
       if (quad == GAUSS_KRONROD_21) then
         call get_quadrature_weights(GAUSS_10,wG,nG)
       else if (quad == GAUSS_KRONROD_31) then
@@ -488,8 +733,12 @@ contains
         call get_quadrature_weights(GAUSS_20,wG,nG)
       else if (quad == GAUSS_KRONROD_51) then
         call get_quadrature_weights(GAUSS_25,wG,nG)
-      else !if (quad == GAUSS_KRONROD_61) then
+      else if (quad == GAUSS_KRONROD_61) then
         call get_quadrature_weights(GAUSS_30,wG,nG)
+      else if (quad == GAUSS_KRONROD_81) then
+        call get_quadrature_weights(GAUSS_40,wG,nG)
+      else if (quad == GAUSS_KRONROD_101) then
+        call get_quadrature_weights(GAUSS_50,wG,nG)
       endif
       f_int_G = 0.0
       do i=1,nG
@@ -500,5 +749,140 @@ contains
       call stoperror("Unknown quadrature")
     end select
   end function calc_quadrature_error
+
+  subroutine integrate_with_differential_const_bound(quad,method_pointer,n,param,a,b,&
+       estimate_quadrature_error,Int,Int_diff)
+    !--------------------------------------------------------------------
+    !  2021-09,    Morten Hammer
+    !  ---------------------------------------------------------------------
+    integer, intent(in) :: quad             !< Quadrature
+    procedure(integrand) :: method_pointer
+    integer, intent(in) :: n
+    real, intent(in)    :: param(n)
+    real, intent(in) :: a,b    !< Integration limits
+    logical, intent(in) :: estimate_quadrature_error
+    real, intent(out) :: Int, Int_diff  !< Integral and differential
+    ! Locals
+    integer :: i,n_quad
+    real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
+    real :: f_vec(max_n_quadrature), quad_error
+    real :: f_vec_diff(max_n_quadrature)
+    real :: r, fun, fun_diff
+    real :: prefactor
+    real :: r_2, r0, r1
+
+    ! Get quadrature points
+    call get_quadrature_positions(quad,x_vec,n_quad)
+    call get_quadrature_weights(quad,w_vec,n_quad)
+
+    ! Initialize integral
+    Int=0
+    Int_diff=0
+
+    ! Integration boundary and mid-way
+    r0 = a
+    r1 = b
+    r_2=0.5*(r1 - r0)
+
+    ! Loop quadrature points
+    do i = 1,n_quad
+      r=r_2*x_vec(i)+r_2 + r0
+
+      ! Obtain the integrand and its differential
+      call method_pointer(r,n,param,fun,fun_diff)
+
+      ! The prefactor
+      prefactor=r_2*w_vec(i)
+
+      ! Integral
+      Int=Int+prefactor*fun
+      Int_diff=Int_diff+prefactor*fun_diff
+
+      if (estimate_quadrature_error) then
+        ! Store function evaluations for post-processing error estimate
+        f_vec(i) = r_2*fun
+        f_vec_diff(i) = r_2*fun_diff
+      endif
+    end do
+    if (estimate_quadrature_error) then
+      quad_error = calc_quadrature_error(f_vec,Int,quad)
+      print *,"Estimated relative quadrature error in "//&
+           "integrate_with_differential: ", quad_error
+      quad_error = calc_quadrature_error(f_vec_diff,Int_diff,quad)
+      print *,"Estimated relative quadrature error in differential"//&
+           "integrate_with_differential: ", quad_error
+    endif
+
+  end subroutine integrate_with_differential_const_bound
+
+  subroutine integrate_with_differential(quad,method_pointer,n,param,a,b,a_diff,b_diff,&
+       estimate_quadrature_error,Int,Int_diff)
+    !--------------------------------------------------------------------
+    !  2021-09,    Morten Hammer
+    !  ---------------------------------------------------------------------
+    integer, intent(in) :: quad             !< Quadrature
+    procedure(integrand_2) :: method_pointer
+    integer, intent(in) :: n
+    real, intent(in)    :: param(n)
+    real, intent(in) :: a,b    !< Integration limits
+    real, intent(in) :: a_diff,b_diff    !< Integration limits
+    logical, intent(in) :: estimate_quadrature_error
+    real, intent(out) :: Int, Int_diff  !< Integral and differential
+    ! Locals
+    integer :: i,n_quad
+    real :: x_vec(max_n_quadrature), w_vec(max_n_quadrature)
+    real :: f_vec(max_n_quadrature), quad_error
+    real :: f_vec_diff(max_n_quadrature)
+    real :: r, fun, fun_diff, fun_diff_r
+    real :: prefactor, prefactor_diff
+    real :: r_2, r0, r1, r_diff, r_2_diff
+
+    ! Get quadrature points
+    call get_quadrature_positions(quad,x_vec,n_quad)
+    call get_quadrature_weights(quad,w_vec,n_quad)
+
+    ! Initialize integral
+    Int=0
+    Int_diff=0
+
+    ! Integration boundary and mid-way
+    r0 = a
+    r1 = b
+    r_2 = 0.5*(r1 - r0)
+    r_2_diff = 0.5*(a_diff - b_diff)
+
+    ! Loop quadrature points
+    do i = 1,n_quad
+      r=r_2*x_vec(i) + r_2 + r0
+      r_diff = (x_vec(i)+1)*r_2_diff + a_diff
+
+      ! Obtain the integrand and its differential
+      call method_pointer(r,n,param,fun,fun_diff,fun_diff_r)
+
+      ! The prefactor
+      prefactor=r_2*w_vec(i)
+      prefactor_diff=r_2_diff*w_vec(i)
+
+      ! Integral
+      Int=Int+prefactor*fun
+      Int_diff=Int_diff + prefactor*fun_diff &
+           + prefactor_diff*fun + prefactor*fun_diff_r*r_diff
+
+      if (estimate_quadrature_error) then
+        ! Store function evaluations for post-processing error estimate
+        f_vec(i) = r_2*fun
+        f_vec_diff(i) = r_2*fun_diff
+      endif
+    end do
+    if (estimate_quadrature_error) then
+      quad_error = calc_quadrature_error(f_vec,Int,quad)
+      print *,"Estimated relative quadrature error in "//&
+           "integrate_with_differential: ", quad_error
+      quad_error = calc_quadrature_error(f_vec_diff,Int_diff,quad)
+      print *,"Estimated relative quadrature error in differential"//&
+           "integrate_with_differential: ", quad_error
+    endif
+
+  end subroutine integrate_with_differential
 
 end module quadratures
