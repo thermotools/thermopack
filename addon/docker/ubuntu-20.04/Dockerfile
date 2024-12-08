@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-MAINTAINER Morten Hammer "Morten.Hammer@sintef.no"
+MAINTAINER Morten Hammer "Morten.Hammer@ntnu.no"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update apt packages
