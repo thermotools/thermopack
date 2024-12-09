@@ -1,13 +1,13 @@
 !-----------------------------------------------------------------------------
 !> This module contains generic methods for minimizing systems of non-linear equations.
-!> 
+!>
 !> \todo Add special treatment for n=2 systems. Analytical modification of eigenvalues.
 !>
 !> \author MHA, February 2012
 !-----------------------------------------------------------------------------
 module optimizers
-  ! 
-  ! 
+  !
+  !
   !
   use numconstants, only: machine_prec
   use thermopack_constants, only: verbose
@@ -283,7 +283,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Set variables
-  !> 
+  !>
   !> \author MH, 2013-02-27
   !-----------------------------------------------------------------------------
   subroutine setX(n,nparam,X,dX,param,alpha)
@@ -300,7 +300,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> No premature return.
-  !> 
+  !>
   !> \author MH, 2013-02-27
   !-----------------------------------------------------------------------------
   function prematureReturn(X,param,of,dofdX) result(doReturn)
@@ -316,7 +316,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Solve \f$ A X = B \f$ using Gill-Murray modified Cholesky factorization of A
-  !> 
+  !>
   !> \author MHA, January 2012
   !-----------------------------------------------------------------------------
   subroutine solveModefiedCholesky(n,A,B)
@@ -330,7 +330,7 @@ contains
     real, dimension(n) :: E ! Diagonal of mofification matrix
     real, parameter :: one = 1.0E+0
     integer :: i
-  
+
     call modefiedCholeskyDecompNoPerm(A,n,L,D,E)
     ! Solve: L*D*L**T*X = B
     ! Solve L*X = B, overwriting B with X.
@@ -343,12 +343,12 @@ contains
     ! Solve L**T*X = B, overwriting B with X.
     call dtrsm( 'Left', 'Lower', 'Transpose', 'Non-unit', n, 1, &
          one, L, n, B, n )
-    
+
   end subroutine solveModefiedCholesky
 
   !-----------------------------------------------------------------------------
   !> Method for testing Gill-Murray modified Cholesky (LDL) factorization of A
-  !> 
+  !>
   !> \author MHA, January 2012
   !-----------------------------------------------------------------------------
   subroutine testModefiedCholeskyDecomp()
@@ -393,7 +393,7 @@ contains
 
     EE = 0.0
     DD = 0.0
-    
+
     ! Transpose
     LT = L
     do j = 1,n
@@ -405,7 +405,7 @@ contains
         LT(j,i) = temp
       end do
     end do
-    
+
     L = MATMUL(L,DD)
     L = MATMUL(L,LT)
 
@@ -433,7 +433,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Compute Gill-Murray modified Cholesky (LDL) factorization of A.
-  !! 
+  !!
   !! If A is negative definite, or singular, the matrix is modified:
   !!
   !! \f$ A + E = L D L^T \f$
@@ -472,7 +472,7 @@ contains
       gamma = max(gamma, abs(A(i,i)))
       P(i) = i
     enddo
-    
+
     ! Compute modification parameters
     xi = 0.0
     do i = 1,n
@@ -537,7 +537,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Swap row j and q in matrix A
-  !> 
+  !>
   !> \author MHA, January 2012
   !-----------------------------------------------------------------------------
   subroutine interChangeRow(A,n,j,q)
@@ -546,7 +546,7 @@ contains
     integer, intent(in) :: j !< Row index
     integer, intent(in) :: q !< Row index
     real, dimension(n,n), intent(inout) :: A !< Symmetric matrix
-    ! 
+    !
     ! Locals
     real, dimension(n) :: row
     row(:) = A(j,:)
@@ -556,7 +556,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Swap column j and q in matrix A
-  !> 
+  !>
   !> \author MHA, January 2012
   !-----------------------------------------------------------------------------
   subroutine interChangeColumn(A,n,j,q)
@@ -565,7 +565,7 @@ contains
     integer, intent(in) :: j !< Column index
     integer, intent(in) :: q !< Column index
     real, dimension(n,n), intent(inout) :: A !< Symmetric matrix
-    ! 
+    !
     ! Locals
     real, dimension(n,1) :: column
     column(:,1) = A(:,j)
@@ -575,7 +575,7 @@ contains
 
   !-----------------------------------------------------------------------------
   !> Compute Gill-Murray modified Cholesky (LDL) factorization of A.
-  !! 
+  !!
   !! If A is negative definite, or singular, the matrix is modified:
   !!
   !! \f$ A + E = L D L^T \f$
@@ -614,7 +614,7 @@ contains
       C(i,i) = A(i,i)
       gamma = max(gamma, abs(A(i,i)))
     enddo
-    
+
     ! Compute modification parameters
     xi = 0.0
     do i = 1,n
@@ -734,13 +734,13 @@ contains
     !    initial simplex.  The relative magnitudes of its elements should reflect
     !    the units of the variables.
     !
-    !    Input, integer ( kind = 4 ) KONVGE, the convergence check is carried out 
+    !    Input, integer ( kind = 4 ) KONVGE, the convergence check is carried out
     !    every KONVGE iterations.
     !
-    !    Input, integer ( kind = 4 ) KCOUNT, the maximum number of function 
+    !    Input, integer ( kind = 4 ) KCOUNT, the maximum number of function
     !    evaluations.
     !
-    !    Output, integer ( kind = 4 ) ICOUNT, the number of function evaluations 
+    !    Output, integer ( kind = 4 ) ICOUNT, the number of function evaluations
     !    used.
     !
     !    Output, integer ( kind = 4 ) NUMRES, the number of restarts.
@@ -839,18 +839,18 @@ contains
           icount = icount + 1
           start(j) = x
        end do
-       !                    
+       !
        !  The simplex construction is complete.
-       !                    
+       !
        !  Find highest and lowest Y values.  YNEWLO = Y(IHI) indicates
        !  the vertex of the simplex to be replaced.
-       !                
+       !
        ylo = y(1)
        ilo = 1
 
        do i = 2, nn
           if ( y(i) < ylo ) then
-             ylo = y(i) 
+             ylo = y(i)
              ilo = i
           end if
        end do
@@ -878,11 +878,11 @@ contains
           !
           do i = 1, n
              z = 0.0D+00
-             do j = 1, nn    
+             do j = 1, nn
                 z = z + p(i,j)
              end do
-             z = z - p(i,ihi)   
-             pbar(i) = z / dn   
+             z = z - p(i,ihi)
+             pbar(i) = z / dn
           end do
           !
           !  Reflection through the centroid.
@@ -975,7 +975,7 @@ contains
 
                    do i = 2, nn
                       if ( y(i) < ylo ) then
-                         ylo = y(i) 
+                         ylo = y(i)
                          ilo = i
                       end if
                    end do
@@ -1018,7 +1018,7 @@ contains
                    do i = 1, n
                       p(i,ihi) = pstar(i)
                    end do
-                   y(ihi) = ystar  
+                   y(ihi) = ystar
 
                 end if
 

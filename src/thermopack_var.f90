@@ -99,7 +99,6 @@ module thermopack_var
     ! From parameters
     integer :: nph=3
     integer :: nc=0
-    integer :: EoSlib=0
     integer :: eosidx=0
     character(len=label_len) :: label
     integer :: liq_vap_discr_method=PSEUDO_CRIT_MOLAR_VOLUME

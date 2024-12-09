@@ -33,7 +33,6 @@ Module eos_parameters
 
   end type meos_idealmix
 
-
 contains
 
   subroutine single_eos_allocate_and_init(eos,nc,eos_label)

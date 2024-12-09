@@ -7,10 +7,8 @@
 module speed_of_sound
   !
   !
-  use thermopack_constants, only: VAPPH,LIQPH,SOLIDPH, &
-       TREND
-  use thermopack_var, only: nc, nph, get_active_thermo_model, thermo_model, &
-       Rgas
+  use thermopack_constants, only: VAPPH,LIQPH,SOLIDPH
+  use thermopack_var, only: nc, nph, Rgas
   implicit none
   private
   save
@@ -18,8 +16,6 @@ module speed_of_sound
   public :: sound_velocity_2ph
   public :: twoPhaseSpeedOfSound, singlePhaseSpeedOfSound, solidSpeedOfSound
   public :: speed_of_sound_TV
-
-  include "trend_interface.f95"
 
 contains
 
@@ -30,7 +26,6 @@ contains
   !-----------------------------------------------------------------------------
   function singlePhaseSpeedOfSound(t,p,Z,phase) result(sos)
     use eos, only: specificVolume, entropy, moleWeight
-    use trend_solver, only: trend_density
     implicit none
     real,                  intent(in) :: t     !< Temperature [K]
     real,                  intent(in) :: p     !< Pressure [Pa]
@@ -39,44 +34,25 @@ contains
     real :: sos
     real :: v,dvdt,dvdp
     real :: s,dsdt,dsdp,dtdp
-    real :: rho_trend
-    type(thermo_model), pointer :: act_mod_ptr
+    ! Find s, dsdt_p, dsdp_t, and then dtdp_s
+    !
+    call entropy(t,p,Z,phase,s,dsdt,dsdp)
+    dtdp = -dsdp/dsdt
 
-    act_mod_ptr => get_active_thermo_model()
-    select case(act_mod_ptr%eoslib)
-      case(TREND)
-        call trend_density(T,p,z,phase,rho_trend)
-        sos = trend_speedofsound(T,rho_trend,z)
-      case default
-        ! Find s, dsdt_p, dsdp_t, and then dtdp_s
-        !
-        call entropy(t,p,Z,phase,s,dsdt,dsdp)
-        dtdp = -dsdp/dsdt
+    !
+    ! Find v, dvdt_p, dvdp_t, and then dvdp_s
+    !
+    call specificVolume(t,p,Z,phase,v,dvdt,dvdp)
+    dvdp = dvdp + dvdt*dtdp
 
-        !
-        ! Find v, dvdt_p, dvdp_t, and then dvdp_s
-        !
-        call specificVolume(t,p,Z,phase,v,dvdt,dvdp)
-        dvdp = dvdp + dvdt*dtdp
-
-        !
-        ! Finally find speed of sound
-        !
-        if (dvdp < 0.0) then
-          sos = sqrt(-1000*v*v/(moleWeight(Z)*dvdp))
-        else
-           sos = 0.0
-           ! Tesing process optimisation - close to critical
-!           point/saturation line .... supressing warning and continue
-!
-!           write (*,*) "speed_of_sound:singlePhaseSpeedOfSound, negative drho/dp-term, set to zero"
-
-!           Will probaly crash sooner of later if this close the the
-!           two-phase region...
-
-!           call stoperror('speed_of_sound:singlePhaseSpeedOfSound')
-        endif
-      end select
+    !
+    ! Finally find speed of sound
+    !
+    if (dvdp < 0.0) then
+      sos = sqrt(-1000*v*v/(moleWeight(Z)*dvdp))
+    else
+      sos = 0.0
+    endif
 
   end function singlePhaseSpeedOfSound
 

@@ -30,8 +30,7 @@ module ideal
   !!                                                                          *
   !!             -10 : Leachman (NIST) and Valenta expression H2              *
   !!                                                                          *
-  !!             -11 : Use TREND model                                        *
-  !!             -12 : Shomate Equation (Note that: Ts=T/1000)                *
+  !!             -11 : Shomate Equation (Note that: Ts=T/1000)                *
   !!                   CP(ideal) = CP(1) + CP(2)*Ts + CP(3)*Ts**2 +           *
   !!                               CP(4)*Ts**3 + CP(5)/Ts**2         (J/molK) *
   !!             -13 : Einstein functions                                     *
@@ -44,8 +43,6 @@ module ideal
   use thermopack_var, only: base_eos_param
   implicit none
   save
-  ! Include TREND interface
-  include 'trend_interface.f95'
 
   !> Log cut-off value
   real, parameter :: logCutOff = 1.0e-100
@@ -204,7 +201,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: cpideal_h2
@@ -286,9 +283,6 @@ contains
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       Cp_id = CPideal_H2(comp%ident, T)
 
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,Cp=Cp_id)
-
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
       Cp_id=comp%id_cp%cp(1)+comp%id_cp%cp(2)*Ts+comp%id_cp%cp(3)*Ts**2+comp%id_cp%cp(4)*Ts**3+ &
@@ -351,7 +345,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: hideal_h2
@@ -443,10 +437,6 @@ contains
     case (CP_H2_KMOL) ! Leachman (NIST) and Valenta expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       H_id = Hideal_H2 (comp%ident, T) + comp%href_int
 
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,h=H_id)
-      H_id = H_id
-
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
       H_id=comp%id_cp%cp(1)*Ts+comp%id_cp%cp(2)*Ts**2.0/2.0 + &
@@ -483,7 +473,7 @@ contains
     use compdata, only: gendata, CP_POLY3_CAL, &
          CP_API44_MASS, CP_HYPOTETIC_MASS, CP_POLY3_SI, &
          CP_ICI_MASS, CP_CHEN_BENDER_MASS, CP_DIPPR_KMOL, &
-         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, CP_TREND_SI, &
+         CP_POLY4_SI, CP_MOGENSEN_SI, CP_H2_KMOL, &
          CP_SHOMATE_SI, CP_EINSTEIN_SI, n_max_cp
     use thermopack_constants, only: verbose
     use idealh2, only: sideal_h2
@@ -571,10 +561,6 @@ contains
 
     case (CP_H2_KMOL) !   ! Leachman (NIST) and Valenti expression for N-H2 , O-H2, P-H2 and E-H2 (Valenta)
       S_id = sideal_H2 (comp%ident, T) + comp%sref_int  ! + rgas * log(rho*T/ rho0*T0)
-
-    case (CP_TREND_SI) ! Use EOSCG-GERG ideal Cp
-      call trend_ideal(T,i,s=S_id)
-      S_id = S_id
 
     case (CP_SHOMATE_SI) ! Third degree polynomial + 1/T**2 term, Ts=T/1000
       Ts = T*1.0e-3
@@ -1095,7 +1081,6 @@ contains
   !----------------------------------------------------------------------
   subroutine idealEntropy_ne(t,p,n,s,dsdt,dsdp,dsdn)
     use thermopack_var, only: get_active_thermo_model, thermo_model, nce
-    use thermopack_constants, only: THERMOPACK, TREND
     implicit none
     ! Transferred variables
     real, intent(in) :: t                    !< K - Temperature
@@ -1110,18 +1095,8 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
-           dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::idealEntropy_ne: dsdn not yet implemented for TREND.'
-      call stoperror("")
-    case default
-      write(*,*) 'EoSlib error in ideal::idealEntropy_ne: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    call TP_Sideal_mix(nce,act_mod_ptr%comps,T, P, n, S_ideal_mix=s, &
+         dsdt_ideal_mix=dsdt, dsdp_ideal_mix=dsdp, dsdz_ideal_mix=dsdn)
   end subroutine idealEntropy_ne
 
   !----------------------------------------------------------------------
@@ -1132,7 +1107,6 @@ contains
   !----------------------------------------------------------------------
   subroutine set_standard_entropy(i,s0, sref_state)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
     use stringmod, only: str_eq
     implicit none
     ! Transferred variables
@@ -1144,23 +1118,13 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      if (.not. (str_eq(sref_state, "1BAR") .or. &
-           str_eq(sref_state, "1ATM"))) then
-        call stoperror("Unknown entropy reference state")
-      endif
-      act_mod_ptr%comps(i)%p_comp%sref_state = trim(sref_state)
-      act_mod_ptr%comps(i)%p_comp%sref = s0
-      call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::set_entropy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
-    case default
-      write(*,*) 'EoSlib error in ideal::set_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    if (.not. (str_eq(sref_state, "1BAR") .or. &
+         str_eq(sref_state, "1ATM"))) then
+      call stoperror("Unknown entropy reference state")
+    endif
+    act_mod_ptr%comps(i)%p_comp%sref_state = trim(sref_state)
+    act_mod_ptr%comps(i)%p_comp%sref = s0
+    call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
   end subroutine set_standard_entropy
 
   !----------------------------------------------------------------------
@@ -1171,7 +1135,6 @@ contains
   !----------------------------------------------------------------------
   subroutine get_standard_entropy(i,s0)
     use thermopack_var, only: get_active_thermo_model, thermo_model, Rgas
-    use thermopack_constants, only: THERMOPACK, TREND
     use stringmod, only: str_eq
     implicit none
     ! Transferred variables
@@ -1182,21 +1145,11 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      s0 = act_mod_ptr%comps(i)%p_comp%sref
-      if (str_eq(act_mod_ptr%comps(i)%p_comp%sref_state, "1ATM")) then
-        ! Correct to 1BAR
-        s0 = s0 - Rgas*log(1.01325)
-      endif
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::get_entropy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
-    case default
-      write(*,*) 'EoSlib error in ideal::get_entropy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    s0 = act_mod_ptr%comps(i)%p_comp%sref
+    if (str_eq(act_mod_ptr%comps(i)%p_comp%sref_state, "1ATM")) then
+      ! Correct to 1BAR
+      s0 = s0 - Rgas*log(1.01325)
+    endif
   end subroutine get_standard_entropy
 
   !----------------------------------------------------------------------
@@ -1207,7 +1160,6 @@ contains
   !----------------------------------------------------------------------
   subroutine set_enthalpy_of_formation(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1217,18 +1169,8 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      act_mod_ptr%comps(i)%p_comp%href = h0
-      call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::set_enthalpy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
-    case default
-      write(*,*) 'EoSlib error in ideal::set_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    act_mod_ptr%comps(i)%p_comp%href = h0
+    call set_reference_energy(act_mod_ptr%comps(i)%p_comp, i)
   end subroutine set_enthalpy_of_formation
 
   !----------------------------------------------------------------------
@@ -1239,7 +1181,6 @@ contains
   !----------------------------------------------------------------------
   subroutine get_enthalpy_of_formation(i,h0)
     use thermopack_var, only: get_active_thermo_model, thermo_model
-    use thermopack_constants, only: THERMOPACK, TREND
     implicit none
     ! Transferred variables
     integer, intent(in) :: i             !< Component index
@@ -1249,17 +1190,7 @@ contains
     !--------------------------------------------------------------------
     !
     act_mod_ptr => get_active_thermo_model()
-    select case (act_mod_ptr%EosLib)
-    case (THERMOPACK)
-      h0 = act_mod_ptr%comps(i)%p_comp%href
-    case (TREND)
-      ! TREND
-      write(*,*) 'ideal::get_enthalpy_reference_value: not yet implemented for TREND.'
-      call stoperror("")
-    case default
-      write(*,*) 'EoSlib error in ideal::get_enthalpy_reference_value: No such EoS libray:',act_mod_ptr%EosLib
-      call stoperror('')
-    end select
+    h0 = act_mod_ptr%comps(i)%p_comp%href
   end subroutine get_enthalpy_of_formation
 
   !---------------------------------------------------------------------- >
