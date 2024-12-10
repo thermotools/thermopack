@@ -162,14 +162,16 @@ OBJE = \
        $(ODIR)/puresaturation.o \
        $(ODIR)/thermo_utils.o \
        $(ODIR)/critical.o \
+       $(ODIR)/stability.o \
        $(ODIR)/saturation.o \
        $(ODIR)/solideos.o \
        $(ODIR)/vls.o \
-       $(ODIR)/stability.o \
        $(ODIR)/tuning.o \
        $(ODIR)/tp_solver.o \
        $(ODIR)/state_functions.o \
        $(ODIR)/saturation_curve.o \
+       $(ODIR)/saturation_tv.o \
+       $(ODIR)/multi_phase_envelope_tv.o \
        $(ODIR)/solid_saturation.o \
        $(ODIR)/saturation_point_locators.o \
        $(ODIR)/joule_thompson_inversion.o \
@@ -183,6 +185,8 @@ OBJE = \
        $(ODIR)/binaryplot.o \
        $(ODIR)/speed_of_sound.o \
        $(ODIR)/saftvrmie_testing.o \
+       $(ODIR)/hydrate.o \
+       $(ODIR)/hydrate_curves.o \
        $(ODIR)/consistency.o \
        $(ODIR)/eoslibinit.o \
        $(ODIR)/complexmodelinit.o \
@@ -503,6 +507,23 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hydrate.o: $(SRC)/hydrate.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/eostv.f90 $(SRC)/saturation.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/solideos.f90 \
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/quadratures.f90 $(SRC)/eos.f90
+	@$(call make_object, $(SRC)/hydrate.f90)
+$(ODIR)/hydrate_curves.o: $(SRC)/hydrate_curves.f90 \
+	$(SRC)/hydrate.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eostv.f90 \
+	$(SRC)/saturation.f90 $(SRC)/multi_phase_envelope_tv.f90 \
+	$(SRC)/saturation_tv.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/stability.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/cubic_eos.f90 \
+	$(SRC)/utilities.f90 $(SRC)/eos.f90 \
+	$(SRC)/thermo_utils.f90
+	@$(call make_object, $(SRC)/hydrate_curves.f90)
 $(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hyperdual_mod.f90)
 $(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \
@@ -562,6 +583,16 @@ $(ODIR)/mbwrdata.o: $(SRC)/mbwrdata.f90 \
 $(ODIR)/mixdatadb.o: $(SRC)/mixdatadb.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/assocschemeutils.f90
 	@$(call make_object, $(SRC)/mixdatadb.f90)
+$(ODIR)/multi_phase_envelope_tv.o: $(SRC)/multi_phase_envelope_tv.f90 \
+	$(SRC)/eos.f90 $(SRC)/eostv.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/thermo_utils.f90 $(SRC)/saturation.f90 \
+	$(SRC)/saturation_tv.f90 $(SRC)/saturation_curve.f90 \
+	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/stability.f90 \
+	$(SRC)/critical.f90
+	@$(call make_object, $(SRC)/multi_phase_envelope_tv.f90)
 $(ODIR)/multiparameter_base.o: $(SRC)/multiparameter_base.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/hyperdual_mod.f90
@@ -765,7 +796,8 @@ $(ODIR)/saturation.o: $(SRC)/saturation.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/nonlinear_solvers.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/puresaturation.f90 \
-	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90
+	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90 \
+	$(SRC)/stability.f90
 	@$(call make_object, $(SRC)/saturation.f90)
 $(ODIR)/saturation_curve.o: $(SRC)/saturation_curve.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
@@ -773,8 +805,8 @@ $(ODIR)/saturation_curve.o: $(SRC)/saturation_curve.f90 \
 	$(SRC)/puresaturation.f90 $(SRC)/saturation.f90 \
 	$(SRC)/nonlinear_solvers.f90 $(SRC)/critical.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90 \
-	$(SRC)/eosdata.f90 $(SRC)/utilities.f90 \
-	$(SRC)/solideos.f90
+	$(SRC)/eosdata.f90 $(SRC)/solideos.f90 \
+	$(SRC)/stability.f90 $(SRC)/utilities.f90
 	@$(call make_object, $(SRC)/saturation_curve.f90)
 $(ODIR)/saturation_point_locators.o: $(SRC)/saturation_point_locators.f90 \
 	$(SRC)/saturation.f90 $(SRC)/saturation_curve.f90 \
@@ -786,6 +818,16 @@ $(ODIR)/saturation_point_locators.o: $(SRC)/saturation_point_locators.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/critical.f90 \
 	$(SRC)/solideos.f90 $(SRC)/vls.f90
 	@$(call make_object, $(SRC)/saturation_point_locators.f90)
+$(ODIR)/saturation_tv.o: $(SRC)/saturation_tv.f90 \
+	$(SRC)/eostv.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/saturation.f90 \
+	$(SRC)/saturation_curve.f90 $(SRC)/puresaturation.f90 \
+	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
+	$(SRC)/thermo_utils.f90 $(SRC)/eos.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/critical.f90 \
+	$(SRC)/stability.f90
+	@$(call make_object, $(SRC)/saturation_tv.f90)
 $(ODIR)/single_component.o: $(SRC)/single_component.f90 \
 	$(SRC)/eos_parameters.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/mbwr_additional.f90 $(SRC)/compdata.f90 \
