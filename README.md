@@ -1,5 +1,5 @@
 <!--- 
-Generated at: 2024-12-13T12:37:41.562166
+Generated at: 2024-12-13T12:43:28.581382
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
     /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
@@ -14,7 +14,6 @@ The file is created by joining the contents of the files
         vCurrent/Component-name-mapping.md
 --->
 
-# ThermoPack
 # [ThermoPack homepage](https://thermotools.github.io/thermopack/)
 
 For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
