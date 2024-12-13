@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-11-13T22:15:22.614283
+Generated at: 2024-12-13T12:37:41.562166
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/morteham/Documents/codes/thermotools/thermopack_ljs/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/github_toc.md
         metapages/please_cite.md
@@ -171,7 +171,7 @@ pip3 install thermopack
 For documentation on the version available on pypi, refer to the appropriate version number in the sidebar.
 
 ## Installing from wheels
-Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
+Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](https://github.com/thermotools/thermopack/releases/tag/Latest-beta). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
 
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and
@@ -525,7 +525,7 @@ eos = saftvrqmie('H2,HE,NE', minimum_temperature=20) # NB: Set minimum temperatu
 T = 35 # Kelvin
 p = 3e6 # Pascal (30 bar)
 z = [0.1, 0.25, 0.65] # Molar composition
-flsh = eos.two_phase_tpflash(T, p, x) # flsh is a FlashResult object
+flsh = eos.two_phase_tpflash(T, p, z) # flsh is a FlashResult object
 print(flsh)
 ### Output: ###
 # FlashResult object for Tp-flash
@@ -540,12 +540,12 @@ print(flsh)
 #   	Liquid fraction                betaL : 0.5026975918252341  
 #   	Phase indentifier index        phase : 0  
 ```
-the result of the flash is accessed from the attributes of the `FlashResult` object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
+the result of the flash is accessed from the attributes of the [`FlashResult`](utility_structs.html#flashresult) object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
 ```Python
 # Continued
 x = flsh.x # Liquid composition
 y = flsh.y # Vapour composition
-betaL = flsh.betaL # 
+betaL = flsh.betaL # Liquid fraction
 # ... etc
 ```
 
