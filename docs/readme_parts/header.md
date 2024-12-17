@@ -1,7 +1,3 @@
----
-layout: home
-title: ThermoPack
----
 # [ThermoPack homepage](https://thermotools.github.io/thermopack/)
 
 For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)
