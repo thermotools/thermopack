@@ -4,7 +4,7 @@
 
 module thermo_utils
   use thermopack_constants, only: LIQPH, VAPPH, SINGLEPH, FAKEPH, MINGIBBSPH, &
-       WATER
+       WATER, NONWATER, STDLIQ
   use thermopack_var, only: nc, thermo_model, get_active_eos, base_eos_param, &
        get_active_thermo_model, get_active_alt_eos, Rgas
   use cubic_eos, only: get_b_linear_mix
@@ -220,17 +220,19 @@ module thermo_utils
     integer :: i
 
     lnPhi_offset = 0.0
-    do i=1,nc
-      if (pid == WATER) then
-        if (.not. isWaterComponent(i)) then
-          lnPhi_offset(i) = 10.0
+    if (pid /= STDLIQ) then
+      do i=1,nc
+        if (pid == WATER) then
+          if (.not. isWaterComponent(i)) then
+            lnPhi_offset(i) = 10.0
+          endif
+        else if (pid == NONWATER) then
+          if (isWaterComponent(i)) then
+            lnPhi_offset(i) = 10.0
+          endif
         endif
-      else
-        if (isWaterComponent(i)) then
-          lnPhi_offset(i) = 10.0
-        endif
-      endif
-    enddo
+      enddo
+    endif
   end subroutine calcLnPhiOffset
 
   !----------------------------------------------------------------------
@@ -296,7 +298,7 @@ module thermo_utils
   !>
   !> \author MH, 2013-03-06
   !----------------------------------------------------------------------
-  subroutine wilsonKdiff(t,p,K,dKdp,dKdt)
+  subroutine wilsonKdiff(t,p,K,dKdp,dKdt,lnPhi_offset)
     use eos, only: getCriticalParam
     implicit none
     real, intent(in) :: t !< K - Temperature
@@ -304,14 +306,26 @@ module thermo_utils
     real, dimension(nc), intent(out) :: K !< K-values
     real, dimension(nc), intent(out) :: dKdt !< 1/K - Differential of K-values wrpt. temperature
     real, dimension(nc), intent(out) :: dKdp !< 1/Pa - Differential of K-values wrpt. pressure
+    real, optional, dimension(nc) :: lnPhi_offset !< -
     ! Locals
     integer :: i
     real :: tci, pci, oi
+    real, dimension(nc) :: lnPhi_offset_local
+    if (present(lnPhi_offset)) then
+      lnPhi_offset_local = lnPhi_offset
+    else
+      lnPhi_offset_local = 0.0
+    endif
+
     do i=1,nc
       call getCriticalParam(i,tci,pci,oi)
-      K(i) = (pci/p)*exp(5.373*(1+oi)*(1-tci/t))
+      K(i) = (pci/p)*exp(5.373*(1+oi)*(1-tci/t) + lnPhi_offset_local(i))
       dKdp(i) = -K(i)/p
-      dKdt(i) = 5.373*(1+oi)*tci/t**2*K(i)
+      if (K(i) > 0.0) then
+        dKdt(i) = 5.373*(1+oi)*tci/t**2*K(i)
+      else
+        dKdt(i) = 0.0
+      endif
     enddo
   end subroutine wilsonKdiff
 

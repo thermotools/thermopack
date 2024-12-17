@@ -388,7 +388,7 @@ contains
         ln_s = log(P)
       end if
 
-      return_iter = sat_newton(Z,K,t,p,beta,ispec(specification),ln_s,ierr)
+      return_iter = sat_newton(Z,K,t,p,beta,ispec(specification),ln_s,ierr=ierr)
 
       if (ierr /= 0 .or. maxval(abs(K-1)) < 1e-8) then
         p = pin
@@ -426,81 +426,164 @@ contains
   !>
   !> \author MH
   !-----------------------------------------------------------------------------
-  subroutine sat_wilsonK(Z,K,t,p,specification,doBub)
+  subroutine sat_wilsonK(Z,K,t,p,specification,doBub,pid,ierr)
+    use thermo_utils, only: wilsonK
+    use thermopack_constants, only: STDLIQ
     implicit none
     real, dimension(nc), intent(in) :: Z
     real, dimension(nc), intent(out) :: K
     real, intent(inout) :: t, p
     logical, intent(in) :: doBub
     integer, intent(in) :: specification
+    integer, optional, intent(in) :: pid
+    integer, optional, intent(out) :: ierr
     ! Locals
-    real :: dfdp, dfdt
-    real :: f, dfdx, dx, x_old, f_old, x
-    integer :: i
+    type(nonlinear_solver) :: solver
+    real, dimension(nc+4) :: param
+    real, dimension(1) :: xmax, xmin, x
+    integer :: iter
+    integer, parameter :: max_iter = 100, max_nr_line_s = 3
 
-    f = 1.0
-    ! Solve for t or p
-    do i=1,sat_max_iter
-      f_old = f
-      call wilsonK_fun(Z,K,t,p,f,dfdt,dfdp,doBub)
-      if (specification == specP) then
-        dfdx = dfdt
-        x = t
-      else if (specification == specT) then
-        dfdx = dfdp
-        x = p
+    param(1) = real(specification)
+    if (doBub) then
+      param(2) = 1.0
+    else
+      param(2) = 0.0
+    endif
+    if (specification == specP) then ! Solve for T, P given
+      X(1) = t
+      param(3) = p
+      Xmin = tpTmin
+      Xmax = tpTmax
+    else
+      param(3) = t
+      x(1) = p
+      Xmin = tpPmin
+      Xmax = tpPmax
+    endif
+    param(4:nc+3) = z
+    if (present(pid)) then
+      param(nc+4) = real(pid)
+    else
+      param(nc+4) = real(STDLIQ)
+    endif
+
+    solver%rel_tol = 1.0e-20
+    solver%abs_tol = 1.0e-8
+    solver%limit_x_values = .true.
+    solver%max_it = max_iter
+    solver%ls_max_it = max_nr_line_s
+    call nonlinear_solve(solver,wilsonK_fun,wilsonK_diff,&
+         wilsonK_diff,limit_dx,premReturn,setXv,X,Xmin,Xmax,param)
+    iter = solver%iter
+    if (solver%exitflag == 0) then
+      if (specification == specP) then ! Solve for T, P given
+        t = X(1)
+      else
+        p = x(1)
       endif
-      dx = -f / dfdx
-      x_old = x
-      x = x + dx
-      if (specification == specP) then
-        t = x
-      else if (specification == specT) then
-        p = x
-      endif
-      if (abs(f - f_old) < sat_rel_tol .and. abs(x_old - x)/x_old < sat_rel_tol) then
-        if (verbose) then
-          print *,'sat_wilsonK: Converged in ', i, ' iterations'
+      ! Update K
+      call wilsonK(t,p,K,liqType=pid)
+    endif
+    if (present(ierr)) then
+      if (solver%exitflag /= 0) then
+        ierr = solver%exitflag
+      else
+        if (T<=tpTmin .or.  T>=tpTmax .or. p<=tpPmin .or. p>=tpPmax) then
+          ierr = -1
+        else
+          ierr = 0
         endif
-        return
       endif
-    enddo
-
-    print *,'sat_wilsonK: Did not converge'
-    call exit(1)
+    else if (solver%exitflag /= 0) then
+      call stoperror('saturation::sat_wilsonK did not converge')
+    endif
   end subroutine sat_wilsonK
 
   !-----------------------------------------------------------------------------
-  !> Calculate function value and differentials for saturation point
+  !> Calculate function value for saturation point
   !> based on Wilson K-factors
   !>
   !> \author MH
   !-----------------------------------------------------------------------------
-  subroutine wilsonK_fun(Z,K,t,p,f,dfdt,dfdp,doBub)
+  subroutine wilsonK_fun(F,X,param)
     use thermo_utils, only: wilsonK
     implicit none
-    real, dimension(nc), intent(out) :: K
-    real, dimension(nc), intent(in) :: Z
-    real, intent(in) :: p, t
-    real, intent(out) :: dfdt, dfdp, f
-    logical, intent(in) :: doBub
+    real, dimension(1), intent(out) :: F
+    real, dimension(1), intent(in) :: X
+    real, dimension(nc+4), intent(in) :: param
     ! Locals
-    real, dimension(nc) :: dKdp, dKdt
+    integer :: spec, pid
+    logical :: doBub
+    real :: t, p
+    real, dimension(nc) :: Z, K
 
-    call wilsonK(t,p,K,dKdp=dKdp,dKdt=dKdt)
-
+    spec = nint(param(1))
+    doBub = (nint(param(2)) /= 0)
+    if (spec == specP) then ! Solve for T, P given
+      t = X(1)
+      p = param(3)
+    else
+      t = param(3)
+      p = x(1)
+    endif
+    z = param(4:nc+3)
+    pid = nint(param(nc+4))
+    call wilsonK(t,p,K,liqType=pid)
     if (doBub) then
       ! Bubble point
       f = sum(K*Z) - 1.0
+    else
+      ! Dew point
+      f = sum(Z/K) - 1.0
+    endif
+  end subroutine wilsonK_fun
+
+  !-----------------------------------------------------------------------
+  !> Calculate differentials for saturation point
+  !> based on Wilson K-factors
+  !>
+  !> \author MH
+  !-----------------------------------------------------------------------
+  subroutine wilsonK_diff(J,X,param)
+    use thermo_utils, only: wilsonK
+    implicit none
+    real, dimension(1,1), intent(out) :: J
+    real, dimension(1), intent(in) :: X
+    real, dimension(nc+4), intent(in) :: param
+    ! Locals
+    integer :: spec, pid
+    logical :: doBub
+    real, dimension(nc) :: Z, K, dKdp, dKdt
+    real :: dfdt, dfdp, p, t
+
+    spec = nint(param(1))
+    doBub = (nint(param(2)) /= 0)
+    if (spec == specP) then ! Solve for T, P given
+      t = X(1)
+      p = param(3)
+    else
+      t = param(3)
+      p = x(1)
+    endif
+    z = param(4:nc+3)
+    pid = nint(param(nc+4))
+    call wilsonK(t,p,K,dKdt,dKdp,liqType=pid)
+    if (doBub) then
+      ! Bubble point
       dfdt = sum(dKdt*Z)
       dfdp = sum(dKdp*Z)
     else
       ! Dew point
-      f = sum(Z/K) - 1.0
       dfdt = -sum(dKdt*Z/K**2)
       dfdp = -sum(dKdp*Z/K**2)
     endif
-  end subroutine wilsonK_fun
+    if (spec == specP) then ! Solve for T, P given
+      J = dfdt
+    else
+      J = dfdp
+    endif
+  end subroutine wilsonK_diff
 
   !-----------------------------------------------------------------------------
   !> Function value and differentials for saturation point.
@@ -635,7 +718,7 @@ contains
   !>
   !> \author MH, 2012-03-05
   !-----------------------------------------------------------------------------
-  function sat_newton(Z,K,t,p,beta,s,ln_s,ierr) result(iter)
+  function sat_newton(Z,K,t,p,beta,s,ln_s,Yphase,ierr) result(iter)
     use numconstants, only: expMax, expMin
     implicit none
     real, dimension(nc), intent(in) :: Z    ! total composition
@@ -645,11 +728,12 @@ contains
     real, intent(in) :: beta                ! vapor quality
     real, intent(in) :: ln_s                ! logarithm of the fixed variable
     integer, intent(in) :: s                ! index of fixed variable in X
+    integer, intent(in), optional :: Yphase ! Phase flag for Y-phase
     integer, intent(out), optional :: ierr  ! error flag
     integer :: iter
     ! Locals
     type(nonlinear_solver) :: solver
-    real, dimension(nc+3) :: param
+    real, dimension(nc+4) :: param
     real, dimension(nc+2) :: xmax, xmin, X
     X(1:nc) = log(K)
     X(nc+1) = log(t)
@@ -659,6 +743,11 @@ contains
     param(nc+1) = beta
     param(nc+2) = real(s) ! typecast since param can only contain reals..
     param(nc+3) = ln_s
+    if (present(Yphase)) then
+      param(nc+4) = Yphase
+    else
+      param(nc+4) = VAPPH
+    endif
 
     solver%rel_tol = 1.0e-20
     solver%abs_tol = 1.0e-8
@@ -702,7 +791,7 @@ contains
     implicit none
     real, dimension(nc+2), intent(out) :: G !< Function values
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
-    real, dimension(nc+3) :: param !< Parameter vector
+    real, dimension(nc+4) :: param !< Parameter vector
     ! Locals
     real, dimension(nc) :: Z
     real, dimension(nc) :: K, FUGV, FUGL, Y, X
@@ -807,18 +896,19 @@ contains
     implicit none
     real, dimension(nc+2), intent(in) :: Xvar !< Variable vector
     real, dimension(nc+2,nc+2), intent(out) :: Jac !< Function differentials
-    real, dimension(nc+3) :: param !< Parameter vector
+    real, dimension(nc+4) :: param !< Parameter vector
     ! Locals
     real, dimension(nc) :: Z
     real, dimension(nc) :: K, FUGV, FUGTV, FUGPV, FUGL, FUGTL, FUGPL, Y, X
     real, dimension(nc,nc) :: FUGXV, FUGXL
     real :: hsl,hslt,hslp,hsln(nc),hsg,hsgt,hsgp,hsgn(nc),hs
-    integer :: s, i, j
+    integer :: s, i, j, Yphase
     real :: p, t, beta
 
     Z = param(1:nc)
     beta = param(nc+1)
     s = nint(param(nc+2))
+    Yphase = int(param(nc+4))
 
     K = exp(Xvar(1:nc))
     t = exp(Xvar(nc+1))
@@ -828,7 +918,7 @@ contains
     Y = K*Z/(1-beta+beta*K)
 
     call thermo(t,p,X,LIQPH,fugL,lnfugt=fugtL,lnfugp=fugpL,lnfugx=fugxL)
-    call thermo(t,p,Y,VAPPH,fugV,lnfugt=fugtV,lnfugp=fugpV,lnfugx=fugxV)
+    call thermo(t,p,Y,Yphase,fugV,lnfugt=fugtV,lnfugp=fugpV,lnfugx=fugxV)
 
     ! Temperature differential
     Jac(1:nc,nc+1) = t*(FUGTV-FUGTL)
@@ -1045,5 +1135,68 @@ contains
       s = specification-2
     endif
   end function ispec
+
+  !-----------------------------------------------------------------------------
+  !> Test if new liquid phase should be introduced
+  !>
+  !> \author MH, 2015-09
+  !-----------------------------------------------------------------------------
+  function isStable(t,p,Z,K,W,Yphase,beta) result(isS)
+    use eos, only: thermo
+    use thermopack_constants, only: LIQPH, VAPPH, WATER, NONWATER
+    use stability, only: stabcalcW, stabilityLimit
+    use thermo_utils, only: waterComponentFraction, wilsonK
+    implicit none
+    real, intent(in) :: t,p,beta
+    integer, intent(in) :: Yphase
+    real, dimension(nc), intent(in) :: Z,K
+    real, dimension(nc), intent(out) :: W
+    logical :: isS
+    ! Locals
+    integer :: nd, phase, Zphase, pid, i
+    real :: XX(2,nc),lnFugZ(nc),lnFugW(nc),tpd
+    real, dimension(nc) :: Kw,dKwdp,dKwdt,WW
+
+    if (beta > 0.5) then
+      Zphase = Yphase
+      XX(2,:) = Z/K
+    else
+      Zphase = LIQPH
+      XX(2,:) = K*Z
+    endif
+
+    call thermo(t,p,Z,zPhase,lnFugZ)
+    nd = 2
+    XX(1,:) = Z
+
+    ! Look for water or liquid phase
+    if (waterComponentFraction(XX(2,:)) > 0.8) then
+      pid = NONWATER
+      phase = VAPPH
+    else
+      pid = WATER
+      phase = LIQPH
+    endif
+    call wilsonK(t,p,Kw,dKwdp,dKwdt,pid)
+    if (phase == LIQPH) then
+      W = Z/Kw
+    else
+      W = Kw*Z
+    endif
+    tpd = stabcalcW(nd,1,t,p,XX,W,phase,lnFugZ,lnFugW,preTermLim=-1000.0)
+    isS = (tpd > -1.0e-9)
+    !if (.not. isS) return
+    ! Loop all possible phases
+    do i=1,nc
+      WW = 0.0
+      WW(i) = 1.0
+      tpd = stabcalcW(nd,1,t,p,XX,WW,LIQPH,lnFugZ,lnFugW,preTermLim=-1000.0)
+      if (tpd < -1.0e-9) then
+        isS = .false.
+        W = WW
+        exit
+      endif
+    enddo
+  end function isStable
 
 end module saturation
