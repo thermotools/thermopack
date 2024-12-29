@@ -33,39 +33,39 @@ class solid_correlation(component):
         code_lines = []
         code_lines.append(I+"type(solid_correlation_data), parameter :: CORRTAG = &")
         code_lines.append(3*I+"solid_correlation_data( &")
-        code_lines.append(3*I+"compName = \"" + self.comp["ident"] + "\", &")
-        code_lines.append(3*I+"correlation = \"" + self.comp[tag]["correlation"] + "\", &")
+        code_lines.append(3*I+"compName = \"" + self.fluid["ident"] + "\", &")
+        code_lines.append(3*I+"correlation = \"" + self.fluid[tag]["correlation"] + "\", &")
         code_lines.append(
-            3*I + 'triple_temperature = {}'.format(print_float(self.comp[tag]["triple_temperature"])) + ", &")
-        maximum_temperature = self.comp[tag]["maximum_temperature"] if tag == "melting_curve" else "0.0"
-        minimum_temperature = self.comp[tag]["minimum_temperature"] if tag == "sublimation_curve" else "0.0"
+            3*I + 'triple_temperature = {}'.format(print_float(self.fluid[tag]["triple_temperature"])) + ", &")
+        maximum_temperature = self.fluid[tag]["maximum_temperature"] if tag == "melting_curve" else "0.0"
+        minimum_temperature = self.fluid[tag]["minimum_temperature"] if tag == "sublimation_curve" else "0.0"
         code_lines.append(
             3*I + 'minimum_temperature = {}'.format(print_float(float(minimum_temperature))) + ", &")
         code_lines.append(
             3*I + 'maximum_temperature = {}'.format(print_float(float(maximum_temperature))) + ", &")
         code_lines.append(
-            3*I + 'reducing_pressure = {}'.format(print_float(self.comp[tag]["reducing_pressure"])) + ", &")
+            3*I + 'reducing_pressure = {}'.format(print_float(self.fluid[tag]["reducing_pressure"])) + ", &")
         code_lines.append(
-            3*I + 'reducing_temperature = {}'.format(print_float(self.comp[tag]["reducing_temperature"])) + ", &")
+            3*I + 'reducing_temperature = {}'.format(print_float(self.fluid[tag]["reducing_temperature"])) + ", &")
         code_lines.append(
-            3*I + 'n_coeff = {}'.format(self.comp[tag]["n_coeff"]) + ", &")
+            3*I + 'n_coeff = {}'.format(self.fluid[tag]["n_coeff"]) + ", &")
         code_lines.append(
-            3*I + 'n_coeff_1 = {}'.format(self.comp[tag]["n_coeff_1"]) + ", &")
+            3*I + 'n_coeff_1 = {}'.format(self.fluid[tag]["n_coeff_1"]) + ", &")
         code_lines.append(
-            3*I + 'n_coeff_2 = {}'.format(self.comp[tag]["n_coeff_2"]) + ", &")
+            3*I + 'n_coeff_2 = {}'.format(self.fluid[tag]["n_coeff_2"]) + ", &")
         code_lines.append(
-            3*I + 'n_coeff_3 = {}'.format(self.comp[tag]["n_coeff_3"]) + ", &")
-        code_lines.append(3*I + "coeff = (/" + '{:.12e}'.format(self.comp[tag]["coeff"][0]) + "," + '{:.12e}'.format(self.comp[tag]["coeff"][1])
-                          + "," + '{:.12e}'.format(self.comp[tag]["coeff"][2]) + ", &")
-        code_lines.append(3*I + '{:.12e}'.format(self.comp[tag]["coeff"][3]) + "," + '{:.12e}'.format(self.comp[tag]["coeff"][4])
-                          + "," + '{:.12e}'.format(self.comp[tag]["coeff"][5]) + "/), &")
-        code_lines.append(3*I + "exponents = (/" + '{:.6f}'.format(self.comp[tag]["exponents"][0]) + "," + '{:.6f}'.format(self.comp[tag]["exponents"][1])
-                          + "," + '{:.6f}'.format(self.comp[tag]["exponents"][2]) + ", &")
-        code_lines.append(3*I + '{:.6f}'.format(self.comp[tag]["exponents"][3]) + "," + '{:.6f}'.format(self.comp[tag]["exponents"][4])
-                          + "," + '{:.6f}'.format(self.comp[tag]["exponents"][5]) + "/), &")
+            3*I + 'n_coeff_3 = {}'.format(self.fluid[tag]["n_coeff_3"]) + ", &")
+        code_lines.append(3*I + "coeff = (/" + '{:.12e}'.format(self.fluid[tag]["coeff"][0]) + "," + '{:.12e}'.format(self.fluid[tag]["coeff"][1])
+                          + "," + '{:.12e}'.format(self.fluid[tag]["coeff"][2]) + ", &")
+        code_lines.append(3*I + '{:.12e}'.format(self.fluid[tag]["coeff"][3]) + "," + '{:.12e}'.format(self.fluid[tag]["coeff"][4])
+                          + "," + '{:.12e}'.format(self.fluid[tag]["coeff"][5]) + "/), &")
+        code_lines.append(3*I + "exponents = (/" + '{:.6f}'.format(self.fluid[tag]["exponents"][0]) + "," + '{:.6f}'.format(self.fluid[tag]["exponents"][1])
+                          + "," + '{:.6f}'.format(self.fluid[tag]["exponents"][2]) + ", &")
+        code_lines.append(3*I + '{:.6f}'.format(self.fluid[tag]["exponents"][3]) + "," + '{:.6f}'.format(self.fluid[tag]["exponents"][4])
+                          + "," + '{:.6f}'.format(self.fluid[tag]["exponents"][5]) + "/), &")
         code_lines.append(3*I + "bib_ref = \"" +
-                          self.comp[tag]["bib_reference"] + "\", &")
-        code_lines.append(3*I + "ref = \"" + self.comp[tag]["ref"] + "\" &")
+                          self.fluid[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I + "ref = \"" + self.fluid[tag]["ref"] + "\" &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -78,7 +78,7 @@ class solid_correlation(component):
         """
 
         code_lines = []
-        for key in self.comp:
+        for key in self.fluid:
             if tag in key:
                 print(self.filepath)
                 corr = self.get_solid_correlation_fortran_code(key)

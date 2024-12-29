@@ -36,20 +36,20 @@ class svrm_component(component):
         code_lines = []
         code_lines.append(I+"type(saftvrmie_data), parameter :: SAFTVRMIETAG = &")
         code_lines.append(3*I+"saftvrmie_data(eosidx = " + saft_eos_to_idx(self.eos) + ", &")
-        code_lines.append(3*I+"compName = \"" + self.comp["ident"] + "\", &")
-        code_lines.append(3*I + 'm = {}'.format(print_float(self.comp[tag]["m"])) + ", &")
-        code_lines.append(3*I + 'sigma = {}'.format(sci_print_float(self.comp[tag]["sigma"])) + ", &")
-        code_lines.append(3*I + 'eps_depth_divk = {}'.format(print_float(self.comp[tag]["eps_depth_divk"])) + ", &")
-        code_lines.append(3*I + 'lambda_a = {}'.format(print_float(self.comp[tag]["lambda_a"])) + ", &")
-        code_lines.append(3*I + 'lambda_r = {}'.format(print_float(self.comp[tag]["lambda_r"])) + ", &")
-        code_lines.append(3*I + 'mass = {}'.format(sci_print_float(self.comp[tag]["mass"])) + ", &")
-        code_lines.append(3*I + 'eps = {}'.format(print_float(self.comp[tag]["eps"])) + ", &")
-        code_lines.append(3*I + 'beta = {:.4E}'.format(self.comp[tag]["beta"]) + ", &")
+        code_lines.append(3*I+"compName = \"" + self.fluid["ident"] + "\", &")
+        code_lines.append(3*I + 'm = {}'.format(print_float(self.fluid[tag]["m"])) + ", &")
+        code_lines.append(3*I + 'sigma = {}'.format(sci_print_float(self.fluid[tag]["sigma"])) + ", &")
+        code_lines.append(3*I + 'eps_depth_divk = {}'.format(print_float(self.fluid[tag]["eps_depth_divk"])) + ", &")
+        code_lines.append(3*I + 'lambda_a = {}'.format(print_float(self.fluid[tag]["lambda_a"])) + ", &")
+        code_lines.append(3*I + 'lambda_r = {}'.format(print_float(self.fluid[tag]["lambda_r"])) + ", &")
+        code_lines.append(3*I + 'mass = {}'.format(sci_print_float(self.fluid[tag]["mass"])) + ", &")
+        code_lines.append(3*I + 'eps = {}'.format(print_float(self.fluid[tag]["eps"])) + ", &")
+        code_lines.append(3*I + 'beta = {:.4E}'.format(self.fluid[tag]["beta"]) + ", &")
         code_lines.append(3*I + 'assoc_scheme = {}, &'.format(
-            get_assoc_scheme_parameter(self.comp[tag]["assoc_scheme"])))
-        code_lines.append(3*I + 'fh_order = {}'.format(str(self.comp[tag]["fh_order"])) + ", &")
-        code_lines.append(3*I + "bib_ref = \"" + self.comp[tag]["bib_reference"] + "\", &")
-        code_lines.append(3*I + "ref = \"" + self.comp[tag]["ref"] + "\" &")
+            get_assoc_scheme_parameter(self.fluid[tag]["assoc_scheme"])))
+        code_lines.append(3*I + 'fh_order = {}'.format(str(self.fluid[tag]["fh_order"])) + ", &")
+        code_lines.append(3*I + "bib_ref = \"" + self.fluid[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I + "ref = \"" + self.fluid[tag]["ref"] + "\" &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -62,7 +62,7 @@ class svrm_component(component):
         """
 
         code_lines = []
-        for key in self.comp:
+        for key in self.fluid:
             if "SAFTVRMIE" in key:
                 svrm = self.get_svrm_fortran_code(key)
                 for line in svrm:
