@@ -14,9 +14,6 @@ module eoslibinit
   !
   logical :: silent_init = .false. ! Disable output for unit testing
   !
-  ! Include TREND interface
-  include 'trend_interface.f95'
-  !
   private
   public :: init_thermo
   public :: init_cubic, init_cpa, init_saftvrmie, init_pcsaft, init_tcPR, init_quantum_cubic
@@ -76,9 +73,9 @@ contains
   !> \author MH, 2014-02
   !----------------------------------------------------------------------
   subroutine init_thermo(eos,mixing,alpha,comp_string,nphases,&
-    liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
-    saft_ref,b_exponent,TrendEosForCp,cptype,silent)
-    use thermopack_constants, only: clen, TREND, THERMOPACK
+       liq_vap_discr_method_in,csp_eos,csp_ref_comp,kij_ref,alpha_ref,&
+       saft_ref,b_exponent,cptype,silent)
+    use thermopack_constants, only: clen
     use cbselect,   only: SelectCubicEOS
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
@@ -95,12 +92,10 @@ contains
     character(len=*), optional, intent(in) :: csp_ref_comp !< CSP component
     character(len=*), optional, intent(in) :: kij_ref, alpha_ref, saft_ref !< Data set identifiers
     real, optional, intent(in) :: b_exponent !< Inverse exponent (1/s) in mixing of covolume (s>1.0)
-    character(len=*), optional, intent(in) :: TrendEosForCp !< Option to init trend for ideal gas properties.
     integer, optional, intent(in) :: cptype !< Type numbers for Cp
     logical, optional, intent(in) :: silent !< Option to disable init messages.
     ! Locals
     integer :: ncomp !< Number of components
-    character(len=clen) :: message
     integer             :: i, ierr, index
     type(thermo_model), pointer :: act_mod_ptr
     if (present(silent)) then
@@ -153,36 +148,12 @@ contains
       enddo
     endif
 
-    if (str_eq(eos, "EOSCG") .or. &
-      str_eq(eos, "EOS-CG") .or. &
-      str_eq(eos, "GERG2008") .or. &
-      str_eq(eos, "GERG-2008") .or. &
-      str_eq(eos, "EOSCG-GERG")) then
-      act_mod_ptr%eosLib = TREND
-    else
-      act_mod_ptr%eosLib = THERMOPACK
-    endif
-
-    ! Initialize the selected EoS-library
-    select case (act_mod_ptr%eosLib)
-    case (THERMOPACK)
-      ! Initialize Thermopack
-      call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
-        trim(uppercase(alpha)), &
-        nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
-        kij_ref,Alpha_ref,saft_ref,&
-        b_exponent)
-      if (present(TrendEosForCp)) then
-        ! Initialize Trend for ideal properties
-        call init_trend(trim(uppercase(TrendEosForCp)),ncomp,nphases,.false.)
-      endif
-    case (TREND)
-      ! Initialize Trend
-      call init_trend(trim(uppercase(eos)),ncomp,nphases,.true.)
-    case default
-      write(message,*) 'Wrong EoS library'
-      call stoperror(trim(message))
-    end select
+    ! Initialize Thermopack
+    call init_thermopack(trim(uppercase(eos)),trim(uppercase(mixing)), &
+         trim(uppercase(alpha)), &
+         nphases,csp_eos,csp_ref_comp, & ! csp_refcomp is case sensitive in compDB
+         kij_ref,Alpha_ref,saft_ref,&
+         b_exponent)
 
     call init_fallback_and_redefine_criticals(silent_init)
   end subroutine init_thermo
@@ -191,7 +162,6 @@ contains
   !> Initialize cubic fallback eos
   !----------------------------------------------------------------------------
   subroutine init_fallback_and_redefine_criticals(silent, enable_volume_shift)
-    use thermopack_constants, only: TREND, THERMOPACK
     use thermopack_var, only: nce
     use eosdata, only: isSAFTEOS
     use cbselect, only: selectCubicEOS, SelectMixingRules
@@ -203,7 +173,7 @@ contains
     logical, optional, intent(in) :: enable_volume_shift !< Initialize volume shift
     ! Locals
     integer             :: i
-    real                :: Tci, Pci, oi, rhocrit
+    real                :: Tci, Pci, rhocrit
     logical             :: redefine_critical
     type(thermo_model), pointer :: act_mod_ptr
     !
@@ -212,16 +182,6 @@ contains
     if (.not. act_mod_ptr%need_alternative_eos) return
 
     redefine_critical = isSAFTEOS(act_mod_ptr%eos(1)%p_eos%eosidx)
-
-    if (act_mod_ptr%EoSLib == TREND) then
-      ! Use TREND parameters to get better critical point in alternative model
-      do i=1,nce
-        call trend_getcrit(i,Tci,Pci,oi)
-        act_mod_ptr%comps(i)%p_comp%tc = Tci
-        act_mod_ptr%comps(i)%p_comp%pc = Pci
-        act_mod_ptr%comps(i)%p_comp%acf = oi
-      enddo
-    endif
 
     select type(p_eos => act_mod_ptr%eos(1)%p_eos)
     class is (single_eos)
@@ -262,7 +222,7 @@ contains
         act_mod_ptr%cubic_eos_alternative(1)%p_eos
     enddo
 
-    if (act_mod_ptr%EoSLib == THERMOPACK .and. redefine_critical) then
+    if (redefine_critical) then
       call redefine_critical_parameters(silent)
     endif
   end subroutine init_fallback_and_redefine_criticals
@@ -274,7 +234,6 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK
     use eos_container, only: allocate_eos
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
@@ -316,9 +275,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifier
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variables inputs that are optional
     mixing_loc = "vdW"
@@ -424,7 +380,6 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc
-    use thermopack_constants, only: THERMOPACK
     use cbselect, only: selectCubicEOS, SelectMixingRules
     use cubic_eos, only: cb_eos
     use volume_shift, only: InitVolumeShift
@@ -534,7 +489,7 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use eos_container, only: allocate_eos
     use extcsp, only: extcsp_eos, csp_init
@@ -581,9 +536,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_ref)) then
@@ -720,7 +672,7 @@ contains
     b_exponent)
     use eosdata, only: isSAFTEOS
     use stringmod, only: str_eq
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use thermopack_var, only: nce, nc, complist
     use volume_shift, only: initVolumeShift, NOSHIFT
     use extcsp, only: csp_init, extcsp_eos
@@ -843,86 +795,6 @@ contains
     enddo
   end subroutine init_thermopack
 
-  !----------------------------------------------------------------------
-  !> Initialize trend
-  !>
-  !> \author MH, 2013-04-10, EA 2014-02
-  !----------------------------------------------------------------------
-  subroutine init_trend(eos,ncomp,nphase,doFallbackInit)
-    !use thermopack_constants, only: Rgas,TREND,verbose
-    !use thermopack_var, only: complist,nph
-    !use stringmod, only: chartoascii
-    !use compname_translation, only: translate_compname
-#ifdef __INTEL_COMPILER
-    use ifport
-#endif
-    ! Input:
-    character(len=*), intent(in)    :: eos            !< String defining equation of state
-    integer, intent(in)             :: ncomp          !< Number of components
-    integer, intent(in)             :: nphase         !< Number of phases
-    logical, intent(in)             :: doFallbackInit !< Init thermopack as fallback
-    !Internal:
-    ! integer                         :: i
-    ! integer                         :: mix
-    ! character (12)                  :: comps(ncomp)
-    ! character(len=255)              :: path,trendroot
-    ! integer                         :: npath,int_path(255),int_comps(12*ncomp),ncomps
-
-    ! if (doFallbackInit) then
-    !   ! Also initialize Thermopack cubic EoS, to be used for initial estimates.
-    !   if (verbose) then
-    !     write(*,*) "Initializing EoS-lib Thermopack for initial estimates. (SRK, Classic)"
-    !   endif
-    !   call init_thermopack("SRK","Classic","Classic", nphase)
-    ! endif
-    ! ! Setting EoSLib flag
-    ! if (verbose) then
-    !   write(*,*) "Initializing EoS-lib TREND"
-    ! endif
-    ! EoSLib = TREND
-    ! call set_constants() ! Depend on EoSLib
-    ! ! Setting global nph number
-    ! nph = nphase
-    ! do i=1,ncomp
-    !   call translate_compname(trim(complist(i)), TREND, comps(i))
-    !   char_comps((i-1)*12+1:i*12) = comps(i)
-    ! enddo
-    ! ! Setting mixing rules
-    ! if (verbose) then
-    !   write(*,*) "OBS: Mixing rule and alpha-correlation input ignored."
-    ! endif
-    ! mix = 1 ! Lorentz-Berthelot or modified Helmholtz mixing rules
-    ! call getenv("TRENDROOT",trendroot)
-    ! if (trim(trendroot) == "") then
-    !    trendroot = "./trend/"
-    ! endif
-    ! ! Setting path based on input EoS-string:
-    ! ! They are all "Multi-parameter explicit Helmholtz" EoS, but with different parameters.
-    ! select case(trim(eos))
-    ! case ("EOSCG")
-    !   ! The EoS for CCS mixtures, parameters fitted by Johannes Gernert.
-    !   ! Will fail when selecting components not covered in the original fitting.
-    !    path = trim(trendroot)//"EOS_CG/"
-    ! case ("GERG2008")
-    !   ! The GERG-2008 EoS for natural gas mixtures.
-    !   path = trim(trendroot)//"GERG-2008/"
-    ! case ("EOSCG-GERG")
-    !   ! Primarily EOSCG, but now falling back to GERG2008 for unsupported components.
-    !   path = trim(trendroot)//"/"
-    ! case default
-    !   call stoperror("No such EoS in TREND (EOSCG,GERG2008,EOSCG-GERG): "//trim(eos))
-    ! end select
-    ! if (verbose) then
-    !   write(*,*) "Will look for dirs FLUIDS and BINARY_MIX_FILES in: "//trim(path)
-    ! endif
-    ! npath = len(trim(path))
-    ! call chartoascii(int_path,path,npath)
-    ! ncomps = 12*ncomp
-    ! call chartoascii(int_comps,char_comps,ncomps)
-    ! call trend_init_no_char(ncomp,int_path,npath,int_comps,ncomps,mix,Rgas)
-
-  end subroutine init_trend
-
   !----------------------------------------------------------------------------
   !> Initialize SAFT-VR-MIE EoS. Use: call init_saftvrmie('CO2,N2')
   !----------------------------------------------------------------------------
@@ -930,7 +802,7 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nce, complist
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -962,8 +834,6 @@ contains
     act_mod_ptr%nc = ncomp
     nce = ncomp
     complist => act_mod_ptr%complist
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
@@ -1052,7 +922,7 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -1104,9 +974,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -1141,7 +1008,6 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: eos    !< Equation of state
@@ -1183,9 +1049,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -1221,7 +1084,7 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     character(len=*), intent(in) :: comps !< Components. Comma or white-space separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -1257,9 +1120,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -1289,7 +1149,6 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK
     use stringmod,  only: uppercase
     use eos_parameters, only: single_eos, get_single_eos_pointer
     use multiparameter_base, only: REF_NO_SOLVE, REF_EVALUATE_ID, &
@@ -1337,9 +1196,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
     call init_component_data_from_db(complist,nce,"DEFAULT",act_mod_ptr%comps,ierr)
@@ -1400,7 +1256,7 @@ contains
     use compdata, only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -1438,9 +1294,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
@@ -1502,7 +1355,7 @@ contains
   subroutine init_lj_ljs(potential,model,parameter_reference)
     use compdata, only: init_component_data_from_db, initCompList
     use thermopack_var,  only: nc, nce, ncsym, complist, apparent, nph
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use stringmod,  only: uppercase
     use volume_shift, only: NOSHIFT
     use saft_interface, only: saft_type_eos_init
@@ -1551,9 +1404,6 @@ contains
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
 
-    ! Set eos library identifyer
-    act_mod_ptr%eosLib = THERMOPACK
-
     ! Set local variable for parameter reference
     if (present(parameter_reference)) then
       param_ref = parameter_reference
@@ -1595,7 +1445,7 @@ contains
     use compdata,   only: init_component_data_from_db, initCompList
     use ideal, only: set_reference_energies
     use thermopack_var, only: nc, nce, ncsym, complist, nph, apparent
-    use thermopack_constants, only: THERMOPACK, ref_len
+    use thermopack_constants, only: ref_len
     use eos_container, only: allocate_eos
     character(len=*), intent(in) :: comps !< Component names. Comma separated
     character(len=*), optional, intent(in) :: parameter_reference !< Data set reference
@@ -1637,9 +1487,6 @@ contains
     apparent => NULL()
     Rgas = act_mod_ptr%Rgas
     kRgas = act_mod_ptr%kRgas
-
-    ! Set eos library identifier
-    act_mod_ptr%eosLib = THERMOPACK
 
     ! Initialize components module
     call init_component_data_from_db(complist,nce,param_ref,act_mod_ptr%comps,ierr)

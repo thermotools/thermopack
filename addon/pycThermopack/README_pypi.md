@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-11-13T22:15:22.611133
+Generated at: 2024-12-13T12:43:28.580207
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/morteham/Documents/codes/thermotools/thermopack_ljs/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/pypi_toc.md
         metapages/please_cite.md
@@ -12,7 +12,6 @@ The file is created by joining the contents of the files
         v2.2.0/Component-name-mapping.md
 --->
 
-# ThermoPack
 # [ThermoPack homepage](https://thermotools.github.io/thermopack/)
 
 For the full documentation and user guide to ThermoPack, see the [ThermoPack homepage.](https://thermotools.github.io/thermopack/)

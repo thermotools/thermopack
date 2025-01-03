@@ -17,7 +17,7 @@ TEST = $(ROOT)/unittests
 ODIR = ./objects/$(TARGET)
 BDIR = ./bin
 DDIR = $(BDIR)/dynamic
-INCDIR = -I$(FULLROOT)/ -I$(FULLROOT)/addon/trend_interface/include
+INCDIR = -I$(FULLROOT)/
 VPATH = . bin/ $(SRC)
 SILENT_RUN ?= off
 ifdef PFUNIT_DIR
@@ -157,19 +157,20 @@ OBJE = \
        $(ODIR)/eos_container.o \
        $(ODIR)/single_phase.o \
        $(ODIR)/eostv.o \
-       $(ODIR)/trend_solver.o \
        $(ODIR)/eos.o \
        $(ODIR)/puresaturation.o \
        $(ODIR)/thermo_utils.o \
        $(ODIR)/critical.o \
+       $(ODIR)/stability.o \
        $(ODIR)/saturation.o \
        $(ODIR)/solideos.o \
        $(ODIR)/vls.o \
-       $(ODIR)/stability.o \
        $(ODIR)/tuning.o \
        $(ODIR)/tp_solver.o \
        $(ODIR)/state_functions.o \
        $(ODIR)/saturation_curve.o \
+       $(ODIR)/saturation_tv.o \
+       $(ODIR)/multi_phase_envelope_tv.o \
        $(ODIR)/solid_saturation.o \
        $(ODIR)/saturation_point_locators.o \
        $(ODIR)/joule_thompson_inversion.o \
@@ -183,27 +184,19 @@ OBJE = \
        $(ODIR)/binaryplot.o \
        $(ODIR)/speed_of_sound.o \
        $(ODIR)/saftvrmie_testing.o \
+       $(ODIR)/hydrate.o \
+       $(ODIR)/hydrate_curves.o \
        $(ODIR)/consistency.o \
        $(ODIR)/eoslibinit.o \
        $(ODIR)/complexmodelinit.o \
        $(ODIR)/external.o
 
-LIBTREND_DIR = $(FULLROOT)/trend
-ifdef $(THERMOPACK_WITH_TREND)
-    OBJIF = $(ODIR)/dltrend.o \
-            $(ODIR)/compname_translation.o \
-    LTREND = $(LIBTREND_DIR)/bin/libtrend_$(TARGET).a
-else
-    OBJIF = $(ODIR)/dltrend_dummy.o
-    LTREND =
-endif
-
 #=============================================================================
 # Rules to make executable:
 #=============================================================================
-.PHONY: thermopack run_unittests trend_$(TARGET) clean
+.PHONY: thermopack run_unittests clean
 
-libthermopack_$(TARGET).a: $(LTREND) Makefile Makefile.code $(OBJE) $(OBJIF)
+libthermopack_$(TARGET).a: Makefile Makefile.code $(OBJE) $(OBJIF)
 	@rm -f $(BDIR)/libthermopack_$(TARGET).a
 	$(AR) $(BDIR)/libthermopack_$(TARGET).a $(OBJE) $(OBJIF)
 	$(RANLIB) $(BDIR)/libthermopack_$(TARGET).a
@@ -227,7 +220,6 @@ thermopack_$(TARGET): $(OBJTEST) $(BDIR)/libthermopack_$(TARGET).a \
 
 thermopack:
 	@mkdir -p $(BDIR) $(ODIR) $(DDIR)
-	$(MAKE) -f Makefile.code -e trend_$(TARGET)
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).a
 	@if [ $(UNAME) = Darwin ]; then \
 	  $(MAKE) -f Makefile.code -e libthermopack_$(TARGET).dylib; \
@@ -252,7 +244,6 @@ run: $(ODIR)/thermopack.o
 run_unittests:
 	@mkdir -p $(BDIR) $(ODIR)
 	$(MAKE) -f Makefile.code -e libthermopack_$(TARGET).a
-	$(MAKE) -f Makefile.code -e trend_$(TARGET)
 	$(MAKE) -C unittests PFUNIT=$(PFUNIT) ODIR=$(ODIR) \
 	INCDIR=$(INCDIR) tests
 	$(MAKE) -f Makefile.code unittests_$(TARGET)
@@ -267,11 +258,6 @@ unittests_$(TARGET): $(OBJE) $(TESTOBJS) unittests/testSuites.inc
 	$(FC) $(FFLAGS) -o $(BDIR)/$@ $(OBJE) $(OBJIF) $(TESTOBJS) -D_TEST_SUITES='"testSuites.inc"' -I$(PFUNIT)/include $(PFUNIT)/include/driver.F90 -L$(PFUNIT)/lib -lfunit \
 	-I$(GFTL)/include/v1 -I$(GFTL_SHARED)/include/v1 -I$(FARGPARSE)/include \
 	-L$(FARGPARSE)/lib -lfargparse -L$(GFTL_SHARED)/lib -lgftl-shared-v2 -lgomp -lpthread $(LIBS) -Iunittests -DBUILD_ROBUST
-
-trend_$(TARGET):
-ifdef $(THERMOPACK_WITH_TREND)
-  $(MAKE) -C $(LIBTREND_DIR) $(TARGET);
-endif
 
 clean:
 	rm -rf ./objects
@@ -310,9 +296,6 @@ else
     $(CC) $(CFLAGS) -DTARGET=$(TARGET) $(INCDIR) -c -o $@ $(1);
   endif
 endif
-
-$(ODIR)/dltrend.o: $(SRC)/dltrend.cpp $(LTREND)
-	@$(call make_object_cpp,$(SRC)/dltrend.cpp)
 
 #=============================================================================
 # Build information generated with addon/pyUtils/generate_dependensies.py
@@ -416,21 +399,20 @@ $(ODIR)/cubic_eos.o: $(SRC)/cubic_eos.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/unifac.f90 \
 	$(SRC)/utilities.f90 $(SRC)/stringmod.f90
 	@$(call make_object, $(SRC)/cubic_eos.f90)
-$(ODIR)/dltrend_dummy.o: $(SRC)/dltrend_dummy.f90
-	@$(call make_object, $(SRC)/dltrend_dummy.f90)
 $(ODIR)/eos.o: $(SRC)/eos.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
-	$(SRC)/single_phase.f90 $(SRC)/trend_solver.f90 \
-	$(SRC)/numconstants.f90 $(SRC)/eostv.f90 \
-	$(SRC)/cubic_eos.f90 $(SRC)/eosdata.f90 \
-	$(SRC)/ideal.f90 $(SRC)/eos_parameters.f90
+	$(SRC)/single_phase.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/eostv.f90 $(SRC)/cubic_eos.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/ideal.f90 \
+	$(SRC)/eos_parameters.f90
 	@$(call make_object, $(SRC)/eos.f90)
 $(ODIR)/eos_container.o: $(SRC)/eos_container.f90 \
 	$(SRC)/compdata.f90 $(SRC)/eos_parameters.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/saftvrmie_containers.f90 $(SRC)/lj_splined.f90 \
 	$(SRC)/pc_saft_nonassoc.f90 $(SRC)/extcsp.f90 \
-	$(SRC)/eosdata.f90 $(SRC)/pets.f90
+	$(SRC)/ideal.f90 $(SRC)/eosdata.f90 \
+	$(SRC)/pets.f90
 	@$(call make_object, $(SRC)/eos_container.f90)
 $(ODIR)/eos_parameters.o: $(SRC)/eos_parameters.f90 \
 	$(SRC)/compdata.f90 $(SRC)/eosdata.f90 \
@@ -503,6 +485,23 @@ $(ODIR)/hardsphere_wca.o: $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/hardsphere_wca.f90 \
 	$(SRC)/saftvrmie_options.f90
 	@$(call make_object, $(SRC)/hardsphere_wca.f90)
+$(ODIR)/hydrate.o: $(SRC)/hydrate.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
+	$(SRC)/eostv.f90 $(SRC)/saturation.f90 \
+	$(SRC)/stringmod.f90 $(SRC)/solideos.f90 \
+	$(SRC)/nonlinear_solvers.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/quadratures.f90 $(SRC)/eos.f90
+	@$(call make_object, $(SRC)/hydrate.f90)
+$(ODIR)/hydrate_curves.o: $(SRC)/hydrate_curves.f90 \
+	$(SRC)/hydrate.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/eostv.f90 \
+	$(SRC)/saturation.f90 $(SRC)/multi_phase_envelope_tv.f90 \
+	$(SRC)/saturation_tv.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/stability.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/cubic_eos.f90 \
+	$(SRC)/utilities.f90 $(SRC)/eos.f90 \
+	$(SRC)/thermo_utils.f90
+	@$(call make_object, $(SRC)/hydrate_curves.f90)
 $(ODIR)/hyperdual_mod.o: $(SRC)/hyperdual_mod.f90
 	@$(call make_object, $(SRC)/hyperdual_mod.f90)
 $(ODIR)/hyperdual_utility.o: $(SRC)/hyperdual_utility.f90 \
@@ -562,6 +561,16 @@ $(ODIR)/mbwrdata.o: $(SRC)/mbwrdata.f90 \
 $(ODIR)/mixdatadb.o: $(SRC)/mixdatadb.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/assocschemeutils.f90
 	@$(call make_object, $(SRC)/mixdatadb.f90)
+$(ODIR)/multi_phase_envelope_tv.o: $(SRC)/multi_phase_envelope_tv.f90 \
+	$(SRC)/eos.f90 $(SRC)/eostv.f90 \
+	$(SRC)/thermopack_constants.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/numconstants.f90 \
+	$(SRC)/thermo_utils.f90 $(SRC)/saturation.f90 \
+	$(SRC)/saturation_tv.f90 $(SRC)/saturation_curve.f90 \
+	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/stability.f90 \
+	$(SRC)/critical.f90
+	@$(call make_object, $(SRC)/multi_phase_envelope_tv.f90)
 $(ODIR)/multiparameter_base.o: $(SRC)/multiparameter_base.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/hyperdual_mod.f90
@@ -765,7 +774,8 @@ $(ODIR)/saturation.o: $(SRC)/saturation.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/nonlinear_solvers.f90 \
 	$(SRC)/numconstants.f90 $(SRC)/puresaturation.f90 \
-	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90
+	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90 \
+	$(SRC)/stability.f90
 	@$(call make_object, $(SRC)/saturation.f90)
 $(ODIR)/saturation_curve.o: $(SRC)/saturation_curve.f90 \
 	$(SRC)/eos.f90 $(SRC)/thermopack_constants.f90 \
@@ -773,8 +783,8 @@ $(ODIR)/saturation_curve.o: $(SRC)/saturation_curve.f90 \
 	$(SRC)/puresaturation.f90 $(SRC)/saturation.f90 \
 	$(SRC)/nonlinear_solvers.f90 $(SRC)/critical.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/eostv.f90 \
-	$(SRC)/eosdata.f90 $(SRC)/utilities.f90 \
-	$(SRC)/solideos.f90
+	$(SRC)/eosdata.f90 $(SRC)/solideos.f90 \
+	$(SRC)/stability.f90 $(SRC)/utilities.f90
 	@$(call make_object, $(SRC)/saturation_curve.f90)
 $(ODIR)/saturation_point_locators.o: $(SRC)/saturation_point_locators.f90 \
 	$(SRC)/saturation.f90 $(SRC)/saturation_curve.f90 \
@@ -782,10 +792,20 @@ $(ODIR)/saturation_point_locators.o: $(SRC)/saturation_point_locators.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/nonlinear_solvers.f90 $(SRC)/numconstants.f90 \
 	$(SRC)/puresaturation.f90 $(SRC)/stringmod.f90 \
-	$(SRC)/eostv.f90 $(SRC)/trend_solver.f90 \
-	$(SRC)/thermo_utils.f90 $(SRC)/critical.f90 \
-	$(SRC)/solideos.f90 $(SRC)/vls.f90
+	$(SRC)/eostv.f90 $(SRC)/thermo_utils.f90 \
+	$(SRC)/critical.f90 $(SRC)/solideos.f90 \
+	$(SRC)/vls.f90
 	@$(call make_object, $(SRC)/saturation_point_locators.f90)
+$(ODIR)/saturation_tv.o: $(SRC)/saturation_tv.f90 \
+	$(SRC)/eostv.f90 $(SRC)/thermopack_constants.f90 \
+	$(SRC)/thermopack_var.f90 $(SRC)/nonlinear_solvers.f90 \
+	$(SRC)/numconstants.f90 $(SRC)/saturation.f90 \
+	$(SRC)/saturation_curve.f90 $(SRC)/puresaturation.f90 \
+	$(SRC)/cubic_eos.f90 $(SRC)/utilities.f90 \
+	$(SRC)/thermo_utils.f90 $(SRC)/eos.f90 \
+	$(SRC)/eosdata.f90 $(SRC)/critical.f90 \
+	$(SRC)/stability.f90
+	@$(call make_object, $(SRC)/saturation_tv.f90)
 $(ODIR)/single_component.o: $(SRC)/single_component.f90 \
 	$(SRC)/eos_parameters.f90 $(SRC)/eosdata.f90 \
 	$(SRC)/mbwr_additional.f90 $(SRC)/compdata.f90 \
@@ -823,9 +843,8 @@ $(ODIR)/solideos.o: $(SRC)/solideos.f90 \
 	@$(call make_object, $(SRC)/solideos.f90)
 $(ODIR)/speed_of_sound.o: $(SRC)/speed_of_sound.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
-	$(SRC)/eos.f90 $(SRC)/trend_solver.f90 \
-	$(SRC)/state_functions.f90 $(SRC)/solideos.f90 \
-	$(SRC)/eostv.f90
+	$(SRC)/eos.f90 $(SRC)/state_functions.f90 \
+	$(SRC)/solideos.f90 $(SRC)/eostv.f90
 	@$(call make_object, $(SRC)/speed_of_sound.f90)
 $(ODIR)/spinodal.o: $(SRC)/spinodal.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/numconstants.f90 \
@@ -858,7 +877,7 @@ $(ODIR)/sv_solver.o: $(SRC)/sv_solver.f90 \
 $(ODIR)/thermo_utils.o: $(SRC)/thermo_utils.f90 \
 	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
 	$(SRC)/cubic_eos.f90 $(SRC)/eos.f90 \
-	$(SRC)/eostv.f90 $(SRC)/trend_solver.f90
+	$(SRC)/eostv.f90
 	@$(call make_object, $(SRC)/thermo_utils.f90)
 $(ODIR)/thermopack.o: $(SRC)/thermopack.f90 \
 	$(SRC)/eoslibinit.f90 $(SRC)/thermopack_constants.f90 \
@@ -877,11 +896,6 @@ $(ODIR)/tp_solver.o: $(SRC)/tp_solver.f90 \
 	$(SRC)/thermo_utils.f90 $(SRC)/stability.f90 \
 	$(SRC)/utilities.f90
 	@$(call make_object, $(SRC)/tp_solver.f90)
-$(ODIR)/trend_solver.o: $(SRC)/trend_solver.f90 \
-	$(SRC)/thermopack_constants.f90 $(SRC)/thermopack_var.f90 \
-	$(SRC)/numconstants.f90 $(SRC)/eostv.f90 \
-	$(SRC)/nonlinear_solvers.f90
-	@$(call make_object, $(SRC)/trend_solver.f90)
 $(ODIR)/tuning.o: $(SRC)/tuning.f90 \
 	$(SRC)/thermopack_var.f90 $(SRC)/cubic_eos.f90 \
 	$(SRC)/cbalpha.f90 $(SRC)/cbbeta.f90 \

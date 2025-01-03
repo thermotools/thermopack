@@ -188,6 +188,11 @@ append_export("fmt_energy_density", "fundamental_measure_theory")
 
 append_export("calc_bmcsl_gij_fmt", "hardsphere_bmcsl")
 
+append_export("init_hydrate_model", "hydrate")
+append_export("fugacity_water_in_hydrate_tpx", "hydrate")
+append_export("fugacity_water_in_hydrate_tvn", "hydrate")
+append_export("map_hydrate_appearance_curve", "hydrate_curves")
+
 append_export("set_standard_entropy", "ideal")
 append_export("get_standard_entropy", "ideal")
 append_export("set_enthalpy_of_formation", "ideal")
@@ -210,6 +215,8 @@ append_export("ljs_uv_model_control", "lj_splined")
 append_export("ljs_wca_model_control", "lj_splined")
 append_export("ljs_wca_set_pure_params", "lj_splined")
 append_export("ljs_wca_get_pure_params", "lj_splined")
+
+append_export("multi_phase_envelope_plot_tv", "multi_phase_envelope_tv")
 
 append_export("solve_mu_t", "mut_solver")
 append_export("solve_lnf_t", "mut_solver")
@@ -301,6 +308,8 @@ append_export("safe_dewp", "saturation")
 append_export("envelopeplot", "saturation_curve")
 append_export("envelope_isentrope_cross", "saturation_curve")
 append_export("pure_fluid_saturation_wrapper", "saturation_curve")
+
+append_export("envelope_plot_tv", "saturation_tv")
 
 append_export("locate_saturation_property", "saturation_point_locators")
 append_export("property_index_from_string", "saturation_point_locators")

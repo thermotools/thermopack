@@ -57,6 +57,10 @@
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[l]{\includegraphics[width=0.08\textwidth]{\MainLogo}}
 
+% Footer
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[c]{\sffamily\thepage}
+
 % This separating line is used across several documents,
 % for example in footers.
 \RequirePackage{tikz}

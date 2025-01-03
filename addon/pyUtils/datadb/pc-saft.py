@@ -38,26 +38,26 @@ class pcsaft_component(component):
         code_lines.append(I+"type(pc_saft_data), parameter :: PC-SAFTTAG = &")
         code_lines.append(3*I+"pc_saft_data(eosidx = " +
                           saft_eos_to_idx(self.eos) + ", &")
-        code_lines.append(3*I+"compName = \"" + self.comp["ident"] + "\", &")
+        code_lines.append(3*I+"compName = \"" + self.fluid["ident"] + "\", &")
         code_lines.append(
-            3*I + 'm = {}'.format(print_float(self.comp[tag]["m"])) + ", &")
+            3*I + 'm = {}'.format(print_float(self.fluid[tag]["m"])) + ", &")
         code_lines.append(
-            3*I + 'sigma = {}'.format(sci_print_float(self.comp[tag]["sigma"])) + ", &")
+            3*I + 'sigma = {}'.format(sci_print_float(self.fluid[tag]["sigma"])) + ", &")
         code_lines.append(
-            3*I + 'eps_depth_divk = {}'.format(print_float(self.comp[tag]["eps_depth_divk"])) + ", &")
+            3*I + 'eps_depth_divk = {}'.format(print_float(self.fluid[tag]["eps_depth_divk"])) + ", &")
         code_lines.append(
-            3*I + 'eps = {}'.format(print_float(self.comp[tag]["eps"])) + ", &")
+            3*I + 'eps = {}'.format(print_float(self.fluid[tag]["eps"])) + ", &")
         code_lines.append(
-            3*I + 'beta = {}'.format(print_float(self.comp[tag]["beta"])) + ", &")
+            3*I + 'beta = {}'.format(print_float(self.fluid[tag]["beta"])) + ", &")
         code_lines.append(3*I + 'assoc_scheme = {}, &'.format(
-            get_assoc_scheme_parameter(self.comp[tag]["assoc_scheme"])))
-        mu = self.comp[tag]["mu"] if "mu" in self.comp[tag] else 0.0
+            get_assoc_scheme_parameter(self.fluid[tag]["assoc_scheme"])))
+        mu = self.fluid[tag]["mu"] if "mu" in self.fluid[tag] else 0.0
         code_lines.append(3*I + 'mu = {}, &'.format(print_float(mu)))
-        Q = self.comp[tag]["Q"] if "Q" in self.comp[tag] else 0.0
+        Q = self.fluid[tag]["Q"] if "Q" in self.fluid[tag] else 0.0
         code_lines.append(3*I + 'Q = {}, &'.format(print_float(Q)))
         code_lines.append(3*I + "bib_ref = \"" +
-                          self.comp[tag]["bib_reference"] + "\", &")
-        code_lines.append(3*I + "ref = \"" + self.comp[tag]["ref"] + "\" &")
+                          self.fluid[tag]["bib_reference"] + "\", &")
+        code_lines.append(3*I + "ref = \"" + self.fluid[tag]["ref"] + "\" &")
         code_lines.append(3*I + ")")
         code_lines.append("")
 
@@ -70,7 +70,7 @@ class pcsaft_component(component):
         """
 
         code_lines = []
-        for key in self.comp:
+        for key in self.fluid:
             if "PC-SAFT" in key:
                 pcsaft = self.get_pcsaft_fortran_code(key)
                 for line in pcsaft:

@@ -5,7 +5,6 @@ module single_component
   save
 
   public :: Zfac_single, enthalpy_single, entropy_single
-  public :: lnfugCoeff_single, Gres_single, pressure_single
   public :: Fid_single, Fres_single
 
 contains
@@ -168,120 +167,6 @@ contains
     end select Choice_EoS
 
   end subroutine entropy_single
-
-  !---------------------------------------------------------------------- >
-  !> This function calculates the Fugacity coefficient and the derivatives.
-  !!
-  !! \param T The temperature [K]
-  !! \param P The pressure [Pa]
-  !! \param Z The overall mole fraction [-]
-  !! \param phase The phase, 1=liquid, 2=vapour
-  !! \param dlnfdt Temperature derivative [1/K] (dlog(f)/dT)
-  !! \param dlnfdp Pressure derivative [1/Pa]   (dlog(f)/dP)
-  !! \param dlnfdz Composition derivative [1/mol] (dlog(f)/dNi)
-  !! \param numder Analytical derivatives if true (default false)
-  !! \param lnfug The fugacity coefficients [-]
-  !!
-  !! \author MH
-  subroutine lnfugCoeff_single(nc,seos,T,P,Z,phase,lnfug,dlnfdt,dlnfdp,dlnfdz)
-    use eosdata
-    use mbwr_additional, only: mbwr_lnphi, mbwr_volume
-    implicit none
-    integer, intent(in) :: nc
-    class(single_eos), intent(inout) :: seos
-    real, dimension(nc), intent(in) :: Z
-    real, intent(in) :: T, P
-    integer, intent(in) :: phase
-    real, dimension(nc), intent(out) :: lnfug
-    real, optional, intent(out) :: dlnfdt(nc), dlnfdp(nc), dlnfdz(nc,nc)
-    ! Locals
-    real :: v
-
-    !-------- Specific for each equation of state ------------------------
-    Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
-    case (meosMbwr19, meosMbwr32)
-      v = mbwr_volume (t,p,Z(1),phase,seos%mbwr_meos(1))
-      call MBWR_lnphi(seos%mbwr_meos(1), t, p, v, Z(1), lnfug, &
-           dlnfdt, dlnfdp, dlnfdz)
-    case (meosNist, meosLJ, meosLJTS)
-      call seos%nist(1)%meos%calc_lnphi(t, p, Z, phase, lnfug, &
-           dlnfdt, dlnfdp, dlnfdz)
-    end select Choice_EoS
-
-  end subroutine lnfugCoeff_single
-
-  !---------------------------------------------------------------------- >
-  !> This subroutine calculates the residual gibbs energy and the derivatives.
-  !!
-  !! \param T The temperature [K]
-  !! \param P The pressure [Pa]
-  !! \param Z The overall mole fraction [-]
-  !! \param phase The phase, 1=liquid, 2=vapour
-  !! \param gr Residual gibbs energy [J/mol]
-  !! \param dgrdt Temperature derivative [J/mol/K]
-  !! \param dgrdp Pressure derivative [J/mol/Pa]
-  !!
-  !! \author Morten H.
-  subroutine Gres_single(nc,seos,T,P,Z,phase,gr,dgrdt,dgrdp)
-    use eosdata
-    use mbwr_additional, only: MBWR_volume, MBWR_Gres
-    implicit none
-    integer, intent(in) :: nc
-    class(single_eos), intent(inout) :: seos
-    real, dimension(nc), intent(in) :: Z
-    real, intent(in) :: T, P
-    integer, intent(in) :: phase
-    real, intent(out) :: gr
-    real, optional, intent(out) :: dgrdt, dgrdp
-    ! Locals
-    real :: v
-
-    !-------- Specific for each equation of state ------------------------
-    Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
-    case (meosMbwr19, meosMbwr32)
-      v = mbwr_volume (t,p,Z(1),phase,seos%mbwr_meos(1))
-      call MBWR_Gres(seos%mbwr_meos(1), t, p, v, Z(1), gr)
-      if (present(dgrdt)) call stoperror("dgrdt not implemented in MBWR_Gres")
-      if (present(dgrdp)) call stoperror("dgrdp not implemented in MBWR_Gres")
-    case (meosNist, meosLJ, meosLJTS)
-      call seos%nist(1)%meos%calc_resgibbs(t, p, Z, phase, gr, dgrdt, dgrdp)
-    end select Choice_EoS
-
-  end subroutine Gres_Single
-
-  !> Calculate pressure given composition, temperature and density
-  !!
-  !! \param T - Temprature [K]
-  !! \param v - Specific volume [m3/mol]
-  !!
-  subroutine pressure_single(nc,seos,T,v,n,p,dpdv,dpdt,dpdz)
-    use eosdata
-    use mbwr_additional, only: MBWR_press
-    implicit none
-    integer, intent(in) :: nc
-    class(single_eos), intent(inout) :: seos
-    real, intent(in) :: t, v, n(nc)
-    real, intent(inout) :: p
-    real, optional, intent(inout) :: dpdv, dpdt
-    real, dimension(nc), optional, intent(out) :: dpdz
-    ! Locals
-    real :: rho
-    !---------------------------------------------------------------------
-    rho = 1.0/v
-    !-------- Specific for each equation of state ------------------------
-    Choice_EoS: select case (seos%subeosidx) ! choose the Equation of State
-    case (meosMbwr19, meosMbwr32)
-      call MBWR_press(seos%mbwr_meos(1), T, v, sum(n), p, dpdv, dpdt)
-    case (meosNist, meosLJ, meosLJTS)
-      call seos%nist(1)%meos%mp_pressure(rho=rho,t=T,p=p,p_rho=dpdv,p_T=dpdt)
-      if (present(dpdv)) then
-        dpdv = -dpdv/v**2
-      end if
-    end select Choice_EoS
-    if (present(dpdz)) then
-      call stoperror("single_component::pressure_single: dpdz not yet implemented")
-    endif
-  end subroutine pressure_single
 
   !> Calculate resudial reduced Helmholtz and differentials
   !!

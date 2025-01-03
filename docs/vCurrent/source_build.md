@@ -30,7 +30,7 @@ pip3 install thermopack
 For documentation on the version available on pypi, refer to the appropriate version number in the sidebar.
 
 ## Installing from wheels
-Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
+Pre-built wheels for the latest version of ThermoPack on GitHub are available for download [here](https://github.com/thermotools/thermopack/releases/tag/Latest-beta). Refer to the linked page for instructions on how to install packages directly from a python wheel. Please note that the latest version on GitHub may be less stable, tested, and well documented than the versions distributed on PyPI.
 
 ## Building from source
 The following sections show how to fetch, compile and install Thermopack and

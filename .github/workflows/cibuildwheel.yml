@@ -18,13 +18,13 @@ jobs:
         os: [macOS, ubuntu, windows]
         version: [latest]
         tp_version: [v2, v3]
-        include:
-            - version: 12
-              os: macOS
-              tp_version: v2
-            - version: 12
-              os: macOS
-              tp_version: v3
+        # include:
+        #     - version: 12
+        #       os: macOS
+        #       tp_version: v2
+        #     - version: 12
+        #       os: macOS
+        #       tp_version: v3
 
     steps:
       - uses: actions/checkout@v4

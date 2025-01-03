@@ -178,7 +178,7 @@ eos = saftvrqmie('H2,HE,NE', minimum_temperature=20) # NB: Set minimum temperatu
 T = 35 # Kelvin
 p = 3e6 # Pascal (30 bar)
 z = [0.1, 0.25, 0.65] # Molar composition
-flsh = eos.two_phase_tpflash(T, p, x) # flsh is a FlashResult object
+flsh = eos.two_phase_tpflash(T, p, z) # flsh is a FlashResult object
 print(flsh)
 ### Output: ###
 # FlashResult object for Tp-flash
@@ -193,12 +193,12 @@ print(flsh)
 #   	Liquid fraction                betaL : 0.5026975918252341  
 #   	Phase indentifier index        phase : 0  
 ```
-the result of the flash is accessed from the attributes of the `FlashResult` object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
+the result of the flash is accessed from the attributes of the [`FlashResult`](utility_structs.html#flashresult) object, found in [`utils.py`](https://github.com/thermotools/thermopack/blob/main/addon/pycThermopack/thermopack/utils.py), as
 ```Python
 # Continued
 x = flsh.x # Liquid composition
 y = flsh.y # Vapour composition
-betaL = flsh.betaL # 
+betaL = flsh.betaL # Liquid fraction
 # ... etc
 ```
 
