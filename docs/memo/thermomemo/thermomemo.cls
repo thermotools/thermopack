@@ -13,47 +13,33 @@
                 left=2.3cm,     right=2.3cm,
                 headheight=1cm, footskip=2.5ex]{geometry}
 
-\newcommand{\MainLogo}{../thermomemo/Sintef_lb}
-\newcommand{\Website}{www.sintef.no/energi}
+\newcommand{\MainLogo}{../thermomemo/thermotools_logo.png}
+\newcommand{\Website}{https://thermotools.github.io/thermopack/index.html}
 \newcommand*{\Institute} {}
-\newcommand*{\Department}{}
-\newcommand*{\Address}   {}
 \newcommand*{\Location}  {}
 \newcommand*{\institute}[1]{\renewcommand{\Institute}{#1}}
-\newcommand*{\address}[1]{\renewcommand{\Address}{#1}}
 \newcommand*{\location}[1]{\renewcommand{\Location}{#1}}
-\newcommand*{\department}[1]{\renewcommand{\Department}{#1}}
 
-\institute{SINTEF Energy Research}
-\department{Gas Technology}
-\address{%
-  P.O. Box 4761 Torgarden\\
-  NO-7465 Trondheim\\NORWAY
-}
+\institute{Thermotools}
 \location{%
-  Sem Sælands vei 11\\
   Trondheim\\NORWAY
 }
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{xcolor}
-\definecolor{sintefblue}{cmyk/RGB/HTML}{1,0.57,0,0.40/0,68,124/00447C}
-\definecolor{sintefdarkgrey}{cmyk/RGB/HTML}{0,0.09,0.16,0.43/161,149,137/A19589}
-\colorlet{sintefdarkgray}{sintefdarkgrey}
+\definecolor{thermotoolsblue}{cmyk/RGB/HTML}{1,0.57,0,0.40/0,68,124/00447C}
+\definecolor{thermotoolsdarkgrey}{cmyk/RGB/HTML}{0,0.09,0.16,0.43/161,149,137/A19589}
+\colorlet{thermotoolsdarkgray}{thermotoolsdarkgrey}
 
 % The information box
 \RequirePackage{hyperref}
-\newcommand{\Information}[1][sintefblue]{%
+\newcommand{\Information}[1][thermotoolsblue]{%
   \noindent%
   \footnotesize%
   \raggedright%
   \setlength{\parskip}{1ex}%
   \color{#1}%
   \textbf{\Institute}\\
-  \Department\\
-  \vspace{2mm}
-  Address:\\ \Address\\
-  \vspace{2mm}
   Location: \\ \Location \\
   \vspace{2mm}
   \url{\Website}
@@ -64,13 +50,14 @@
 \RequirePackage{nccfancyhdr,lastpage}
 \pagestyle{fancy}
 \newpagestyle{firstpage}[fancy]{%
-  \fancyhead[l]{\includegraphics[width=0.25\textwidth]{\MainLogo}}
-  \fancyfoot[c]{\sffamily\thepage}
+  \fancyhead[l]{\includegraphics[width=0.08\textwidth]{\MainLogo}\hspace{0.8em}%
+  \raisebox{0.5\height}{\textbf{\textsf{\Huge Thermotools memo}}}}%
 }
 
 % Header
 \renewcommand{\headrulewidth}{0pt}
-\fancyhead[l]{\includegraphics[width=0.25\textwidth]{\MainLogo}}
+  \fancyhead[c]{\includegraphics[width=0.04\textwidth]{\MainLogo}\hspace{0.5em}%
+  \raisebox{0.5\height}{\textbf{\textsf{\Large Thermotools memo}}}}%
 
 % Footer
 \renewcommand{\footrulewidth}{0pt}
@@ -81,7 +68,7 @@
 \RequirePackage{tikz}
 \newcommand{\DashedRule}{%
   \begin{tikzpicture}%
-    \draw[color=sintefdarkgray, line width=0.5pt, dashed]
+    \draw[color=thermotoolsdarkgray, line width=0.5pt, dashed]
          (0,-1ex) (0,1ex) (0,0) -- (0.999\textwidth,0);%
   \end{tikzpicture}%
 }
@@ -94,7 +81,7 @@
   \noindent%
   \begin{minipage}[b]{0.7\textwidth}
     \setlength{\parskip}{2ex}%
-    \Huge Memo
+    %\Huge Memo
 
     \huge\textbf \@title
   \end{minipage}
