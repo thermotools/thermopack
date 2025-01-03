@@ -50,12 +50,14 @@
 \RequirePackage{nccfancyhdr,lastpage}
 \pagestyle{fancy}
 \newpagestyle{firstpage}[fancy]{%
-  \fancyhead[l]{\includegraphics[width=0.08\textwidth]{\MainLogo}}
+  \fancyhead[l]{\includegraphics[width=0.08\textwidth]{\MainLogo}\hspace{0.8em}%
+  \raisebox{0.5\height}{\textbf{\textsf{\Huge Thermotools memo}}}}%
 }
 
 % Header
 \renewcommand{\headrulewidth}{0pt}
-\fancyhead[l]{\includegraphics[width=0.08\textwidth]{\MainLogo}}
+  \fancyhead[c]{\includegraphics[width=0.04\textwidth]{\MainLogo}\hspace{0.5em}%
+  \raisebox{0.5\height}{\textbf{\textsf{\Large Thermotools memo}}}}%
 
 % Footer
 \renewcommand{\footrulewidth}{0pt}
@@ -79,7 +81,7 @@
   \noindent%
   \begin{minipage}[b]{0.7\textwidth}
     \setlength{\parskip}{2ex}%
-    \Huge Memo
+    %\Huge Memo
 
     \huge\textbf \@title
   \end{minipage}
