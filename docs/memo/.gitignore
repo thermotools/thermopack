@@ -1,2 +1,3 @@
 # .dat files are ignored on a repo basis, but we have .dat files in the memo/ dir that we do not want to ignore
 !*.dat
+SPUNG/figures
