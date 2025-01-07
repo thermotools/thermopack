@@ -37,6 +37,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Install lapack Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt install -y liblapack-dev libblas-dev
+
       - uses: fortran-lang/setup-fortran@v1
         id: setup-fortran
         if: matrix.os != 'macos-12'
