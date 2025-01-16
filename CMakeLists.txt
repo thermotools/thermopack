@@ -1,3 +1,26 @@
+# CMake build system for ThermoPack
+# 
+# To run (from the directory in which this file is found)
+#   mkdir build
+#   cd build
+#   cmake ..
+#   make install
+#
+# Installs files ("." refers to the directory in which this file is found)
+#   ./installed/libthermopack.{dynamic library}
+#   ./installed/libthermopack.{static library}
+#   ./addon/pycThermopack/thermopack/libthermopack.{dynamic library}
+#   ./installed/run_thermopack
+#
+#   (optional) ./installed/unittests
+#
+# Accepts options
+#   test : Build unittests suite
+#       cmake -Dtest=ON .. # CMakeCache.txt must be cleared to switch ON/OFF
+#       make install
+#       ../installed/unittests
+#
+
 cmake_minimum_required(VERSION 3.19)
 project(ThermoPack LANGUAGES Fortran)
 
