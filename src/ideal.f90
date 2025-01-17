@@ -1227,7 +1227,8 @@ contains
     real :: s_id, h_id, p_ref
     T0 = 298.15
     ! Test if parameters are given
-    if (comp%sref /= 0 .or. comp%href /= 0) then
+    if ( (comp%sref /= 0 .or. comp%href /= 0) .and. &
+         (abs(comp%sref) < 1.0e15 .and. abs(comp%href) < 1.0e15)) then
       if (str_eq(comp%sref_state, "1BAR")) then
         p_ref = 1e5
       else if (str_eq(comp%sref_state, "1ATM")) then
