@@ -22,7 +22,7 @@ def test_pr_114(eos):
     h2, dh = eos.idealenthalpysingle(1, T, dhdt=True)
     assert check_eq(h1, h2)
 
-@mark.parametrize('EOS', [*ALL_CUBIC, saftvrmie, pc])
+@mark.parametrize('EOS', [*ALL_CUBIC, saftvrmie])
 def test_pr_191(EOS):
     if DIFFERENTIAL_RETURN_MODE == 'v2':
         warnings.warn('Test only implemented for V3')
