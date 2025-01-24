@@ -136,15 +136,16 @@ jobs:
         run: |
             python addon/pycThermopack/map_platform_specifics.py
             pip install addon/pycThermopack/[test]
-            pytest addon/pyTests
             result=$(pytest addon/pyTests)
+            echo "Test Result:"
+            echo "$result"
             if echo "$result" | grep -q "FAILED"; then
             statuscode=1
             else
             statuscode=0
             fi
-            echo "$result"
-            echo "statuscode=$statuscode" >> $GITHUB_OUTPUT
+            echo "Status code : ${statuscode}" 
+            echo "statuscode=${statuscode}" >> $GITHUB_OUTPUT
             exit $statuscode
     
       - uses: actions/setup-python@v5

@@ -30,9 +30,22 @@ class lee_kesler(thermo):
 
         # Init methods
         self.eoslibinit_init_lee_kesler = getattr(self.tp, self.get_export_name("eoslibinit", "init_lee_kesler"))
+        
+        # A range of methods, specifically the TV properties and TVP properties, which are not supported by Lee-Kesler EoS.
+        not_supported = [self.enthalpy_tv, self.entropy_tv, self.fugacity_tv, self.chemical_potential_tv, 
+                         self.helmholtz_tv, self.internal_energy_tv, self.pressure_tv, self.speed_of_sound_tv,
+                         self.enthalpy_tvp, self.entropy_tvp, self.thermo_tvp]
+
+        for method in not_supported:
+            self.__dict__[method.__name__] = lambda *args, _method_name_=method.__name__, **kwargs: self.__not_supported__(_method_name_)
+
 
         if comps is not None:
             self.init(comps, parameter_reference)
+        
+    @staticmethod
+    def __not_supported__(method):
+        raise NotImplementedError(f'Class lee_kesler does not support TV-property methods (Tried to call: {method})')
 
     #################################
     # Init
