@@ -62,8 +62,8 @@ def get_optional_pointers(optional_flags, optional_arrayshapes):
     for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
         if flag is None:
             continue
-        if np.product(shape) > 0:
-            optional_ptrs[i] = (c_double * np.product(shape))(0.0)
+        if np.prod(shape) > 0:
+            optional_ptrs[i] = (c_double * np.prod(shape))(0.0)
         else:
             optional_ptrs[i] = c_double(0.0)
     return optional_ptrs
@@ -85,7 +85,7 @@ def fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arra
     for i, (flag, shape) in enumerate(zip(optional_flags, optional_arrayshapes)):
         if flag is None:
             continue
-        if np.product(shape) > 0:
+        if np.prod(shape) > 0:
             # Need to transpose because fortran is column-major
             # Note : Reshape will do nothing if optional_pointers[i] is 1D
             return_array = np.array(optional_ptrs[i]).reshape(shape, order='F')
