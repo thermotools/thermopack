@@ -489,7 +489,7 @@ class thermo(object):
                                                 c_len_type, c_len_type,
                                                 c_len_type, c_len_type,
                                                 c_len_type, c_len_type,
-                                                c_len_type, c_len_type]
+                                                c_len_type]
 
         self.eoslibinit_init_thermo.restype = None
 
