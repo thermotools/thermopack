@@ -12,14 +12,14 @@ import warnings
 
 @mark.parametrize('eos', ALL_CUBIC)
 def test_pr_114(eos):
-    T = 300
+    T = 300.0
     eos = eos('ETOH,C2')
     if DIFFERENTIAL_RETURN_MODE == 'v3':
-        h1 = eos.idealenthalpysingle(1, T)
+        h1 = eos.idealenthalpysingle(T, 1)
     elif DIFFERENTIAL_RETURN_MODE == 'v2':
-        h1, = eos.idealenthalpysingle(1, T)
-    
-    h2, dh = eos.idealenthalpysingle(1, T, dhdt=True)
+        h1, = eos.idealenthalpysingle(T, 1)
+
+    h2, dh = eos.idealenthalpysingle(T, 1, dhdt=True)
     assert check_eq(h1, h2)
 
 @mark.parametrize('EOS', [*ALL_CUBIC, saftvrmie])
@@ -34,7 +34,7 @@ def test_pr_191(EOS):
         if (EOS in ALL_SAFT) and (comp == 'PSEUDO'): continue
         eos = EOS(comp)
         if isinstance(eos, lee_kesler): continue
-        
+
         v = eos.specific_volume(T, p, [1], phase=eos.VAPPH)
         _, dh_tp = eos.enthalpy(T, p, [1], phase=eos.VAPPH, dhdt=True)
         _, dh_tv = eos.enthalpy_tvp(T, v, [1], dhdt=True)
