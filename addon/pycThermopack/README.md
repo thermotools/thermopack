@@ -129,8 +129,7 @@ generate the manylinux2014 wheel the `auditwheel repair` command
 should be executed.
 
 ```sh
-ln -s ../../LICENCE-MIT
-ln -s ../../LICENCE-APACHE
+ln -s ../../LICENCE
 python map_platform_specifics.py
 python -m pip wheel .
 auditwheel repair thermopack-2.0.0-py3-none-any.whl -w .

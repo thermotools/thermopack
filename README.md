@@ -1,8 +1,8 @@
 <!--- 
-Generated at: 2024-12-13T12:43:28.581382
+Generated at: 2025-03-07T09:12:41.194860
 This is an auto-generated file, generated using the script at thermopack/addon/pyUtils/docs/join_docs.py
 The file is created by joining the contents of the files
-    /Users/vegardjervell/code/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
+    /Users/morteham/Documents/codes/thermotools/thermopack/addon/pyUtils/docs/../../../docs/vCurrent/
         readme_parts/header.md
         readme_parts/github_toc.md
         metapages/please_cite.md
@@ -37,11 +37,12 @@ much-appreciated in-house powerhouse.
 ![](https://thermotools.github.io/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
 Thermopack is available for everybody, free of charge under the
-MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
+Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
 to handle heavy numerical computations associated with process and
 computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
 Python wrapper to make scripting easy.
+
 
 # Table of contents
   * [Please cite](#please-cite)
@@ -98,14 +99,13 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## License
-Thermopack is distributed under the [MIT
-license](https://github.com/thermotools/thermopack/blob/main/LICENSE-MIT)
-and [Apache
-2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE-APACHE).
+Thermopack is distributed under the [Apache
+2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE).
 
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
 development of thermopack. We gratefully acknowledge their contributions.
+
 
 # Program structure
 
@@ -140,7 +140,6 @@ Brief description of file structure:
 - `thermopack/addon/`: Add-on functionality
 - `thermopack/addon/pycThermopack/`: Python interface
 - `thermopack/addon/pyUtils/`: Python utilities for generating fortran code and makefile input.
-- `thermopack/addon/trend_interface/`: Interface for working with the TREND/EOSCG library developed by Roland Span and Ruhr-Universität Bochum
 
 
 # Installing the latest version of ThermoPack
