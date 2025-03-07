@@ -1,4 +1,11 @@
-# ThermoPack C/C++ interface
+# This interface is DEPRECATED
+## For the up-to-date C++ wrapper see [addon/cppThermopack](https://github.com/thermotools/thermopack/tree/main/addon/cppThermopack/)
+
+### Outdated ThermoPack C/C++ interface
+
+
+**Note:** This interface is deprecated, and will probably be deleted soon. For the up-to-date C++ wrapper, see [addon/cppThermopack](https://github.com/thermotools/thermopack/tree/main/addon/cppThermopack/).
+
 
 ThermoPack can be interfaced from C/C++ using the header file `thermopack.h` in this directory. The file `test.cpp` and 
 `Makefile` in the `test_includes` directory serve as a minimal example of how to link ThermoPack to a C program.
@@ -16,7 +23,7 @@ The first command will build the thermopack library, which is placed in the `bin
 compiles `test.cpp` and links to the thermopack library. The options `optim/debug` are used to toggle debug flags off/on.
 
 
-# If something goes wrong
+### If something goes wrong
 
 * The path to your Fortran and C compiler are set in the top of the `Makefile`, in the variables `FC` and `CC`. Modify these
 as needed.
