@@ -134,6 +134,7 @@ class thermo(object):
         self.s_eos_zfac = getattr(self.tp, self.get_export_name("eos", "zfac"))
         self.s_eos_thermo = getattr(
             self.tp, self.get_export_name("eos", "thermo"))
+        self.s_eos_thermodynamic_factor = getattr(self.tp, self.get_export_name("eos", 'thermodynamic_factor'))
         self.s_eos_entropy = getattr(
             self.tp, self.get_export_name("eos", "entropy"))
         self.s_eos_enthalpy = getattr(
@@ -1409,6 +1410,50 @@ class thermo(object):
 
         return prop.unpack()
 
+    def thermodynamic_factor(self, temp, pres, z, phase, k=-1):
+        r"""Tp-property
+        Calculate thermodynamic factors, defined as
+        Gamma_{ij} = (x_i / RT) (d \mu_i / d x_j)_{T, p, x_{l \nin \{j, k\}}}
+        That is: The derivative is taken while holding temperature, pressure,
+        and all mole fractions except the selected "k" constant.
+        The resulting matrix has dimension (nc - 1) x (nc - 1),
+        and is indexed as Gamma[i, j] (ref. equation above) when k is the last component.
+        If k is not the last component, the matrix is indexed as Gamma[i, j] for j < k
+        and Gamma[i, j - 1] for j > k.
+
+        Args:
+            temp (float) : Temperature (K)
+            pres (float) : Pressure (Pa)
+            z (array_like) : Molar composition (-)
+            phase (int) : Phase flag
+            k (int, optional) : Dependent component, defaults to last component
+        
+        Returns:
+            ndarray : The thermodynamic factors
+        """
+        self.activate()
+        temp_c = c_double(temp)
+        pres_c = c_double(pres)
+        x_c = (c_double * len(z))(*z)
+        phase_c = c_int(phase)
+        k_c = c_int(k)
+        gamma_c = (c_double * (len(z) - 1)**2)(0.0)
+
+        self.s_eos_thermodynamic_factor.argtypes = [POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int),
+                                                    POINTER(c_double),
+                                                    POINTER(c_int)]
+        self.s_eos_thermodynamic_factor.restype = None
+        self.s_eos_thermodynamic_factor(byref(temp_c), byref(pres_c), x_c, byref(phase_c), gamma_c, byref(k_c))
+        gamma = np.zeros((len(z) - 1, len(z) - 1))
+
+        for i in range(len(z) - 1):
+            for j in range(len(z) - 1):
+                gamma[i, j] = gamma_c[i + j * (len(z) - 1)]
+        return gamma
+        
     def enthalpy(self, temp, press, x, phase, dhdt=None, dhdp=None, dhdn=None, residual=False):
         """Tp-property
         Calculate specific single-phase enthalpy

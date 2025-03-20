@@ -10,7 +10,7 @@ module eos
   save
   !
   private
-  public :: thermo
+  public :: thermo, thermodynamic_factor
   public :: zfac, entropy, enthalpy, specificVolume, molardensity, pseudo
   public :: pseudo_safe
   public :: twoPhaseEnthalpy, twoPhaseEntropy, twoPhaseSpecificVolume
@@ -121,6 +121,57 @@ contains
     endif
     lnfug = tp_fug(1:nc)
   end subroutine thermo
+
+  !----------------------------------------------------------------------
+  !> Compute Thermodynamic factors, defined as
+  !> Gamma_{ij} = (x_i / RT) (d \mu_i / d x_j)_{T, p, x_{l \nin \{j, k\}}}
+  !>
+  !> That is: The derivative is taken while holding temperature, pressure,
+  !> and all mole fractions except the selected "k" constant.
+  !> The resulting matrix has dimension (nc - 1) x (nc - 1),
+  !> and is indexed as Gamma[i, j] (ref. equation above) when k is the last component.
+  !>
+  !> If k is not the last component, the matrix is indexed as Gamma[i, j] for j < k
+  !> and Gamma[i, j - 1] for j > k.
+  !>
+  !> \author VGJ, 2025-03-20
+  !----------------------------------------------------------------------
+  subroutine thermodynamic_factor(T, p, z, phase, Gamma, k)
+    implicit none
+    real,                             intent(in)  :: T !< K - Temperature
+    real,                             intent(in)  :: p !< Pa - Pressure
+    real, dimension(nc),              intent(in)  :: z !< (-) - Mol fractions
+    integer,                          intent(in)  :: phase !< Phase flag
+    real, dimension(nc - 1, nc - 1),  intent(out) :: Gamma !< Thermodynamic factors
+    integer, optional,                intent(inout)  :: k !< Dependent component index (negative indexing supported, defaults to last component)
+
+    real, dimension(nc, nc) :: dlnphi_dn
+    real, dimension(nc) :: lnphi
+    integer :: gi, gj, ci, cj
+
+    call thermo(T, p, z, phase, lnphi, lnfugx=dlnphi_dn)
+
+    if (.not. present(k)) k = nc
+    if (k < 0) k = nc + k + 1
+
+    gi = 1
+    ci = 1
+    do while (gi < nc)
+      if (ci == k) ci = ci + 1
+      gj = 1
+      cj = 1
+      do while (gj < nc)
+        if (cj == k) cj = cj + 1
+        Gamma(gi, gj) = z(ci) * (dlnphi_dn(ci, cj) - dlnphi_dn(ci, k))
+        if (ci == cj) Gamma(gi, gj) = Gamma(gi, gj) + 1
+        gj = gj + 1
+        cj = cj + 1
+      enddo
+      gi = gi + 1
+      ci = ci + 1
+    enddo
+
+  end subroutine thermodynamic_factor
 
   !----------------------------------------------------------------------
   !> Calculate single-phase compressibility factor given composition,
