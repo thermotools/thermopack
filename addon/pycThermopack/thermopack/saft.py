@@ -86,7 +86,7 @@ class saft(thermo):
         self.sigma = None
         self.eps_div_kb = None
 
-    def hard_sphere_diameters(self, temp):
+    def hard_sphere_diameters(self, temp, d_TT=False):
         """Utility
         Calculate hard-sphere diameters given temperature, volume and mol numbers.
 
@@ -101,8 +101,10 @@ class saft(thermo):
         temp_c = c_double(temp)
         d_c = (c_double * self.nc)(0.0)
         dT_c = (c_double * self.nc)(0.0)
+        dTT_c = (c_double * self.nc)(0.0) if (d_TT is True) else POINTER(c_double)()
 
         self.s_calc_hs_diameter.argtypes = [POINTER(c_double),
+                                            POINTER(c_double),
                                             POINTER(c_double),
                                             POINTER(c_double)]
 
@@ -110,9 +112,12 @@ class saft(thermo):
 
         self.s_calc_hs_diameter(byref(temp_c),
                                 d_c,
-                                dT_c)
+                                dT_c,
+                                dTT_c)
 
-        return  np.array(d_c), np.array(dT_c)
+        if d_TT is False:
+            return  np.array(d_c), np.array(dT_c)
+        return np.array(d_c), np.array(dT_c), np.array(dTT_c)
 
     def hard_sphere_diameter_ij(self, i, j, temp):
         """Utility
@@ -220,7 +225,9 @@ class saft(thermo):
 
         return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-        return return_tuple
+        a = utils.Property.from_return_tuple(return_tuple, optional_flags, 'tvn')
+
+        return a.unpack()
 
     def a_soft_repulsion(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                          a_tv=None, a_tn=None, a_vn=None, a_nn=None):

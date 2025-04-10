@@ -744,7 +744,7 @@ contains
   end subroutine calc_saft_chain
 
   !> Calculates Hard-sphere diameter
-  subroutine calc_hard_sphere_diameter(T,d,d_T)
+  subroutine calc_hard_sphere_diameter(T,d,d_T,d_TT)
     use pc_saft_nonassoc, only: calc_d, sPCSAFT_eos
     use saftvrmie_interface, only: update_saftvrmie_hs_diameter
     use saftvrmie_containers, only: saftvrmie_eos
@@ -756,6 +756,7 @@ contains
     ! Output.
     real, intent(out) :: d(nce) !(m)
     real, intent(out) :: d_T(nce) !(m/K)
+    real, optional, intent(out) :: d_TT(nce) !(m/K^2)
     ! Locals
     class(base_eos_param), pointer :: eos
     integer :: i
@@ -763,21 +764,23 @@ contains
     ! Calculate the hard-sphere diameter
     select type ( p_eos => eos )
     class is ( sPCSAFT_eos )
-      call calc_d(p_eos,T,d,d_T)
+      call calc_d(p_eos,T,d,d_T,d_TT)
     class is (saftvrmie_eos)
       call update_saftvrmie_hs_diameter(p_eos,nce,T)
       do i=1,nce
         d(i) = p_eos%saftvrmie_var%dhs%d(i,i)
         d_T(i) = p_eos%saftvrmie_var%dhs%d_T(i,i)
+        if (present(d_TT)) d_TT(i) = p_eos%saftvrmie_var%dhs%d_TT(i, i)
       enddo
     class is (ljs_wca_eos)
       call calc_dhs_WCA(1,p_eos%sigma,p_eos%eps_divk,T,p_eos%dhs)
       do i=1,nce
         d(i) = p_eos%dhs%d(i,i)
         d_T(i) = p_eos%dhs%d_T(i,i)
+        if (present(d_TT)) d_TT(i) = p_eos%dhs%d_TT(i, i)
       enddo
     class is (PETS_eos)
-      call p_eos%calc_d_pets(T,d=d,d_T=d_T)
+      call p_eos%calc_d_pets(T,d=d,d_T=d_T,d_TT=d_TT)
     class default
       call stoperror("calc_hard_sphere_diameter: Wrong eos...")
     end select

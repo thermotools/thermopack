@@ -188,12 +188,16 @@ class Differentials:
         self.dp = None
         self.dV = None
         self.dn = None
+        d_TT, d_VV, d_TV, d_Tn, d_Vn, d_nn = None, None, None, None, None, None
 
         self.iterable = tuple()
         self.constant = variables
 
         if (self.constant == 'tvn') and (diffs is not None):
-            self.dT, self.dV, self.dn = diffs
+            if len(diffs) == 3:
+                self.dT, self.dV, self.dn = diffs
+            else:
+                self.dT, self.dV, self.dn, self.d_TT, self.d_VV, self.d_TV, self.d_Tn, self.d_Vn, self.d_nn = diffs
         elif (self.constant == 'tpn') and (diffs is not None):
             self.dT, self.dp, self.dn = diffs
         elif diffs is not None:
@@ -243,13 +247,15 @@ class Differentials:
             diff_idx += 1
 
         if variables == 'tvn':
-            if flags[1] is not None:
-                dV = vals[diff_idx]
-                diff_idx += 1
-            if flags[2] is not None:
-                dn = vals[diff_idx]
+            diff_idx = 0
+            diffs = []
+            for i in range(len(flags)):
+                if flags[i] is None: 
+                    diffs.append(None)
+                else:
+                    diffs.append(vals[diff_idx])
+                    diff_idx += 1
 
-            diffs = (dT, dV, dn)
         elif variables == 'tpn':
             if flags[1] is not None:
                 dp = vals[diff_idx]
