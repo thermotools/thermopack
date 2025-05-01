@@ -188,7 +188,7 @@ class Differentials:
         self.dp = None
         self.dV = None
         self.dn = None
-        d_TT, d_VV, d_TV, d_Tn, d_Vn, d_nn = None, None, None, None, None, None
+        self.dTT, self.dVV, self.dTV, self.dTn, self.dVn, self.dnn = None, None, None, None, None, None
 
         self.iterable = tuple()
         self.constant = variables
@@ -197,7 +197,7 @@ class Differentials:
             if len(diffs) == 3:
                 self.dT, self.dV, self.dn = diffs
             else:
-                self.dT, self.dV, self.dn, self.d_TT, self.d_VV, self.d_TV, self.d_Tn, self.d_Vn, self.d_nn = diffs
+                self.dT, self.dV, self.dn, self.dTT, self.dVV, self.d_V, self.dTn, self.dVn, self.dnn = diffs
         elif (self.constant == 'tpn') and (diffs is not None):
             self.dT, self.dp, self.dn = diffs
         elif diffs is not None:
@@ -275,6 +275,12 @@ class Differentials:
         ostr += f'\t{"Pressure derivative" : <31} dp : {self.dp}\n'
         ostr += f'\t{"Volume derivative" : <31} dV : {self.dV}\n'
         ostr += f'\t{"Mole number derivative" : <31} dn : {self.dn}\n'
+        d2_str = ''
+        for k, v in self.__dict__.items():
+            if (k not in ('dT', 'dp', 'dV', 'dn', 'constant', 'iterable')) and (v is not None):
+                d2_str += f'\t\t{k} : {v}\n'
+        if d2_str:
+            ostr += f'\tSecond derivatives : \n{d2_str}'
         return ostr
 
     def __str__(self):

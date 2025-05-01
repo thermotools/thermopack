@@ -372,7 +372,8 @@ class saft(thermo):
 
         return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-        return return_tuple
+        a = utils.Property.from_return_tuple(return_tuple, optional_flags, 'tvn')
+        return a.unpack()
 
     def a_chain(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                      a_tv=None, a_tn=None, a_vn=None, a_nn=None):
