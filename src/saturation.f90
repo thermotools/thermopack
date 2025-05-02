@@ -6,7 +6,6 @@ module saturation
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
-  use saturation_point_locators, only: locate_sat_prop, locate_from_pressure, locate_from_temperature
   implicit none
   private
   save
