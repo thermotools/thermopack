@@ -39,10 +39,8 @@ rules:
 [Thermodynamic properties of the 3D Lennard-Jones/spline model](https://doi.org/10.1080/00268976.2019.1664780)
 
 ## License
-Thermopack is distributed under the [MIT
-license](https://github.com/thermotools/thermopack/blob/main/LICENSE-MIT)
-and [Apache
-2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE-APACHE).
+Thermopack is distributed under the [Apache
+2.0](https://github.com/thermotools/thermopack/blob/main/LICENSE).
 
 ## Acknowledgments
 A number of colleagues at SINTEF Energy Research and NTNU have contributed to the
