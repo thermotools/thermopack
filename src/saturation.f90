@@ -369,7 +369,7 @@ contains
 
       pin = p
       tin = t
-      call sat_wilsonK(Z,K,t,p,specification,doBubIn)
+      call sat_wilsonK(Z,K,t,p,specification,doBubIn,ierr=ierr)
       ! For stabillity do some successive substitution iterations before full NR solver...
       return_iter = 5
       call sat_successive(Z,K,t,p,specification,doBubIn,return_iter,ierr)
@@ -377,7 +377,7 @@ contains
       if (t /= t .or. p /= p) then
          p = pin
          t = tin
-         call sat_wilsonK(Z,K,t,p,specification,doBubIn)
+         call sat_wilsonK(Z,K,t,p,specification,doBubIn,ierr=ierr)
       end if
 
       beta = 1.0
