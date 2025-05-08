@@ -24,11 +24,48 @@ module tp_solver
   !> Accept two-phase solution even though its Gibbs energy is slightly larger than that of the single-phase feed
   real :: g_tolerance = machine_prec * 10.0
 
-  public :: twoPhaseTPflash, differentials, rr_solve, objective
+  public :: twoPhaseTPflash, twoPhaseTPflash_safe
+  public :: differentials, rr_solve, objective
   public :: g_tolerance
   public :: rr_successive_substitution_iteration
 
 contains
+
+  !-------------------------------------------------------------------------
+  !> Given pressure and temperature calculate phase distribution.
+  !> and composition
+  !>
+  !> Call is forwarded to twoPhaseTPflash_safe, and a stoperror is triggered
+  !> if twoPhaseTPflash_safe returns with an error code.
+  !>
+  !> \author VGJ 2025-05-08
+  !-----------------------------------------------------------------------------
+  subroutine twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+    implicit none
+    real,                intent(out)   :: beta  !< Vapour phase molar fraction [-]
+    real, dimension(nc), intent(in)    :: Z     !< Overall molar compozition [-]
+    real, dimension(nc), intent(out)   :: X     !< Liquid molar compozition [-]
+    real, dimension(nc), intent(out)   :: Y     !< Vapour molar compozition [-]
+    real,                intent(in)    :: t     !< Temperature [K]
+    real,                intent(in)    :: p     !< Pressure [Pa]
+    integer,             intent(out)   :: phase !< Phase identefier
+    real,                intent(out)   :: betaL !< Liquid phase molar fraction [-]
+    integer :: ierr
+
+    call twoPhaseTPflash_safe(t, p, Z, beta, betaL, phase, X, Y, ierr)
+    if (ierr == 0) return
+    if (ierr == 1 .or. ierr == 3) then
+      call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: (mod_newton_search) g_solution > g_feed!', ierr)
+    endif
+    if (ierr == 2) then
+      print *, 'tp_solver::twoPhaseTPflash: Will not perform stability analysis a second time.'
+      call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: Not able to solve for beta given the initial K values', ierr)
+    endif
+    if (ierr == 4) then
+      call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: No convergence in maximum number of iterations.', ierr)
+    endif
+
+  end subroutine twoPhaseTPflash
 
   !-------------------------------------------------------------------------
   !> Given pressure and temperature calculate phase distribution.
@@ -41,9 +78,11 @@ contains
   !> energy, the minimum single gibbs energy is comapred with the
   !> mixture gibbs energy.
   !>
+  !> Error codes are handled in subroutine twoPhaseTPflash
+  !>
   !> \author MHA, 2012-01-30, EA, 2013-07, MAG, 2013-09
   !-----------------------------------------------------------------------------
-  subroutine twoPhaseTPflash(t,p,Z,beta,betaL,phase,X,Y)
+  subroutine twoPhaseTPflash_safe(t,p,Z,beta,betaL,phase,X,Y,ierr)
     implicit none
     real,                intent(out)   :: beta  !< Vapour phase molar fraction [-]
     real, dimension(nc), intent(in)    :: Z     !< Overall molar compozition [-]
@@ -53,6 +92,7 @@ contains
     real,                intent(in)    :: p     !< Pressure [Pa]
     integer,             intent(out)   :: phase !< Phase identefier
     real,                intent(out)   :: betaL !< Liquid phase molar fraction [-]
+    integer,             intent(out)   :: ierr  !< Error code
     ! Locals
     real, dimension(nc) :: K,FUGL,FUGV,FUGL_old,FUGV_old,DKm1,DKm2,DK,K_old,K_in
     real, dimension(nc) :: FUGZ
@@ -65,6 +105,7 @@ contains
     integer, parameter :: dem_acc_freq = 5
     real, dimension(nc) :: stabK, Wg, Wl
 
+    ierr = 0
     beta = 0.5 ! Make sure beta is initialized
     if (verbose) then
       write(*,*) ""
@@ -173,22 +214,30 @@ contains
               ! phase = -1 : If this is to be included all thermopack code must handle "phase = -1"
               return
             else
-              write(*,*) 'tp_solver::twoPhaseTPflash: (mod_newton_search) g_solution > g_feed!'
-              write(*,*) 'g_solution,g_feed,g_tolerance = ',g_solution, g_feed, g_tolerance
-              write(*,*) 'Temperature = ',T
-              write(*,*) 'Pressure = ',P
-              write(*,*) 'Composition = ',Z
-              call stoperror('')
+              ierr = 1
+              if (verbose) then
+                write(*,*) 'tp_solver::twoPhaseTPflash: (mod_newton_search) g_solution > g_feed!'
+                write(*,*) 'g_solution,g_feed,g_tolerance = ',g_solution, g_feed, g_tolerance
+                write(*,*) 'Temperature = ',T
+                write(*,*) 'Pressure = ',P
+                write(*,*) 'Composition = ',Z
+                write(*,*) 'Return with exit code :', ierr
+              endif
+              return
             endif
           else
             ! Success: Modified Newton search converged to a two-phase solution of smaller Gibbs.
             return
           endif
-          print *,'tp_solver::twoPhaseTPflash: Will not perform stability analysis a second time.'
-          print *,'tp_solver::twoPhaseTPflash: Not able to solve for beta given the initial K values'
-          print *,'T,P = ',T,P
-          print *,'K = ',K
-          call stoperror('')
+          ierr = 2
+          if (verbose) then
+            print *,'tp_solver::twoPhaseTPflash: Will not perform stability analysis a second time.'
+            print *,'tp_solver::twoPhaseTPflash: Not able to solve for beta given the initial K values'
+            print *,'T,P = ',T,P
+            print *,'K = ',K
+            print *, 'Return with exit code :', ierr 
+          endif
+          return
         endif
       endif
       ! If no solution is found in 2*dem_acc_freq iterations, a modified Newton is used to converge the two phase flash.
@@ -212,12 +261,16 @@ contains
             ! phase = -1 : If this is to be included all thermopack code must handle "phase = -1"
             return
           else
-            write(*,*) 'tp_solver::twoPhaseTPflash: (mod_newton_search) g_solution > g_feed!'
-            write(*,*) 'g_solution,g_feed,g_tolerance = ',g_solution, g_feed, g_tolerance
-            write(*,*) 'Temperature = ',T
-            write(*,*) 'Pressure = ',P
-            write(*,*) 'Composition = ',Z
-            call stoperror('')
+            ierr = 3
+            if (verbose) then
+                write(*,*) 'tp_solver::twoPhaseTPflash: (mod_newton_search) g_solution > g_feed!'
+                write(*,*) 'g_solution,g_feed,g_tolerance = ',g_solution, g_feed, g_tolerance
+                write(*,*) 'Temperature = ',T
+                write(*,*) 'Pressure = ',P
+                write(*,*) 'Composition = ',Z
+                write(*,*) 'Return with exit code :', ierr
+              endif
+            return
           endif
         else
           ! Success: Modified Newton search converged to a two-phase solution of smaller Gibbs.
@@ -227,10 +280,9 @@ contains
     enddo
 
     ! EA: Will we ever get here? The modified Newton search either ends in error or return.
-    print *,'tp_solver::twoPhaseTPflash: No convergence in maximum number of iterations.'
-    call exit(1)
+    ierr = 4
 
-  end subroutine twoPhaseTPflash
+  end subroutine twoPhaseTPflash_safe
 
   !-----------------------------------------------------------------------------
   !> Calculate the most fugacity and minimum Gibbs energy of the feed as a
