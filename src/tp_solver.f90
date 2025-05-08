@@ -64,6 +64,13 @@ contains
     if (ierr == 4) then
       call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: No convergence in maximum number of iterations.', ierr)
     endif
+    if (ierr >= 10) then
+      call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: The nonlinear solver did not converge', ierr / 10)
+    endif
+
+    if (ierr /= 0) then
+      call stoperror_with_exitcode('tp_solver::twoPhaseTPflash: Unknown error code.', ierr)
+    endif
 
   end subroutine twoPhaseTPflash
 
@@ -208,7 +215,11 @@ contains
           endif
         else
           ! Have already tried stability analysis. Try newton method directly?
-          call mod_newton_search(T,P,Z,beta, X,Y,phase,g_solution,betaL,stabK,Wg,Wl)
+          call mod_newton_search(T,P,Z,beta, X,Y,phase,g_solution,betaL,stabK,Wg,Wl,ierr)
+          if (ierr /= 0) then
+            ierr = ierr * 10
+            return
+          endif
           if (g_solution - g_feed > g_tolerance) then
             if (continueOnError) then
               ! phase = -1 : If this is to be included all thermopack code must handle "phase = -1"
@@ -255,7 +266,11 @@ contains
           endif
         endif
         ! Do modified newton search
-        call mod_newton_search(T,P,Z,beta, X,Y,phase,g_solution,betaL,stabK,Wg,Wl)
+        call mod_newton_search(T,P,Z,beta, X,Y,phase,g_solution,betaL,stabK,Wg,Wl,ierr)
+        if (ierr /= 0) then
+          ierr = ierr * 10
+          return
+        endif
         if (g_solution - g_feed > g_tolerance) then
           if (continueOnError) then
             ! phase = -1 : If this is to be included all thermopack code must handle "phase = -1"
@@ -602,7 +617,7 @@ contains
   !!
   !! \author MHA, 2012-01-30, EA, 2013-07-26, MAG, 2013-09-12
   !-------------------------------------------------------------------------
-  subroutine mod_newton_search(T,P,Z,beta,X,Y,phase,g_solution,betaL,stabK,Wg,Wl)
+  subroutine mod_newton_search(T,P,Z,beta,X,Y,phase,g_solution,betaL,stabK,Wg,Wl,ierr)
     use optimizers, only: optimize, optim_param
     implicit none
     ! Input:
@@ -612,6 +627,7 @@ contains
     integer, intent(out)    :: phase
     ! In/Out:
     real, intent(inout)     :: beta
+    integer, optional, intent(out) :: ierr
     ! Internal:
     real                    :: V(nc),L(nc)
     type(optim_param)       :: optim
@@ -621,6 +637,7 @@ contains
     integer, parameter      :: max_iter_mod_newton = 1000
     integer                 :: i
     !---------------------------------------------------------------------------
+    if (present(ierr)) ierr = 0
     if (beta>=0.0 .and. beta<=1.0) then
       ! beta is acceptable. Continue with recieved values.
       V = beta*Y
@@ -674,14 +691,20 @@ contains
     g_solution = optim%of
     !
     if (optim%exitflag > 0 .and. .not. continueOnError) then
-      print *,'(T,P): ',T, P
-      print *,'Z:',Z
-      print *, 'Exitflag: ',optim%exitflag
-      print *,'beta: ', beta
-      print *,'betaL: ', betaL
-      print *,'X: ', X
-      print *,'Y: ', Y
-      print *,'g two phase: ', g_solution
+      if (verbose .or. (.not. present(ierr))) then
+        print *,'(T,P): ',T, P
+        print *,'Z:',Z
+        print *, 'Exitflag: ',optim%exitflag
+        print *,'beta: ', beta
+        print *,'betaL: ', betaL
+        print *,'X: ', X
+        print *,'Y: ', Y
+        print *,'g two phase: ', g_solution
+      endif
+      if (present(ierr)) then
+        ierr = optim%exitflag
+        return
+      endif
       call stoperror('tp_solver::twoPhaseTPflash: The nonlinear solver did not converge')
     endif
     !
