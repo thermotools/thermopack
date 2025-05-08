@@ -95,3 +95,21 @@ call tracebackqq(USER_EXIT_CODE=-1)
    endif
    if (dostop) call exit(err)
 end subroutine StopError
+
+!-------------------------------------------------------
+!> Take an error message and exit code, concatenate to a single 
+!> error message, and forward call to stoperror
+!>
+!> \author VGJ 2025-05-08
+!-------------------------------------------------------
+subroutine stoperror_with_exitcode(msg, ierr)
+  implicit none
+  character(len=*), intent(in)  :: msg
+  integer,         intent(in)   :: ierr
+  character(len=32)             :: err_str
+  character(len=:), allocatable :: full_msg
+
+  write(err_str, '(I0)') ierr
+  full_msg = trim(msg) // new_line('a') // ' Exit code: ' // trim(adjustl(err_str))
+  call stoperror(full_msg)
+end subroutine stoperror_with_exitcode
