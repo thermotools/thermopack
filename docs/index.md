@@ -18,7 +18,7 @@ much-appreciated in-house powerhouse.
 ![](/thermopack/assets/graphics/readme_intro.gif?raw=true)
 
 Thermopack is available for everybody, free of charge under the
-MIT/Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
+Apache 2.0 open-source licenses. Thermopack is written in FORTRAN
 to handle heavy numerical computations associated with process and
 computational fluid dynamics (CFD) simulations. The thermodynamic
 framework is easily interfaced from C/C++ and also contains a flexible
