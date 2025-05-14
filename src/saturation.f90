@@ -308,7 +308,7 @@ contains
   !>
   !> \author VGJ, 2025-08-05
   !-----------------------------------------------------------------------------
-  subroutine satP_bracket(T, Psat, Z, Z_sat, spec, ierr, tol_in)
+  subroutine satP_bracket(T, Psat, Z, Z_sat, spec, ierr, tol_in, beta_tol_in)
     use eos, only: getCriticalParam
     use critical, only: calcCriticalTV
     use tp_solver, only: twophasetpflash
@@ -319,13 +319,14 @@ contains
     real, dimension(nc), intent(out) :: Z_sat ! Composition of incipient phase
     integer, intent(in) :: spec ! 1 : Search for high-P intersect (bubble point), 2 : Search for low-P intersect (dew point)
     integer, optional, intent(out) :: ierr
-    integer, optional, intent(in) :: tol_in ! Relative tolerance for saturation pressure
+    real, optional, intent(in) :: tol_in ! Relative tolerance for saturation pressure
+    real, optional, intent(in) :: beta_tol_in ! Tolerance for betaV * betaL
     ! Critical values
     real :: Vc, tmp, crit_tol, crit(2) 
     integer :: ierr_crit, ierr_puresat
     ! Result from TP-flash
     real, dimension(nc) :: x, y 
-    real :: betaV, betaL
+    real :: betaV, betaL, beta, beta_tol
     integer :: phase
     ! Locals
     integer :: i 
@@ -337,6 +338,11 @@ contains
       tol = tol_in
     else
       tol = 1e-6
+    endif
+    if (present(beta_tol_in)) then
+      beta_tol = beta_tol_in
+    else
+      beta_tol = 1e-3 
     endif
 
     ierr = 0
@@ -420,7 +426,8 @@ contains
     if (verbose) print*, "Bracket pressures : ", T, p1, p2
 
     ! Bracket solve for saturation pressure
-    do while ((p2 - p1) / (0.5 * (p1 + p2)) > tol)
+    beta = 1
+    do while (((p2 - p1) / (0.5 * (p1 + p2)) > tol) .or. (beta > beta_tol))
       Psat = 0.5 * (p1 + p2)
       call twoPhaseTPflash_safe(T, Psat, Z, betaV, betaL, phase, x, y, ierr)
       if (ierr /= 0) return
@@ -430,6 +437,7 @@ contains
       else
         p2 = Psat
       endif
+      if (phase == TWOPH) beta = betaV * betaL
     enddo
 
     ! Set Psat to the bracketing pressure slightly inside the two-phase region
@@ -447,7 +455,7 @@ contains
       Z_sat = x
     endif
 
-    if (betaV * betaL > 1e-3) then
+    if (betaV * betaL > beta_tol) then
       print*, "WARNING: Saturation pressure at T = ", T, "K, Z = ", Z
       print*, "         Psat = ", Psat, "Pa, Z_sat = ", Z_sat
       print*, "         Phase fractions (Vap, Liq) are :", betaV, betaL
@@ -465,7 +473,7 @@ contains
   !>
   !> \author VGJ, 2025-08-05
   !-----------------------------------------------------------------------------
-  subroutine satT_bracket(Tsat, P, Z, Z_sat, spec, ierr, tol_in)
+  subroutine satT_bracket(Tsat, P, Z, Z_sat, spec, ierr, tol_in, beta_tol_in)
     use eos, only: getCriticalParam
     use critical, only: calcCriticalTV
     use tp_solver, only: twophasetpflash
@@ -476,13 +484,14 @@ contains
     real, dimension(nc), intent(out) :: Z_sat ! Composition of incipient phase
     integer, intent(in) :: spec ! 1 : Search for high-P intersect (bubble point), 2 : Search for low-P intersect (dew point)
     integer, optional, intent(out) :: ierr
-    integer, optional, intent(in) :: tol_in ! Relative tolerance for saturation temperature
+    real, optional, intent(in) :: tol_in ! Relative tolerance for saturation temperature
+    real, optional, intent(in) :: beta_tol_in ! Tolerance for betaV * betaL
     ! Critical values
     real :: Vc, tmp, crit_tol, crit(2) 
     integer :: ierr_crit, ierr_puresat
     ! Result from TP-flash
     real, dimension(nc) :: x, y 
-    real :: betaV, betaL
+    real :: betaV, betaL, beta, beta_tol
     integer :: phase
     ! Locals
     integer :: i 
@@ -493,6 +502,11 @@ contains
       tol = tol_in
     else
       tol = 1e-6
+    endif
+    if (present(beta_tol_in)) then
+      beta_tol = beta_tol_in
+    else
+      beta_tol = 1e-3 
     endif
 
     ierr = 0
@@ -575,7 +589,8 @@ contains
     if (verbose) print*, "Bracket temperatures : ", P * 1e-7, T1, T2
 
     ! Bracket solve for saturation temperature
-    do while ((T2 - T1) / (0.5 * (T1 + T2)) > tol)
+    beta = 1
+    do while (((T2 - T1) / (0.5 * (T1 + T2)) > tol) .or. (beta > beta_tol))
       Tsat = 0.5 * (T1 + T2)
       call twoPhaseTPflash_safe(Tsat, P, Z, betaV, betaL, phase, x, y, ierr)
       if (ierr /= 0) return
@@ -585,6 +600,7 @@ contains
       else
         T2 = Tsat
       endif
+      if (phase == TWOPH) beta = betaV * betaL
     enddo
 
     ! Set Tsat to the bracketing temperature slightly inside the two-phase region
@@ -602,7 +618,7 @@ contains
       Z_sat = x
     endif
 
-    if (betaV * betaL > 1e-3) then
+    if (betaV * betaL > beta_tol) then
       print*, "WARNING: Saturation temperature at P = ", P, "Pa, Z = ", Z
       print*, "         Tsat = ", Tsat, "K, Z_sat = ", Z_sat
       print*, "         Phase fractions (Vap, Liq) are :", betaV, betaL
