@@ -399,11 +399,19 @@ contains
     else if (spec == 2) then ! Decrease p1 and p2 to bracket lower saturation line
       do while (phase == TWOPH)
         p1 = 0.95 * p1
+        if (p1 < tppmin) then
+          ierr = 1
+          return
+        endif
         call twoPhaseTPflash_safe(T, p1, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
       do while (phase /= TWOPH)
         p2 = 0.95 * p2
+        if (p2 < tppmin) then
+          ierr = 3
+          return
+        endif
         call twoPhaseTPflash_safe(T, p2, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
@@ -493,7 +501,7 @@ contains
     ! T1 or increase T2 such that T1 is in the two-phase region and T2 is in the single-phase
     ! region. Then start bracket solver.
 
-    ! Assume that 1.5 * Tc is larger than the temperature at the critcondenbar
+    ! Assume that 1.5 * Tc is larger than the temperature at the critcondenbar (will correct later if not)
     crit(1) = 0
     Vc = 0
     call calcCriticalTV(crit(1), Vc, Z, ierr_crit, tol=crit_tol, p=crit(2))
@@ -508,6 +516,14 @@ contains
       T1 = 1.5 * crit(1)
     endif
     T2 = T1
+
+    if (T1 < tptmin) then
+      ierr = 1
+      return
+    else if (T1 > tpTmax) then
+      ierr = 2
+      return
+    endif
 
     if (verbose) print*, "Starting bracketing satT bracketing from : ", P, T1
     ! Decrease T1 until we enter the two-phase region
@@ -528,17 +544,29 @@ contains
       if (ierr /= 0) return
       do while (phase == TWOPH)
         T2 = 1.05 * T2
+        if (T2 > tpTmax) then
+          ierr = 2
+          return
+        endif
         call twoPhaseTPflash_safe(T2, P, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
     else if (spec == 2) then ! Decrease T1 and T2 to bracket lower saturation line
       do while (phase == TWOPH)
         T1 = 0.95 * T1
+        if (T1 < tptmin) then
+          ierr = 1
+          return
+        endif
         call twoPhaseTPflash_safe(T1, P, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
       do while (phase /= TWOPH)
         T2 = 0.95 * T2
+        if (T2 < tptmin) then
+          ierr = 3
+          return
+        endif
         call twoPhaseTPflash_safe(T2, P, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
