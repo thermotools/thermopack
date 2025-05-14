@@ -361,6 +361,14 @@ contains
     endif
     p2 = p1
 
+    if (p1 < tppmin) then
+      ierr = 1
+      return
+    else if (p1 > tppmax) then
+      ierr = 2
+      return
+    endif
+    
     if (verbose) print*, "Starting satP bracketing from :", T, p1
 
     ! Decrease p1 until we enter the two-phase region
@@ -370,7 +378,7 @@ contains
       p1 = 0.95 * p1
       call twoPhaseTPflash_safe(T, p1, Z, betaV, betaL, phase, x, y, ierr)
       if (ierr /= 0) return
-      if (p1 < 1e2) then
+      if (p1 < tppmin) then
         ierr = 1
         return
       endif
@@ -381,6 +389,10 @@ contains
       if (ierr /= 0) return
       do while (phase == TWOPH)
         p2 = 1.05 * p2
+        if (p2 > tppmax) then
+          ierr = 2
+          return
+        endif
         call twoPhaseTPflash_safe(T, p2, Z, betaV, betaL, phase, x, y, ierr)
         if (ierr /= 0) return
       enddo
