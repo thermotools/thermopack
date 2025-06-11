@@ -23,7 +23,7 @@ USER thermo
 WORKDIR /home/thermo/
 
 # Fetch thermopack
-RUN git clone https://github.com/SINTEF/thermopack.git
+RUN git clone https://github.com/thermotools/thermopack.git
 WORKDIR /home/thermo/thermopack
 
 # Build thermopack and its python interface
