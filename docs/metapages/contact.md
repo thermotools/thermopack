@@ -6,6 +6,6 @@ permalink: /contact.html
 ---
 
 Morten Hammer (morten.hammer@ntnu.no)<br>
-Ailo Aasen (ailo.aasen@sintef.no)<br>
+Ailo Aasen (ailo.aasen@ntnu.no)<br>
 Øivind Wilhelmsen (oivind.wilhelmsen@ntnu.no)<br>
 Vegard Gjeldvik Jervell (vegard.g.jervell@ntnu.no)
