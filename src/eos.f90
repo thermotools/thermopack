@@ -131,27 +131,33 @@ contains
   !> The resulting matrix has dimension (nc - 1) x (nc - 1),
   !> and is indexed as Gamma[i, j] (ref. equation above) when k is the last component.
   !>
-  !> If k is not the last component, the matrix is indexed as Gamma[i, j] for j < k
-  !> and Gamma[i, j - 1] for j > k.
+  !> If k is *not* the last component, the matrix is indexed as Gamma[i, j] for j < k
+  !> and Gamma[i, j - 1] for j > k.
   !>
   !> \author VGJ, 2025-03-20
   !----------------------------------------------------------------------
-  subroutine thermodynamic_factor(T, p, z, phase, Gamma, k)
+  subroutine thermodynamic_factor(T, p, z, phase, Gamma, k_in)
     implicit none
     real,                             intent(in)  :: T !< K - Temperature
     real,                             intent(in)  :: p !< Pa - Pressure
     real, dimension(nc),              intent(in)  :: z !< (-) - Mol fractions
     integer,                          intent(in)  :: phase !< Phase flag
     real, dimension(nc - 1, nc - 1),  intent(out) :: Gamma !< Thermodynamic factors
-    integer, optional,                intent(inout)  :: k !< Dependent component index (negative indexing supported, defaults to last component)
+    integer, optional,                intent(in)  :: k_in !< Dependent component index (negative indexing supported, defaults to last component)
 
     real, dimension(nc, nc) :: dlnphi_dn
     real, dimension(nc) :: lnphi
     integer :: gi, gj, ci, cj
+    integer :: k
 
     call thermo(T, p, z, phase, lnphi, lnfugx=dlnphi_dn)
 
-    if (.not. present(k)) k = nc
+    if (present(k_in)) then
+        k = k_in
+    else
+        k = nc
+    endif
+
     if (k < 0) k = nc + k + 1
 
     gi = 1
