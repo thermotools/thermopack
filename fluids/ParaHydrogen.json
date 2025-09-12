@@ -48,7 +48,7 @@
   "ideal_heat_capacity-1": {
     "ref": "MEOS/Default",
     "bib_reference": "Leachman (2009), DOI: 10.1063/1.3160306",
-    "correlation": 13,
+    "correlation": 12,
     "cp": [
       2.5,
       4.30256,

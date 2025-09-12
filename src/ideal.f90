@@ -299,6 +299,9 @@ contains
       enddo
       Cp_id = Cp_id*rgas
 
+      case default
+        call stoperror("Invalid Cp correlation")
+
     end select method_Cp
   end function CPideal
 

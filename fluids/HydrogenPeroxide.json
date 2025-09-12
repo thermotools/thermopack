@@ -46,7 +46,7 @@
   "ideal_heat_capacity-1": {
     "ref": "Default",
     "bib_reference": "https://webbook.nist.gov",
-    "correlation": 12,
+    "correlation": 11,
     "cp": [
       34.25667,
       55.18445,

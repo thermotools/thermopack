@@ -8,7 +8,7 @@ permalink: /vcurrent/Component-name-mapping.html
 
 <!---
 This is an auto-generated file, written by the module at addon/pyUtils/compdatadb.py
-Generated at : 2024-02-19T15:48:32.012730
+Generated at : 2025-09-12T11:47:50.087083
 This is the same module that is used to generate the Fortran
 component database files.
 --->
@@ -105,7 +105,7 @@ You may have to scroll right to view the whole table.
 | Trichlorofluoromethane | 75-69-4 | R11 |   |   |   |
 | Trifluoroamine oxide | 13847-65-9 | F3NO |   |   |   |
 | Trifluoromethane | 75-46-7 | R23 |   |   |   |
-| Water | 7732-18 | H2O | &#10004; | &#10004; | &#10004; |
+| Water | 7732-18-5 | H2O | &#10004; | &#10004; | &#10004; |
 | Xenon | 7440-63-3 | XE | &#10004; |   |   |
 | m-Xylene | 108-38-3 | MXYL |   |   |   |
 | n-Butane | 106-97-8 | NC4 | &#10004; | &#10004; | &#10004; |
