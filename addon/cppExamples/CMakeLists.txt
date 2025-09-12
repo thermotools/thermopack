@@ -9,7 +9,7 @@
 # before running cmake, in order to force compilation for arm64.
 
 project(cppExamples)
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.20)
 
 string(ASCII 27 Esc)
 set(ColourRed "${Esc}[31m")
