@@ -1,6 +1,6 @@
 !> Automatically generated to file compdatadb.f90
 !! using utility python code pyUtils
-!! Time stamp: 2024-10-28T15:26:42.069790
+!! Time stamp: 2025-09-12T11:47:50.071313
 
 module compdatadb
   use compdata, only: gendatadb, cpdata, alphadatadb, cidatadb, CPAdata
@@ -2473,7 +2473,7 @@ module compdatadb
       cpdata(cid = "H2", &
       ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
-      cptype = 13, &
+      cptype = 12, &
       cp = (/2.50000000e+00,1.61600000e+00,5.31000000e+02,-4.11700000e-01,7.51000000e+02, &
       -7.92000000e-01,1.98900000e+03,7.58000000e-01,2.48400000e+03,1.21700000e+00, &
       6.85900000e+03,0.0d0,0.0d0,0.0d0,0.0d0, &
@@ -2580,7 +2580,7 @@ module compdatadb
       cpdata(cid = "H2O2", &
       ref = "Default", &
       bib_ref = "https://webbook.nist.gov", &
-      cptype = 12, &
+      cptype = 11, &
       cp = (/3.42566700e+01,5.51844500e+01,-3.51544300e+01,9.08744000e+00,-4.22157000e-01, &
       0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
@@ -2961,7 +2961,7 @@ module compdatadb
       cpdata(cid = "KR", &
       ref = "Default", &
       bib_ref = "NIST-Chase1998", &
-      cptype = 12, &
+      cptype = 11, &
       cp = (/2.07860300e+01,4.85063800e-10,-1.58291600e-10,1.52510200e-11,3.19634700e-11, &
       0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00, &
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
@@ -3842,7 +3842,7 @@ module compdatadb
       cpdata(cid = "O-H2", &
       ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
-      cptype = 13, &
+      cptype = 12, &
       cp = (/2.50000000e+00,2.54151000e+00,8.56000000e+02,-2.36610000e+00,1.44400000e+03, &
       1.00365000e+00,2.19400000e+03,1.22447000e+00,6.96800000e+03,0.0d0, &
       0.0d0,0.0d0,0.0d0,0.0d0,0.0d0, &
@@ -4052,7 +4052,7 @@ module compdatadb
       cpdata(cid = "P-H2", &
       ref = "MEOS/Default", &
       bib_ref = "Leachman (2009), DOI: 10.1063/1.3160306", &
-      cptype = 13, &
+      cptype = 12, &
       cp = (/2.50000000e+00,4.30256000e+00,4.99000000e+02,1.30289000e+01,8.26500000e+02, &
       -4.77365000e+01,9.70800000e+02,5.00013000e+01,1.16620000e+03,-1.86261000e+01, &
       1.34140000e+03,9.93973000e-01,5.39500000e+03,5.36078000e-01,1.01850000e+04, &
