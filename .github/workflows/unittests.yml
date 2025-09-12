@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -Dtest=ON -DCMAKE_BUILD_TYPE=Debug ..
+          cmake -Dtest=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j4 install
       
       # - name: Build LAPACK Windows
