@@ -188,12 +188,16 @@ class Differentials:
         self.dp = None
         self.dV = None
         self.dn = None
+        self.dTT, self.dVV, self.dTV, self.dTn, self.dVn, self.dnn = None, None, None, None, None, None
 
         self.iterable = tuple()
         self.constant = variables
 
         if (self.constant == 'tvn') and (diffs is not None):
-            self.dT, self.dV, self.dn = diffs
+            if len(diffs) == 3:
+                self.dT, self.dV, self.dn = diffs
+            else:
+                self.dT, self.dV, self.dn, self.dTT, self.dVV, self.d_V, self.dTn, self.dVn, self.dnn = diffs
         elif (self.constant == 'tpn') and (diffs is not None):
             self.dT, self.dp, self.dn = diffs
         elif diffs is not None:
@@ -243,13 +247,15 @@ class Differentials:
             diff_idx += 1
 
         if variables == 'tvn':
-            if flags[1] is not None:
-                dV = vals[diff_idx]
-                diff_idx += 1
-            if flags[2] is not None:
-                dn = vals[diff_idx]
+            diff_idx = 0
+            diffs = []
+            for i in range(len(flags)):
+                if flags[i] is None: 
+                    diffs.append(None)
+                else:
+                    diffs.append(vals[diff_idx])
+                    diff_idx += 1
 
-            diffs = (dT, dV, dn)
         elif variables == 'tpn':
             if flags[1] is not None:
                 dp = vals[diff_idx]
@@ -269,6 +275,12 @@ class Differentials:
         ostr += f'\t{"Pressure derivative" : <31} dp : {self.dp}\n'
         ostr += f'\t{"Volume derivative" : <31} dV : {self.dV}\n'
         ostr += f'\t{"Mole number derivative" : <31} dn : {self.dn}\n'
+        d2_str = ''
+        for k, v in self.__dict__.items():
+            if (k not in ('dT', 'dp', 'dV', 'dn', 'constant', 'iterable')) and (v is not None):
+                d2_str += f'\t\t{k} : {v}\n'
+        if d2_str:
+            ostr += f'\tSecond derivatives : \n{d2_str}'
         return ostr
 
     def __str__(self):
