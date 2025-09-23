@@ -197,7 +197,7 @@ class Differentials:
             if len(diffs) == 3:
                 self.dT, self.dV, self.dn = diffs
             else:
-                self.dT, self.dV, self.dn, self.dTT, self.dVV, self.d_V, self.dTn, self.dVn, self.dnn = diffs
+                self.dT, self.dV, self.dn, self.dTT, self.dVV, self.dTV, self.dTn, self.dVn, self.dnn = diffs
         elif (self.constant == 'tpn') and (diffs is not None):
             self.dT, self.dp, self.dn = diffs
         elif diffs is not None:
