@@ -234,7 +234,7 @@ class Differentials:
 
         Args:
             vals (tuple) : A (possibly empty) tuple of differentials.
-            flags (tuple) : The flags passed to the thermopack method (dxdt, dxdv, dxdn) or (dxdt, dxdp, dxdn).
+            flags (tuple | list) : The flags passed to the thermopack method (dxdt, dxdv, dxdn) or (dxdt, dxdp, dxdn).
             variables (str) : Key (either 'tvn' or 'tpn') indicating what differentials are expected in `vals`
 
         Returns:
