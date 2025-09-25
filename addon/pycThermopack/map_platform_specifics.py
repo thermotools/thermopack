@@ -22,7 +22,7 @@ I_POSTFIX = "_"
 I_POSTFIX_NM = "_"
 
 VERSION_2 = '2.2.5b0'
-VERSION_3 = '3.b0'
+VERSION_3 = '3.0.0'
 pf_specifics_path = os.path.join(os.path.dirname( __file__), "thermopack", "platform_specifics.py")
 
 class bcolor:

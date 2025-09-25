@@ -12,6 +12,7 @@ from .saft import saft
 from .volume_translation import volume_translation
 from . import utils
 import warnings
+from thermopack.utils import Property, Differentials
 
 
 class pcsaft(saft, volume_translation):
@@ -340,6 +341,7 @@ class pcsaft(saft, volume_translation):
         n_alpha_c = (c_double * dim)(*n_alpha.flatten('F'))
         n_assoc_siets = self.get_n_assoc_sites()
         optional_flags = [phi, phi_t, phi_n, phi_tt, phi_tn, phi_nn, Xk]
+        optional_flags = [f if (f is not False) else None for f in optional_flags]
         optional_arrayshapes = [(0,), (0,), (self.nc, 6,), (0,), (self.nc, 6,), (self.nc, self.nc, 6, 6,), (n_assoc_siets,)]
         optional_ptrs = utils.get_optional_pointers(optional_flags, optional_arrayshapes)
         phi_c, phi_t_c, phi_n_c, phi_tt_c, phi_tn_c, phi_nn_c, Xk_c = optional_ptrs
@@ -369,9 +371,28 @@ class pcsaft(saft, volume_translation):
                               phi_nn_c,
                               Xk_c)
 
-        return_tuple = ()
-        return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-        return return_tuple
+        val = phi_c.value if (phi is not None) else None
+        diffs = [None for _ in range(9)]
+        if phi_t:
+            diffs[0] = phi_t_c.value
+        # diffs[1] = phi_v = None
+        if phi_n:
+            diffs[2] = np.array(phi_n_c).reshape((self.nc, 6), order='F')
+        if phi_tt:
+            diffs[3] = phi_tt_c.value
+        # diffs[4] = phi_vv = None
+        # diffs[5] = phi_tv = None
+        if phi_tn:
+            diffs[6] = np.array(phi_tn_c).reshape((self.nc, 6), order='F')
+        # diffs[7] = phi_vn = None
+        if phi_nn:
+            diffs[8] = np.array(phi_nn_c).reshape((self.nc, self.nc, 6, 6), order='F')
+        # return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
+        prop = Property(val, Differentials('tvn', tuple(diffs)))
+        if Xk is not None:
+            prop.Xk = np.array(Xk_c)
+        return prop.unpack()
+
 
 class PCP_SAFT(pcsaft):
     def __init__(self, comps, parameter_reference="Default"):
