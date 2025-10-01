@@ -1,14 +1,8 @@
-# Import ctypes
 from ctypes import *
-# Importing Numpy (math, arrays, etc...)
 import numpy as np
 from . import utils
-# Import platform to detect OS
-from sys import platform, exit
-# Import os utils
-from os import path
-# Import thermo
-from .thermo import thermo, c_len_type
+from thermopack.utils import Property
+from .thermo import thermo
 
 
 class saft(thermo):
@@ -300,7 +294,7 @@ class saft(thermo):
 
         return_tuple = (a_c.value, )
         return_tuple = utils.fill_return_tuple(return_tuple, optional_ptrs, optional_flags, optional_arrayshapes)
-        return return_tuple
+        return Property.from_return_tuple(return_tuple, optional_flags, 'tvn').unpack()
 
     def a_hard_sphere(self, temp, volume, n, a_t=None, a_v=None, a_n=None, a_tt=None, a_vv=None,
                       a_tv=None, a_tn=None, a_vn=None, a_nn=None):
