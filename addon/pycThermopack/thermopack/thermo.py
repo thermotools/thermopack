@@ -3005,7 +3005,7 @@ class thermo(object):
 
         y = np.array(y_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_temperature calculation failed")
+            raise Exception(f"bubble_temperature calculation failed (exit code {ierr_c.value})")
         return temp, y
 
     def bubble_pressure(self, temp, z):
@@ -3043,7 +3043,7 @@ class thermo(object):
 
         y = np.array(y_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_pressure calculation failed")
+            raise Exception(f"bubble_pressure calculation failed (exit code {ierr_c.value})")
         return press, y
 
     def dew_temperature(self, press, z):
@@ -3081,7 +3081,7 @@ class thermo(object):
 
         x = np.array(x_c)
         if ierr_c.value != 0:
-            raise Exception("dew_temperature calculation failed")
+            raise Exception(f"dew_temperature calculation failed (exit code {ierr_c.value})")
         return temp, x
 
     def dew_pressure(self, temp, z):
@@ -3119,7 +3119,7 @@ class thermo(object):
 
         x = np.array(x_c)
         if ierr_c.value != 0:
-            raise Exception("bubble_pressure calculation failed")
+            raise Exception(f"bubble_pressure calculation failed (exit code {ierr_c.value})")
         return press, x
 
     def get_envelope_twophase(self, initial_pressure, z, maximum_pressure=1.5e7,
