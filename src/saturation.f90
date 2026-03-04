@@ -1,11 +1,13 @@
 module saturation
   use eos, only: thermo
-  use thermopack_constants, only: clen, LIQPH, VAPPH, verbose
+  use thermopack_constants, only: clen, LIQPH, VAPPH, TWOPH, verbose
   use thermopack_var, only: nc, thermo_model, get_active_eos, &
-       Rgas, tptmin, tppmin, tppmax, tpTmax
+       Rgas, tptmin, tppmin, tppmax, tpTmax, robustness_level
   use nonlinear_solvers
   use numconstants, only: machine_prec
   use puresaturation, only: puresat
+  use tp_solver, only: twoPhaseTPflash_safe
+  use thermo_utils, only: isSingleComp
   implicit none
   private
   save
@@ -42,6 +44,9 @@ contains
     integer, optional, intent(out) :: ierr
     real :: Tbub !< K
     !
+    real :: betaV, betaL
+    real, dimension(nc) :: x_flsh, y_flsh
+    integer :: phase, ierr_flsh
     real :: Pcpy
     Pcpy = P
     ! Initial temperature
@@ -49,6 +54,14 @@ contains
 
     ! Find real bubble point temperature
     Tbub = bubT(Tbub,Pcpy,X,Y,ierr)
+    if (isSingleComp(X)) return
+
+    call twoPhaseTPflash_safe(Tbub, P, X, betaV, betaL, phase, x_flsh, y_flsh, ierr_flsh)
+    if (ierr == 0 .and. ierr_flsh /= 0) return ! Assume Pbub is correct solution
+    if (ierr /= 0 .or. (phase == TWOPH .and. betaV * betaL > 1e-3)) then
+      if (verbose) print*, "safe_bubT : Falling back to bracket solver at P, Z = ", P, X
+      call satT_bracket(Tbub, P, X, Y, 2, ierr)
+    endif
   end function safe_bubT
 
   !-----------------------------------------------------------------------------
@@ -57,6 +70,8 @@ contains
   !> \author MH, 2013-03-05
   !-----------------------------------------------------------------------------
   function safe_bubP(T,X,Y,ierr) result(Pbub)
+    use tp_solver, only: twoPhaseTPflash
+    use thermopack_var, only: robustness_level
     implicit none
     real, dimension(nc), intent(in) :: X
     real, dimension(nc), intent(out) :: Y
@@ -64,13 +79,23 @@ contains
     integer, optional, intent(out) :: ierr
     real :: Pbub !< Pa
     !
-    real :: Tcpy
+    real :: Tcpy, betaV, betaL
+    real, dimension(nc) :: x_flsh, y_flsh
+    integer :: phase, ierr_flsh
     Tcpy = T
     ! Initial pressure
     call PureSat(Tcpy,Pbub,X,.false.,ierr=ierr)
 
     ! Find real bubble point temperature
     Pbub = bubP(Tcpy,Pbub,X,Y,ierr)
+    if (isSingleComp(X)) return
+
+    call twoPhaseTPflash_safe(T, Pbub, X, betaV, betaL, phase, x_flsh, y_flsh, ierr_flsh)
+    if (ierr == 0 .and. ierr_flsh /= 0) return ! Assume Pbub is correct solution
+    if (ierr /= 0 .or. (phase == TWOPH .and. betaV * betaL > 1e-3)) then
+      if (verbose) print*, "safe_bubP : Falling back to bracket solver at T, Z = ", T, X
+      call satP_bracket(T, Pbub, X, Y, 1, ierr)
+    endif
   end function safe_bubP
 
   !-----------------------------------------------------------------------------
@@ -79,7 +104,7 @@ contains
   !> \author MH, 2013-03-05
   !-----------------------------------------------------------------------------
   function safe_dewT(P,X,Y,ierr) result(Tdew)
-    use thermo_utils, only: maxComp, isSingleComp
+    use thermo_utils, only: maxComp
     use eos, only: getCriticalParam, specificVolume
     use eosTV, only: entropy_tv
     implicit none
@@ -94,6 +119,9 @@ contains
     integer :: ierr_local, i
     integer, parameter :: n = 2
     real, parameter :: safe_rel_press = 0.02
+    real :: betaV, betaL
+    real, dimension(nc) :: x_flsh, y_flsh
+    integer :: phase, ierr_flsh
     Pcpy = P
     ! Initial temperature
     call PureSat(Tdew,Pcpy,Y,.true.,ierr=ierr_local)
@@ -132,6 +160,16 @@ contains
       call stoperror('safe_dewT::No convergece')
     endif
 
+    if (isSingleComp(Y)) return
+
+    call twoPhaseTPflash_safe(Tdew, P, Y, betaV, betaL, phase, x_flsh, y_flsh, ierr_flsh)
+    if (ierr_local == 0 .and. ierr_flsh /= 0) return ! Assume Tdew is correct solution
+    if (ierr_local /= 0 .or. (phase == TWOPH .and. betaV * betaL > 1e-3)) then
+      if (verbose) print*, "safe_dewT : Falling back to bracket solver at P, Z = ", P, Y
+      call satT_bracket(Tdew, P, Y, X, 1, ierr_local)
+    endif
+    if (present(ierr)) ierr = ierr_local
+
   end function safe_dewT
 
   !-----------------------------------------------------------------------------
@@ -140,6 +178,7 @@ contains
   !> \author MH, 2013-03-05
   !-----------------------------------------------------------------------------
   function safe_dewP(T,X,Y,ierr) result(Pdew)
+    use tp_solver, only: twoPhaseTPflash
     implicit none
     real, dimension(nc), intent(out) :: X
     real, dimension(nc), intent(in) :: Y
@@ -147,13 +186,24 @@ contains
     integer, optional, intent(out) :: ierr
     real :: Pdew !< Pa
     !
-    real :: Tcpy
+    real :: Tcpy, betaV, betaL
+    real, dimension(nc) :: x_flsh, y_flsh
+    integer :: phase, ierr_flsh
     Tcpy = T
     ! Initial pressure
     call PureSat(Tcpy,Pdew,Y,.false.,ierr=ierr)
 
     ! Find real bubble point temperature
     Pdew = dewP(Tcpy,Pdew,X,Y,ierr)
+    if (isSingleComp(Y)) return
+
+    
+    call twoPhaseTPflash_safe(T, Pdew, Y, betaV, betaL, phase, x_flsh, y_flsh, ierr_flsh)
+    if (ierr == 0 .and. ierr_flsh /= 0) return ! Assume Pdew is correct solution
+    if (ierr /= 0 .or. (phase == TWOPH .and. betaV * betaL > 1e-3)) then
+      if (verbose) print*, "safe_dewP : Falling back to bracket solver at T, Z = ", T, Y
+      call satP_bracket(T, Pdew, Y, X, 2, ierr)
+    endif
   end function safe_dewP
 
   !-----------------------------------------------------------------------------
@@ -247,6 +297,334 @@ contains
     call sat(Y,Z,X,T,P,spec,doBubIn,ierr)
     Pdew = P
   end function dewP
+
+  !-----------------------------------------------------------------------------
+  !> Inefficient but robust fallback solver for saturation pressure. Uses tp-flash
+  !> to bracket the saturation line. safe_bubP and safe_dewP fall back to this solver
+  !> if the standard solver fails.
+  !>
+  !> spec = 1 : Solve for high-pressure saturation line / temperature intersect (bubble pressure)
+  !> spec = 2 : Solve for low-pressure saturation line / temperature intersect (dew pressure)
+  !>
+  !> \author VGJ, 2025-08-05
+  !-----------------------------------------------------------------------------
+  subroutine satP_bracket(T, Psat, Z, Z_sat, spec, ierr, tol_in, beta_tol_in)
+    use eos, only: getCriticalParam
+    use critical, only: calcCriticalTV
+    use tp_solver, only: twophasetpflash
+    implicit none
+    real, intent(in) :: T ! Temperature
+    real, intent(out) :: Psat ! Saturation pressure
+    real, dimension(nc), intent(in) :: Z ! Total composition
+    real, dimension(nc), intent(out) :: Z_sat ! Composition of incipient phase
+    integer, intent(in) :: spec ! 1 : Search for high-P intersect (bubble point), 2 : Search for low-P intersect (dew point)
+    integer, optional, intent(out) :: ierr
+    real, optional, intent(in) :: tol_in ! Relative tolerance for saturation pressure
+    real, optional, intent(in) :: beta_tol_in ! Tolerance for betaV * betaL
+    ! Critical values
+    real :: Vc, tmp, crit_tol, crit(2) 
+    integer :: ierr_crit, ierr_puresat
+    ! Result from TP-flash
+    real, dimension(nc) :: x, y 
+    real :: betaV, betaL, beta, beta_tol
+    integer :: phase
+    ! Locals
+    integer :: i 
+    real :: tol
+    real :: p1, p2  ! Bracketing pressures
+    real :: T_cpy
+    
+    if (present(tol_in)) then
+      tol = tol_in
+    else
+      tol = 1e-6
+    endif
+    if (present(beta_tol_in)) then
+      beta_tol = beta_tol_in
+    else
+      beta_tol = 1e-3 
+    endif
+
+    ierr = 0
+
+    ! Start at a pressure larger than the pressure at the critcondentherm, then reduce
+    ! p1 or increase p2 such that p1 is in the two-phase region and p2 is in the single-phase
+    ! region. Then start bracket solver.
+
+    ! Assume that critical pressure is larger than the pressure at the critcondentherm
+    crit(1) = 0
+    Vc = 0
+    call calcCriticalTV(crit(1), Vc, Z, ierr_crit, tol=crit_tol, p=crit(2))
+    if (ierr_crit /= 0) then ! Fall back to highest pure component critical pressure
+      p1 = 0
+      do i = 1, nc
+        call getCriticalParam(i, crit(1), crit(2), tmp)
+        if (crit(2) > p1) p1 = crit(2)
+      enddo
+      p1 = 2 * p1 ! Just to be sure we are high enough in pressure
+    else
+      p1 = crit(2)
+    endif
+    p2 = p1
+
+    if (p1 < tppmin) then
+      ierr = 1
+      return
+    else if (p1 > tppmax) then
+      ierr = 2
+      return
+    endif
+    
+    if (verbose) print*, "Starting satP bracketing from :", T, p1
+
+    ! Decrease p1 until we enter the two-phase region
+    call twoPhaseTPflash_safe(T, p1, Z, betaV, betaL, phase, x, y, ierr)
+    if (ierr /= 0) return
+    do while (phase /= TWOPH)
+      p1 = 0.95 * p1
+      call twoPhaseTPflash_safe(T, p1, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      if (p1 < tppmin) then
+        ierr = 1
+        return
+      endif
+    enddo
+
+    if (spec == 1) then ! Increase p2 to bracket saturation line
+      call twoPhaseTPflash_safe(T, p2, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      do while (phase == TWOPH)
+        p2 = 1.05 * p2
+        if (p2 > tppmax) then
+          ierr = 2
+          return
+        endif
+        call twoPhaseTPflash_safe(T, p2, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+    else if (spec == 2) then ! Decrease p1 and p2 to bracket lower saturation line
+      do while (phase == TWOPH)
+        p1 = 0.95 * p1
+        if (p1 < tppmin) then
+          ierr = 1
+          return
+        endif
+        call twoPhaseTPflash_safe(T, p1, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+      do while (phase /= TWOPH)
+        p2 = 0.95 * p2
+        if (p2 < tppmin) then
+          ierr = 3
+          return
+        endif
+        call twoPhaseTPflash_safe(T, p2, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+    endif 
+
+    if (verbose) print*, "Bracket pressures : ", T, p1, p2
+
+    ! Bracket solve for saturation pressure
+    beta = 1
+    do while (((p2 - p1) / (0.5 * (p1 + p2)) > tol) .or. (beta > beta_tol))
+      Psat = 0.5 * (p1 + p2)
+      call twoPhaseTPflash_safe(T, Psat, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      if ((phase == TWOPH .and. spec == 1) &
+            .or. (phase /= TWOPH .and. spec == 2)) then
+        p1 = Psat
+      else
+        p2 = Psat
+      endif
+      if (phase == TWOPH) beta = betaV * betaL
+    enddo
+
+    ! Set Psat to the bracketing pressure slightly inside the two-phase region
+    if (spec == 1) then
+      Psat = p1
+    else 
+      Psat = p2
+    endif
+
+    ! Compute incipient phase composition
+    call twoPhaseTPflash_safe(T, Psat, Z, betaV, betaL, phase, x, y, ierr)
+    if (ierr /= 0) return
+    Z_sat = y
+    if (betaV > betaL) then ! Incipient phase is Liquid
+      Z_sat = x
+    endif
+
+    if (betaV * betaL > beta_tol) then
+      print*, "WARNING: Saturation pressure at T = ", T, "K, Z = ", Z
+      print*, "         Psat = ", Psat, "Pa, Z_sat = ", Z_sat
+      print*, "         Phase fractions (Vap, Liq) are :", betaV, betaL
+    endif
+
+  end subroutine satP_bracket
+
+  !-----------------------------------------------------------------------------
+  !> Inefficient but robust fallback solver for saturation pressure. Uses tp-flash
+  !> to bracket the saturation line. safe_bubP and safe_dewP fall back to this solver
+  !> if the standard solver fails.
+  !>
+  !> spec = 1 : Solve for high-pressure saturation line / temperature intersect (bubble pressure)
+  !> spec = 2 : Solve for low-pressure saturation line / temperature intersect (dew pressure)
+  !>
+  !> \author VGJ, 2025-08-05
+  !-----------------------------------------------------------------------------
+  subroutine satT_bracket(Tsat, P, Z, Z_sat, spec, ierr, tol_in, beta_tol_in)
+    use eos, only: getCriticalParam
+    use critical, only: calcCriticalTV
+    use tp_solver, only: twophasetpflash
+    implicit none
+    real, intent(out) :: Tsat ! Saturation Temperature
+    real, intent(in) :: P ! Pressure
+    real, dimension(nc), intent(in) :: Z ! Total composition
+    real, dimension(nc), intent(out) :: Z_sat ! Composition of incipient phase
+    integer, intent(in) :: spec ! 1 : Search for high-P intersect (bubble point), 2 : Search for low-P intersect (dew point)
+    integer, optional, intent(out) :: ierr
+    real, optional, intent(in) :: tol_in ! Relative tolerance for saturation temperature
+    real, optional, intent(in) :: beta_tol_in ! Tolerance for betaV * betaL
+    ! Critical values
+    real :: Vc, tmp, crit_tol, crit(2) 
+    integer :: ierr_crit, ierr_puresat
+    ! Result from TP-flash
+    real, dimension(nc) :: x, y 
+    real :: betaV, betaL, beta, beta_tol
+    integer :: phase
+    ! Locals
+    integer :: i 
+    real :: tol
+    real :: T1, T2  ! Bracketing pressures
+    
+    if (present(tol_in)) then
+      tol = tol_in
+    else
+      tol = 1e-6
+    endif
+    if (present(beta_tol_in)) then
+      beta_tol = beta_tol_in
+    else
+      beta_tol = 1e-3 
+    endif
+
+    ierr = 0
+
+    ! Start at a temperature larger than the temperature at the critcondenbar, then reduce
+    ! T1 or increase T2 such that T1 is in the two-phase region and T2 is in the single-phase
+    ! region. Then start bracket solver.
+
+    ! Assume that 1.5 * Tc is larger than the temperature at the critcondenbar (will correct later if not)
+    crit(1) = 0
+    Vc = 0
+    call calcCriticalTV(crit(1), Vc, Z, ierr_crit, tol=crit_tol, p=crit(2))
+    if (ierr_crit /= 0) then ! Fall back to highest pure component critical temperature
+      T1 = 0
+      do i = 1, nc
+        call getCriticalParam(i, crit(1), crit(2), tmp)
+        if (crit(1) > T1) T1 = crit(1)
+      enddo
+      T1 = 2.5 * T1
+    else
+      T1 = 1.5 * crit(1)
+    endif
+    T2 = T1
+
+    if (T1 < tptmin) then
+      ierr = 1
+      return
+    else if (T1 > tpTmax) then
+      ierr = 2
+      return
+    endif
+
+    if (verbose) print*, "Starting bracketing satT bracketing from : ", P, T1
+    ! Decrease T1 until we enter the two-phase region
+    call twoPhaseTPflash_safe(T1, P, Z, betaV, betaL, phase, x, y, ierr)
+    if (ierr /= 0) return
+    do while (phase /= TWOPH)
+      T1 = 0.95 * T1
+      call twoPhaseTPflash_safe(T1, P, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      if (T1 < tptmin) then
+        ierr = 1
+        return
+      endif
+    enddo
+
+    if (spec == 1) then ! Increase T2 to bracket saturation line
+      call twoPhaseTPflash_safe(T2, P, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      do while (phase == TWOPH)
+        T2 = 1.05 * T2
+        if (T2 > tpTmax) then
+          ierr = 2
+          return
+        endif
+        call twoPhaseTPflash_safe(T2, P, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+    else if (spec == 2) then ! Decrease T1 and T2 to bracket lower saturation line
+      do while (phase == TWOPH)
+        T1 = 0.95 * T1
+        if (T1 < tptmin) then
+          ierr = 1
+          return
+        endif
+        call twoPhaseTPflash_safe(T1, P, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+      do while (phase /= TWOPH)
+        T2 = 0.95 * T2
+        if (T2 < tptmin) then
+          ierr = 3
+          return
+        endif
+        call twoPhaseTPflash_safe(T2, P, Z, betaV, betaL, phase, x, y, ierr)
+        if (ierr /= 0) return
+      enddo
+    endif 
+
+    if (verbose) print*, "Bracket temperatures : ", P * 1e-7, T1, T2
+
+    ! Bracket solve for saturation temperature
+    beta = 1
+    do while (((T2 - T1) / (0.5 * (T1 + T2)) > tol) .or. (beta > beta_tol))
+      Tsat = 0.5 * (T1 + T2)
+      call twoPhaseTPflash_safe(Tsat, P, Z, betaV, betaL, phase, x, y, ierr)
+      if (ierr /= 0) return
+      if ((phase == TWOPH .and. spec == 1) &
+            .or. (phase /= TWOPH .and. spec == 2)) then
+        T1 = Tsat
+      else
+        T2 = Tsat
+      endif
+      if (phase == TWOPH) beta = betaV * betaL
+    enddo
+
+    ! Set Tsat to the bracketing temperature slightly inside the two-phase region
+    if (spec == 1) then
+      Tsat = T1
+    else 
+      Tsat = T2
+    endif
+
+    ! Compute incipient phase composition
+    call twoPhaseTPflash_safe(Tsat, P, Z, betaV, betaL, phase, x, y, ierr)
+    if (ierr /= 0) return
+    Z_sat = y
+    if (betaV > betaL) then ! Incipient phase is Liquid
+      Z_sat = x
+    endif
+
+    if (betaV * betaL > beta_tol) then
+      print*, "WARNING: Saturation temperature at P = ", P, "Pa, Z = ", Z
+      print*, "         Tsat = ", Tsat, "K, Z_sat = ", Z_sat
+      print*, "         Phase fractions (Vap, Liq) are :", betaV, betaL
+    endif
+
+  end subroutine satT_bracket
 
   !-----------------------------------------------------------------------------
   !> Calculate saturation value, pressure or temperature
