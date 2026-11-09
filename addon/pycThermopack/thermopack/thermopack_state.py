@@ -744,8 +744,9 @@ class phase_state_list(State, list):
                 setattr(self, name, self.no_inherit_static)
 
         for name, val in properties:
-            setattr(phase_state_list, name, property(lambda *args, mname=name: np.array([state.__getattribute__(mname)
-                                                                                for state in self])))
+            setattr(phase_state_list, name, property(
+                lambda states, mname=name: np.array([
+                    state.__getattribute__(mname) for state in states])))
 
     def no_inherit_static(self, *args, **kwargs):
         raise AttributeError('phase_state_list does not inherit static methods from State.')
