@@ -187,7 +187,7 @@ class State(object):
         """
         if self._p is None and (self._T is not None and
                 self._v is not None and self._x is not None):
-            self._p, = self.eos.pressure_tv(self._T, self._v, self._x)
+            self._p = utils.back_compatible_unpack(self.eos.pressure_tv(self._T, self._v, self._x))
         return self._p
 
     @property
@@ -204,7 +204,7 @@ class State(object):
                 self._p is not None and
                 self._x is not None and
                 self._ph is not None):
-            self._v, = self.eos.specific_volume(self._T, self._p, self._x, self._ph)
+            self._v = utils.back_compatible_unpack(self.eos.specific_volume(self._T, self._p, self._x, self._ph))
         return self._v
 
     @property
