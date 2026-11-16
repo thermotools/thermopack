@@ -40,7 +40,7 @@ class State(object):
             self._v = V/self._n_tot if V is not None else None
             self._x = n/self._n_tot
         if self._v is not None:
-            self._rho = np.zeros_like(self._n)
+            self._rho = np.zeros_like(self._n, dtype=float)
             self._rho[:] = self._x[:] / self._v
         else:
             self._rho = None
@@ -232,7 +232,7 @@ class State(object):
         """ Partial densities (mol/m3)
         """
         if self._rho is None:
-            self._rho = np.zeros_like(self._n)
+            self._rho = np.zeros_like(self._n, dtype=float)
             self._rho[:] = self._x[:]/self.specific_volume
         return self._rho
 
