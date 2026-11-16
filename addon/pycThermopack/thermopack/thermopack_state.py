@@ -766,7 +766,7 @@ class phase_state_list(State, list):
 
     @staticmethod
     def new_phx(eos, h, p, x):
-        return phase_state_list([State.new_tpx(eos, hi, pi, xi) for hi, pi, xi in zip(h, p, x)])
+        return phase_state_list([State.new_phx(eos, hi, pi, xi) for hi, pi, xi in zip(h, p, x)])
 
     @staticmethod
     def new_mut(eos, mu, T, rho0):
